@@ -1,10 +1,25 @@
-function App() {
-  return (
-    <div style={{ padding: "20px", fontFamily: "Arial" }}>
-      <h1>The Sanctuary</h1>
-      <p>Rice Assessment Dashboard</p>
-    </div>
-  );
-}
+import "./styles/global.css"
 
-export default App;
+import Navbar from "./component/navbar"
+import Hero from "./component/hero"
+import Stats from "./component/stats"
+import Features from "./component/features"
+import Journey from "./component/journey"
+import Mentors from "./component/mentors"
+import CTA from "./component/cta"
+import Footer from "./component/footer"
+
+export default function App() {
+  return (
+    <>
+      <Navbar />
+      <Hero />
+      <Stats />
+      <Features />
+      <Journey />
+      <Mentors />
+      <CTA />
+      <Footer />
+    </>
+  )
+}

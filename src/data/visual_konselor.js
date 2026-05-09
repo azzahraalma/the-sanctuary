@@ -1,0 +1,74 @@
+const visual_konselor = [
+  {
+    "Kategori_Masalah":"Keuangan dan Karier",
+    "Jumlah_Kasus":6,
+    "Jenis_Chart":"Pie Chart"
+  },
+  {
+    "Kategori_Masalah":"Akademik dan Relasi",
+    "Jumlah_Kasus":9,
+    "Jenis_Chart":"Pie Chart"
+  },
+  {
+    "Kategori_Masalah":"Hubungan",
+    "Jumlah_Kasus":3,
+    "Jenis_Chart":"Pie Chart"
+  },
+  {
+    "Kategori_Masalah":"Keluarga",
+    "Jumlah_Kasus":2,
+    "Jenis_Chart":"Pie Chart"
+  },
+  {
+    "Kategori_Masalah":null,
+    "Jumlah_Kasus":null,
+    "Jenis_Chart":null
+  },
+  {
+    "Kategori_Masalah":null,
+    "Jumlah_Kasus":null,
+    "Jenis_Chart":null
+  },
+  {
+    "Kategori_Masalah":"Komponen",
+    "Jumlah_Kasus":"Nilai",
+    "Jenis_Chart":"Jenis Chart"
+  },
+  {
+    "Kategori_Masalah":"Rata-rata rating konsleor",
+    "Jumlah_Kasus":3.8,
+    "Jenis_Chart":"Doughnut Chart"
+  },
+  {
+    "Kategori_Masalah":"Sisa",
+    "Jumlah_Kasus":1.2,
+    "Jenis_Chart":"Doughnut Chart"
+  },
+  {
+    "Kategori_Masalah":null,
+    "Jumlah_Kasus":null,
+    "Jenis_Chart":null
+  },
+  {
+    "Kategori_Masalah":"Komponen",
+    "Jumlah_Kasus":"Rating",
+    "Jenis_Chart":"Jenis Chart"
+  },
+  {
+    "Kategori_Masalah":"Probabilitas Sukses Tim",
+    "Jumlah_Kasus":0.4444444444,
+    "Jenis_Chart":"Pie Chart"
+  },
+  {
+    "Kategori_Masalah":"Sisa",
+    "Jumlah_Kasus":0.5555555556,
+    "Jenis_Chart":"Pie Chart"
+  },
+  {
+    "Kategori_Masalah":null,
+    "Jumlah_Kasus":null,
+    "Jenis_Chart":null
+  }
+];
+
+export default visual_konselor;

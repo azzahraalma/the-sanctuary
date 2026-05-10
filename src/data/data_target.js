@@ -9,7 +9,7 @@ const data_target = [
   },
   {
     "ID_Mahasiswa":"M-001",
-    "Nama_Target":"Latihan Pernapasan dan Journaling Harian",
+    "Nama_Target":"Teknik Grounding 5-4-3-2-1",
     "Target_Sesi":4.0,
     "Sesi_Terlalui":4.0,
     "Status":"Selesai",
@@ -17,7 +17,7 @@ const data_target = [
   },
   {
     "ID_Mahasiswa":"M-001",
-    "Nama_Target":"Latihan Pernapasan dan Journaling Harian",
+    "Nama_Target":"Manajemen Waktu Akademik",
     "Target_Sesi":4.0,
     "Sesi_Terlalui":4.0,
     "Status":"Selesai",
@@ -25,7 +25,7 @@ const data_target = [
   },
   {
     "ID_Mahasiswa":"M-001",
-    "Nama_Target":"Latihan Pernapasan dan Journaling Harian",
+    "Nama_Target":"Refleksi Diri Mingguan",
     "Target_Sesi":4.0,
     "Sesi_Terlalui":4.0,
     "Status":"Selesai",

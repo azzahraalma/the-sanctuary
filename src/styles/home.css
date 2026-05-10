@@ -290,11 +290,17 @@ button { cursor: pointer; font-family: inherit; }
 
 /* donut */
 .status-donut-wrap {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 24px; height: 100%; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
 }
+
 .donut-svg {
-  filter: drop-shadow(0 6px 18px rgba(47,125,121,0.20));
+  width: 260px;
+  height: 260px;
+  filter: drop-shadow(0 10px 25px rgba(47,125,121,0.25));
 }
 .donut-legend { display: flex; flex-direction: column; gap: 14px; }
 .donut-item { display: flex; align-items: center; gap: 10px; font-size: 15px; color: #333; font-weight: 500; }
@@ -622,4 +628,49 @@ button { cursor: pointer; font-family: inherit; }
   .cta-h2      { font-size: 28px; }
   .footer      { grid-template-columns: 1fr; gap: 36px; }
   .nav-l       { flex-direction: column; gap: 12px; }
+}
+
+/* Tambah di home.css */
+.nav-user-wrap { display: flex; align-items: center; gap: 8px; }
+
+.nav-avatar--active {
+  background: var(--teal);
+  color: white;
+  font-size: 13px; font-weight: 700;
+}
+
+.nav-avatar-initial { line-height: 1; }
+
+.nav-logout-btn {
+  background: none; border: none; color: var(--gray);
+  display: flex; align-items: center;
+  width: 30px; height: 30px; border-radius: 50%;
+  justify-content: center;
+  transition: color .2s, background .2s;
+}
+.nav-logout-btn:hover { color: #c0392b; background: rgba(192,57,43,0.08); }
+
+.page-dummy {
+  width: 92%;
+  margin: 60px auto;
+  padding: 40px;
+  background: #fff;
+  border-radius: 20px;
+}
+
+.page-dummy h1 {
+  font-size: 28px;
+  color: #2f7d79;
+  margin-bottom: 10px;
+}
+
+.page-dummy p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.dummy-box {
+  background: #f5f5ef;
+  padding: 20px;
+  border-radius: 16px;
 }

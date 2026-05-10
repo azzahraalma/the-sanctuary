@@ -24,6 +24,25 @@ const probSukses = analisis_konselor.find(
   (a) => a.Metrik_Tim === "Probabilitas Sukses Tim"
 )?.Rumus_Excel ?? 0;
 
+// ── Helper: cek session & arahkan ke tujuan atau login ───────────────────────
+// destination: path tujuan kalau sudah login (mis. "/konselor", "/dashboard")
+function useAuthNav() {
+  const navigate = useNavigate();
+
+  const goTo = (destination) => {
+    const user = localStorage.getItem("sanctuary_user");
+    if (user) {
+      navigate(destination);
+    } else {
+      // Simpan tujuan asal agar setelah login bisa redirect ke sana
+      sessionStorage.setItem("redirect_after_login", destination);
+      navigate("/login");
+    }
+  };
+
+  return goTo;
+}
+
 // ── StarRating ───────────────────────────────────────────────────────────────
 function StarRating({ rating }) {
   return (
@@ -116,6 +135,7 @@ const steps = [
     title: "Tes Refleksi Diri",
     body: "Jawab beberapa pertanyaan sederhana untuk membantu memahami kondisi dan kebutuhan Anda saat ini di lingkungan perkuliahan..",
     cta: "Mulai Tes Refleksi Diri",
+    dest: "/dashboard",
   },
   {
     n: "02",
@@ -134,7 +154,20 @@ const steps = [
 // ── Home ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   const navigate = useNavigate();
+  const goTo     = useAuthNav();
   const statsRef = useRef(null);
+
+  // Ambil info user dari session (untuk tampilan navbar)
+  const user = (() => {
+    try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
+    catch { return null; }
+  })();
+
+  const handleLogout = () => {
+    localStorage.removeItem("sanctuary_user");
+    sessionStorage.removeItem("redirect_after_login");
+    navigate("/login");
+  };
 
   const handleScrollToStats = () => {
     statsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -150,31 +183,60 @@ export default function Home() {
             <span className="nav-logo">The Sanctuary</span>
             <ul className="nav-menu">
               <li className="nav-item is-active">Beranda</li>
-              <li className="nav-item" onClick={() => navigate("/login")}>Konselor</li>
-              <li className="nav-item" onClick={() => navigate("/login")}>Dashboard</li>
+              {/* Konselor → butuh login → /konselor */}
+              <li className="nav-item" onClick={() => goTo("/konselor")}>Konselor</li>
+              {/* Dashboard → butuh login → /dashboard */}
+              <li className="nav-item" onClick={() => goTo("/dashboard")}>Dashboard</li>
             </ul>
           </div>
           <div className="nav-r">
-            <button className="nav-cta" onClick={() => navigate("/login")}>
+            <button className="nav-cta" onClick={() => goTo("/konselor")}>
               Temukan Konselor
             </button>
-            <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => navigate("/login")}>
+
+            {/* Notif → butuh login → /dashboard */}
+            <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/dashboard")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
             </button>
-            <div
-              className="nav-avatar"
-              onClick={() => navigate("/login")}
-              style={{ cursor: "pointer" }}
-              aria-label="Profil"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </div>
+
+            {/* Avatar: kalau sudah login tampil nama + tombol logout, kalau belum ke /login */}
+            {user ? (
+              <div className="nav-user-wrap">
+                <div
+                  className="nav-avatar nav-avatar--active"
+                  onClick={() => goTo("/dashboard")}
+                  style={{ cursor: "pointer" }}
+                  aria-label="Profil"
+                  title={user.name}
+                >
+                  <span className="nav-avatar-initial">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <button className="nav-logout-btn" onClick={handleLogout} title="Keluar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <div
+                className="nav-avatar"
+                onClick={() => navigate("/login")}
+                style={{ cursor: "pointer" }}
+                aria-label="Profil"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+            )}
           </div>
         </nav>
       </header>
@@ -191,7 +253,8 @@ export default function Home() {
             teman sebaya di kampus yang siap mendengarkan dan bantu kamu cari jalan keluar bareng-bareng.
           </p>
           <div className="hero-btns">
-            <button className="btn-primary" onClick={() => navigate("/login")}>
+            {/* Mulai Perjalanan → kalau login → /dashboard, kalau belum → /login */}
+            <button className="btn-primary" onClick={() => goTo("/dashboard")}>
               Mulai Perjalananmu
             </button>
             <button className="btn-ghost" onClick={handleScrollToStats}>
@@ -280,19 +343,21 @@ export default function Home() {
           <div className="stats-detail-card">
             <h4 className="sdc-title">Status Sesi Konseling</h4>
             <div className="status-donut-wrap">
-              <svg viewBox="0 0 120 120" width="110" height="110" className="donut-svg">
-                <circle cx="60" cy="60" r="45" fill="none" stroke="#e8e8e8" strokeWidth="18" />
+              <svg viewBox="0 0 200 200" width="220" height="220" className="donut-svg">
+                <circle cx="100" cy="100" r="80" fill="none" stroke="#e8e8e8" strokeWidth="22" />
                 <circle
-                  cx="60" cy="60" r="45" fill="none"
-                  stroke="#2f7d79" strokeWidth="18"
-                  strokeDasharray={`${(kasusSelesai / totalKasus) * 283} 283`}
-                  strokeDashoffset="70.75"
+                  cx="100" cy="100" r="80" fill="none"
+                  stroke="#2f7d79" strokeWidth="22"
+                  strokeDasharray={`${(kasusSelesai / totalKasus) * 502} 502`}
+                  strokeDashoffset="125"
                   strokeLinecap="round"
                 />
-                <text x="60" y="55" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#2f7d79">
+                <text x="100" y="95" textAnchor="middle" fontSize="26" fontWeight="bold" fill="#2f7d79">
                   {successRate}%
                 </text>
-                <text x="60" y="70" textAnchor="middle" fontSize="8" fill="#888">selesai</text>
+                <text x="100" y="120" textAnchor="middle" fontSize="12" fill="#888">
+                  selesai
+                </text>
               </svg>
               <div className="donut-legend">
                 <div className="donut-item">
@@ -375,7 +440,7 @@ export default function Home() {
                 <h4 className="step-h4">{s.title}</h4>
                 <p className="step-p">{s.body}</p>
                 {s.cta && (
-                  <button className="step-cta" onClick={() => navigate("/login")}>
+                  <button className="step-cta" onClick={() => goTo(s.dest)}>
                     {s.cta}
                   </button>
                 )}
@@ -418,7 +483,8 @@ export default function Home() {
               <div className="mcard-photo-wrap">
                 <img src={m.image} alt={m.Nama} className="mcard-photo" />
                 <div className="mcard-hover-layer">
-                  <button className="mcard-book" onClick={() => navigate("/login")}>
+                  {/* Buat Janji → butuh login → /konselor */}
+                  <button className="mcard-book" onClick={() => goTo("/konselor")}>
                     Buat Janji
                   </button>
                 </div>
@@ -461,10 +527,14 @@ export default function Home() {
             yang siap mendengarkan dan membantu Anda.
           </p>
           <div className="cta-btns">
-            <button className="cta-btn-solid" onClick={() => navigate("/login")}>
-              Buat Akun Gratis
+            {/* Buat Akun → kalau belum login ke /register, kalau udah ke /dashboard */}
+            <button className="cta-btn-solid" onClick={() => user ? navigate("/dashboard") : navigate("/register")}>
+              {user ? "Buka Dashboard" : "Buat Akun Gratis"}
             </button>
-            <button className="cta-btn-ghost">Hubungi Konselor</button>
+            {/* Hubungi Konselor → butuh login → /konselor */}
+            <button className="cta-btn-ghost" onClick={() => goTo("/konselor")}>
+              Hubungi Konselor
+            </button>
           </div>
         </div>
       </section>

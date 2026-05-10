@@ -4,11 +4,11 @@ import "../styles/auth.css";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail]       = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPw, setShowPw]     = useState(false);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -18,13 +18,9 @@ export default function Login() {
     setLoading(true);
     // Simulasi auth — ganti dengan API call nyata
     setTimeout(() => {
-      // Simpan session
       localStorage.setItem("sanctuary_user", JSON.stringify({ email, name: email.split("@")[0] }));
-
-      // Ambil tujuan asal (kalau ada), lalu hapus
       const redirect = sessionStorage.getItem("redirect_after_login") || "/";
       sessionStorage.removeItem("redirect_after_login");
-
       setLoading(false);
       navigate(redirect, { replace: true });
     }, 1000);
@@ -33,13 +29,12 @@ export default function Login() {
   return (
     <div className="auth-shell">
 
-      {/* ── KIRI: foto + overlay teks ── */}
+      {/* ── KIRI: panel hijau tua ── */}
       <div className="auth-panel-left">
-        <img src="/forest.jpg" alt="" className="auth-bg-img" />
         <div className="auth-overlay" />
 
         <div className="auth-left-brand">
-          <span className="auth-logo">The Sanctuary</span>
+          <span className="auth-logo auth-logo--light">The Sanctuary</span>
         </div>
 
         <div className="auth-left-copy">
@@ -122,14 +117,14 @@ export default function Login() {
 
           </form>
 
-          <p className="auth-switch">
+          <p className="auth-switch" style={{ textAlign: "center" }}>
             Baru di The Sanctuary?{" "}
             <span className="auth-switch-link" onClick={() => navigate("/register")}>
               Buat akun anda
             </span>
           </p>
 
-          <button className="auth-support-btn" onClick={() => {}}>
+          <button className="auth-support-btn" onClick={() => { }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
               <circle cx="12" cy="12" r="10" />
               <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />

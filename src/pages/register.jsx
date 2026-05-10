@@ -17,7 +17,6 @@ export default function Register() {
     if (password.length < 6) { setError("Password minimal 6 karakter."); return; }
 
     setLoading(true);
-    // Simulasi register — ganti dengan API call nyata
     setTimeout(() => {
       localStorage.setItem("sanctuary_user", JSON.stringify({ email, name }));
       setLoading(false);
@@ -26,48 +25,57 @@ export default function Register() {
   };
 
   return (
-    <div className="reg-shell">
-      {/* Background foto gunung/alam */}
-      <img src="/mountain.jpg" alt="" className="reg-bg-img" />
-      <div className="reg-overlay" />
+    <div className="auth-shell">
 
-      {/* Brand top-left */}
-      <div className="reg-brand">
-        <span className="auth-logo auth-logo--light">The Sanctuary</span>
+      {/* ── KIRI ── */}
+      <div className="auth-panel-left">
+        <div className="auth-overlay" />
+        <div className="auth-left-brand">
+          <span className="auth-logo auth-logo--light">The Sanctuary</span>
+        </div>
+        <div className="auth-left-copy">
+          <h2 className="auth-left-h2">Ciptakan Ruang<br />Kedamaian Anda</h2>
+          <p className="auth-left-p">
+            Tarik napas dalam-dalam. Mari mulai dari hal-hal dasar dan 
+            bergabung bersama komunitas konseling sebaya Polimedia.
+          </p>
+        </div>
+        <div className="auth-left-footer">© 2026 THE SANCTUARY</div>
       </div>
 
-      {/* Card register di tengah kanan */}
-      <div className="reg-card-wrap">
-        <div className="reg-card">
+      {/* ── KANAN ── */}
+      <div className="auth-panel-right">
+        <div className="auth-form-wrap">
 
-          <div className="reg-card-header">
-            <h1 className="reg-card-h1">Ciptakan Ruang Kedamaian Anda</h1>
-            <p className="reg-card-sub">Tarik napas dalam-dalam. Mari mulai dari hal-hal dasar.</p>
+          <div className="auth-form-header">
+            <h1 className="auth-form-h1">Ciptakan Ruang<br />Kedamaian Anda</h1>
+            <p className="auth-form-sub">
+              Tarik napas dalam-dalam. Mari mulai dari hal-hal dasar.
+            </p>
           </div>
 
           <form className="auth-form" onSubmit={handleRegister}>
 
-            <div className="reg-field-row">
-              <div className="auth-field">
-                <label className="auth-label">Nama Lengkap</label>
-                <input
-                  type="text"
-                  className="auth-input"
-                  placeholder="Evelyn Harper"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="auth-field">
-                <label className="auth-label">Alamat Email</label>
-                <input
-                  type="email"
-                  className="auth-input"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
+            <div className="auth-field">
+              <label className="auth-label">Nama Lengkap</label>
+              <input
+                type="text"
+                className="auth-input"
+                placeholder="Evelyn Harper"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <div className="auth-field">
+              <label className="auth-label">Alamat Email</label>
+              <input
+                type="email"
+                className="auth-input"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
 
             <div className="auth-field">
@@ -98,41 +106,6 @@ export default function Register() {
 
         </div>
       </div>
-
-      {/* Feature bullets bawah kiri */}
-      <div className="reg-features">
-        <div className="reg-feat-item">
-          <div className="reg-feat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-            </svg>
-          </div>
-          <span>Mindfulness Berbasis Bukti Ilmiah</span>
-        </div>
-        <div className="reg-feat-item">
-          <div className="reg-feat-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 8v4l3 3" />
-            </svg>
-          </div>
-          <span>Ketangguhan Mental dengan Bimbingan Profesional</span>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <footer className="reg-footer">
-        <div className="reg-footer-brand">
-          <span className="auth-logo">The Sanctuary.</span>
-          <p className="reg-footer-copy">© 2026 The Sanctuary. A space for resilient horizons.</p>
-        </div>
-        <div className="reg-footer-links">
-          <span>Privacy Policy</span>
-          <span>Terms of Service</span>
-          <span>Contact Support</span>
-          <span>Our Methodology</span>
-        </div>
-      </footer>
 
     </div>
   );

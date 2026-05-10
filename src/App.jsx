@@ -1,9 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Home      from "./pages/home";
-import Login     from "./pages/login";
-import Register  from "./pages/register";
+import Home from "./pages/home";
+import Login from "./pages/login";
+import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
+import Konselor from "./pages/konselor";
 
 // ── Cek apakah user sudah login (session di localStorage) ──────────
 function isLoggedIn() {
@@ -36,6 +37,16 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* konselor — harus login */}
+        <Route
+          path="/konselor"
+          element={
+            <ProtectedRoute>
+              <Konselor />
             </ProtectedRoute>
           }
         />

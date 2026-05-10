@@ -5,7 +5,7 @@ const data_booking = [
     "ID_Booking":"B-001",
     "ID_Konselor":"K-001",
     "ID_Mahasiswa":"M-001",
-    "Nama_Mahasiswa":"Ahmad Rizky Pratama",
+    "Nama_Mahasiswa":"Muhammad Prasetyo Hanggara",
     "Sesi_Konseling":4.0,
     "Kondisi_Awal":0.25,
     "Kondisi_Saat_Ini":1.0,
@@ -361,42 +361,8 @@ const data_booking = [
     "col_14":null,
     "col_15":null
   },
-  {
-    "ID_Booking":null,
-    "ID_Konselor":null,
-    "ID_Mahasiswa":null,
-    "Nama_Mahasiswa":null,
-    "Sesi_Konseling":null,
-    "Kondisi_Awal":null,
-    "Kondisi_Saat_Ini":null,
-    "Kategori_Masalah":null,
-    "Tanggal_Sesi":null,
-    "Status":null,
-    "col_10":null,
-    "col_11":null,
-    "col_12":null,
-    "col_13":null,
-    "col_14":null,
-    "col_15":null
-  },
-  {
-    "ID_Booking":null,
-    "ID_Konselor":null,
-    "ID_Mahasiswa":null,
-    "Nama_Mahasiswa":null,
-    "Sesi_Konseling":null,
-    "Kondisi_Awal":null,
-    "Kondisi_Saat_Ini":null,
-    "Kategori_Masalah":null,
-    "Tanggal_Sesi":null,
-    "Status":null,
-    "col_10":null,
-    "col_11":null,
-    "col_12":null,
-    "col_13":null,
-    "col_14":null,
-    "col_15":null
-  }
+  {"ID_Booking":null,"ID_Konselor":null,"ID_Mahasiswa":null,"Nama_Mahasiswa":null,"Sesi_Konseling":null,"Kondisi_Awal":null,"Kondisi_Saat_Ini":null,"Kategori_Masalah":null,"Tanggal_Sesi":null,"Status":null,"col_10":null,"col_11":null,"col_12":null,"col_13":null,"col_14":null,"col_15":null},
+  {"ID_Booking":null,"ID_Konselor":null,"ID_Mahasiswa":null,"Nama_Mahasiswa":null,"Sesi_Konseling":null,"Kondisi_Awal":null,"Kondisi_Saat_Ini":null,"Kategori_Masalah":null,"Tanggal_Sesi":null,"Status":null,"col_10":null,"col_11":null,"col_12":null,"col_13":null,"col_14":null,"col_15":null}
 ];
 
 export default data_booking;

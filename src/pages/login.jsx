@@ -22,7 +22,7 @@ export default function Login() {
       localStorage.setItem("sanctuary_user", JSON.stringify({ email, name: email.split("@")[0] }));
 
       // Ambil tujuan asal (kalau ada), lalu hapus
-      const redirect = sessionStorage.getItem("redirect_after_login") || "/dashboard";
+      const redirect = sessionStorage.getItem("redirect_after_login") || "/";
       sessionStorage.removeItem("redirect_after_login");
 
       setLoading(false);

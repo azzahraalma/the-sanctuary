@@ -6,7 +6,7 @@ import Home from "./pages/home";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
-import Konselor from "./pages/Konselor";
+import Konselor from "./pages/konselor";
 import Statistik from "./pages/statistik";
 import Kuesioner from "./pages/kuesioner";
 import KonselorDetail from "./pages/KonselorDetail";

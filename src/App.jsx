@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Home      from "./pages/home";
-import Login     from "./pages/login";
-import Register  from "./pages/register";
+import Home from "./pages/home";
+import Login from "./pages/login";
+import Register from "./pages/register";
 import Dashboard from "./pages/dashboard";
-import Konselor  from "./pages/konselor";
+import Konselor from "./pages/konselor";
 import Statistik from "./pages/statistik";
 import Kuesioner from "./pages/kuesioner";
 
@@ -28,27 +28,27 @@ export default function App() {
 
         <Route path="/dashboard" element={
           <ProtectedRoute><Dashboard /></ProtectedRoute>
-        }/>
+        } />
 
         <Route path="/kuesioner" element={
-  <ProtectedRoute><Kuesioner /></ProtectedRoute>
-}/>
+          <ProtectedRoute><Kuesioner /></ProtectedRoute>
+        } />
 
         <Route path="/statistik" element={
           <ProtectedRoute><Statistik /></ProtectedRoute>
-        }/>
+        } />
 
         <Route path="/konselor" element={
           <ProtectedRoute><Konselor /></ProtectedRoute>
-        }/>
+        } />
 
         <Route path="/login" element={
           <AuthRoute><Login /></AuthRoute>
-        }/>
+        } />
 
         <Route path="/register" element={
           <AuthRoute><Register /></AuthRoute>
-        }/>
+        } />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

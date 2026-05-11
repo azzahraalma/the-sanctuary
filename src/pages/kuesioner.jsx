@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import data_konselor from "../data/data_konselor";
 import "../styles/kuesioner.css";
 
+// ── Data Soal ────────────────────────────────────────────────────
 const soalList = [
   {
     id: 1,
@@ -52,32 +54,62 @@ const soalList = [
   },
 ];
 
+// ── Hitung skor dari jawaban ─────────────────────────────────────
 function hitungSkor(jawaban) {
-  let total = 0;
-  let count = 0;
+  let total = 0, count = 0;
   soalList.forEach((s) => {
     const j = jawaban[s.id];
     if (j === undefined || j === null) return;
     if (s.tipe === "pilihan_kartu") {
       const map = { a: 10, b: 40, c: 70, d: 90 };
       total += map[j] || 0;
-      count++;
     } else {
       total += Number(j);
-      count++;
     }
+    count++;
   });
   return count > 0 ? Math.round(total / count) : 0;
 }
 
-function hasilDariSkor(skor) {
-  if (skor <= 30) return { level: "Baik", warna: "#10b981", desc: "Kondisi psikologismu terlihat baik! Pertahankan kebiasaan positifmu.", icon: "🌿" };
-  if (skor <= 55) return { level: "Waspada", warna: "#f59e0b", desc: "Ada beberapa hal yang perlu diperhatikan. Jangan abaikan sinyal dari dirimu.", icon: "🌤️" };
-  if (skor <= 75) return { level: "Perlu Dukungan", warna: "#f97316", desc: "Kamu sedang menanggung banyak hal. Berbicara dengan konselor sebaya bisa sangat membantu.", icon: "🌧️" };
-  return { level: "Segera Cari Bantuan", warna: "#ef4444", desc: "Kondisimu memerlukan perhatian segera. Jangan ragu untuk mencari bantuan.", icon: "⛈️" };
+// ── Tentukan kategori masalah dari jawaban ───────────────────────
+function tentukanKategori(jawaban, skor) {
+  const { KATEGORI } = { KATEGORI: {
+    AKADEMIK: "Tekanan Akademik & Kesejahteraan Mahasiswa",
+    KARIER: "Perencanaan Karier & Kehidupan Kampus",
+    EMOSI: "Pengelolaan Kebiasaan & Emosi Mahasiswa",
+    BURNOUT: "Kelelahan Akademik & Aktivitas Kampus",
+  }};
+  // Mapping jawaban ke kategori
+  const j1 = jawaban[1], j3 = jawaban[3];
+  if (j1 === "d" || j3 === "d") return KATEGORI.EMOSI;
+  if (j1 === "c" || j3 === "c") return KATEGORI.BURNOUT;
+  if (skor > 55) return KATEGORI.AKADEMIK;
+  return KATEGORI.KARIER;
 }
 
-// ── Navbar shared ─────────────────────────────────────────────────
+// ── Hitung % match konselor ──────────────────────────────────────
+function hitungMatch(konselor, kategoriUser, skor) {
+  let match = 60;
+  if (konselor.Kategori_Masalah === kategoriUser) match += 25;
+  match += Math.round(konselor["Rating_(Final)"] * 3);
+  if (skor > 55 && konselor["Rating_(Final)"] >= 4.5) match += 5;
+  return Math.min(match, 99);
+}
+
+// ── Alasan cocok ─────────────────────────────────────────────────
+function alasanCocok(konselor, kategoriUser) {
+  const alasan = [];
+  if (konselor.Kategori_Masalah === kategoriUser)
+    alasan.push(`Spesialis di bidang ${konselor.Kategori_Masalah.toLowerCase()}`);
+  if (konselor["Rating_(Final)"] >= 4.5)
+    alasan.push(`Rating tinggi ${konselor["Rating_(Final)"]}/5`);
+  if (konselor["Success_Rate"] >= 0.5)
+    alasan.push(`Success rate ${Math.round(konselor["Success_Rate"] * 100)}%`);
+  alasan.push(`${konselor.Pengalaman} pengalaman`);
+  return alasan.slice(0, 3);
+}
+
+// ── Navbar ───────────────────────────────────────────────────────
 function KuisNav({ navigate }) {
   return (
     <header className="kuis-nav">
@@ -87,14 +119,12 @@ function KuisNav({ navigate }) {
         <span onClick={() => navigate("/konselor")}>Mentor</span>
         <span onClick={() => navigate("/dashboard")}>Dashboard</span>
       </nav>
-      <div className="kuis-nav-right-group">
-        <button className="kuis-nav-cta" onClick={() => navigate("/konselor")}>Temukan Mentor</button>
-      </div>
+      <button className="kuis-nav-cta" onClick={() => navigate("/konselor")}>Temukan Mentor</button>
     </header>
   );
 }
 
-// ── Footer shared ─────────────────────────────────────────────────
+// ── Footer ───────────────────────────────────────────────────────
 function KuisFooter() {
   return (
     <footer className="kuis-footer">
@@ -112,9 +142,161 @@ function KuisFooter() {
   );
 }
 
+// ── Star Rating ──────────────────────────────────────────────────
+function Stars({ rating }) {
+  return (
+    <div className="hasil-stars">
+      {[1,2,3,4,5].map(n => (
+        <span key={n} className={n <= Math.round(rating) ? "star-on" : "star-off"}>★</span>
+      ))}
+      <span className="hasil-rating-val">{rating.toFixed(1)}</span>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// HALAMAN HASIL REKOMENDASI
+// ════════════════════════════════════════════════════════════════
+function HalamanHasil({ skor, jawaban, navigate, onUlang }) {
+  const kategoriUser = tentukanKategori(jawaban, skor);
+
+  // Urutkan konselor berdasarkan % match
+  const konselorRanked = [...data_konselor]
+    .map(k => ({ ...k, match: hitungMatch(k, kategoriUser, skor) }))
+    .sort((a, b) => b.match - a.match);
+
+  const utama = konselorRanked[0];
+  const alternatif = konselorRanked.slice(1, 3);
+
+  const alasan = alasanCocok(utama, kategoriUser);
+
+  const pendekatan = [
+    { icon: "👥", judul: "Komunitas Sebaya", desc: "Bergabung dan berbagi pengalaman bersama komunitas dalam lingkungan yang aman dan mendukung." },
+    { icon: "🧘", judul: "Berlatih Mindfulness", desc: "Temukan ketenangan melalui latihan kesadaran diri, meditasi, dan teknik relaksasi." },
+    { icon: "📔", judul: "Jurnal Digital", desc: "Ekspresikan perasaan dan pikiran melalui jurnal reflektif sebagai terapi diri." },
+  ];
+
+  return (
+    <div className="kuis-shell">
+      <KuisNav navigate={navigate} />
+
+      <main className="hasil-main">
+        {/* ── Header ── */}
+        <div className="hasil-header">
+          <h1 className="hasil-h1">Perjalanan Anda Menuju Kedamaian</h1>
+          <p className="hasil-sub">
+            Berdasarkan refleksi Anda, kami telah mengidentifikasi mentor yang memiliki keahlian dalam membantu
+            menghadapi transisi yang Anda sebutkan. Koneksi ini dibangun atas dasar empati, pengalaman yang
+            serupa, dan ketangguhan profesional.
+          </p>
+        </div>
+
+        {/* ── Konselor Utama ── */}
+        <div className="hasil-utama-grid">
+          {/* Card konselor utama */}
+          <div className="hasil-card-utama">
+            <div className="hasil-match-badge">{utama.match}% Resilience Match</div>
+            <div className="hasil-utama-foto-wrap">
+              <img src={utama.image} alt={utama.Nama} className="hasil-utama-foto" />
+            </div>
+            <div className="hasil-utama-info">
+              <h2 className="hasil-utama-nama">{utama.Nama}</h2>
+              <p className="hasil-utama-spesialis">Spesialis {utama.Kategori_Masalah}</p>
+              <Stars rating={utama["Rating_(Final)"]} />
+              <p className="hasil-utama-exp">{utama.Pengalaman} pengalaman · {utama.Kasus_Selesai}/{utama.Jumlah_Kasus} kasus</p>
+              <button className="hasil-btn-jadwal" onClick={() => navigate("/konselor")}>
+                Jadwalkan Konsultasi Awal
+              </button>
+            </div>
+          </div>
+
+          {/* Kenapa cocok */}
+          <div className="hasil-card-alasan">
+            <div className="hasil-alasan-icon">↗</div>
+            <h3 className="hasil-alasan-h3">Mengapa cocok untuk Anda?</h3>
+            <p className="hasil-alasan-p">
+              {utama.Nama.split(" ")[0]} memiliki pengalaman mendampingi mahasiswa yang menghadapi tantangan
+              seperti yang Anda alami, dengan pendekatan berbasis empati dan <em>mindful movement</em>,
+              membantu Anda menemukan jalur yang paling sesuai dengan kebutuhan Anda saat ini.
+            </p>
+            <div className="hasil-alasan-tags">
+              {alasan.map((a, i) => (
+                <span key={i} className="hasil-tag">{a}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Konselor Alternatif ── */}
+        <div className="hasil-alternatif-grid">
+          {alternatif.map((k) => (
+            <div key={k.ID} className="hasil-card-alt">
+              <div className="hasil-alt-top">
+                <img src={k.image} alt={k.Nama} className="hasil-alt-foto" />
+                <div>
+                  <span className="hasil-alt-match">{k.match}% Match</span>
+                  <h4 className="hasil-alt-nama">{k.Nama}</h4>
+                  <p className="hasil-alt-kat">{k.Kategori_Masalah}</p>
+                  <Stars rating={k["Rating_(Final)"]} />
+                </div>
+              </div>
+              <p className="hasil-alt-desc">
+                {k.Nama.split(" ")[0]} memiliki fokus pada {k.Kategori_Masalah.toLowerCase()},
+                dengan {k.Pengalaman} pengalaman mendampingi mahasiswa.
+              </p>
+              <button className="hasil-btn-alt" onClick={() => navigate("/konselor")}>
+                Atur Sesi Konsultasi Awal
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Pendekatan Alternatif ── */}
+        <div className="hasil-pendekatan-wrap">
+          <div className="hasil-pendekatan-header">
+            <h3 className="hasil-pendekatan-h3">Pendekatan Alternatif</h3>
+            <p className="hasil-pendekatan-sub">
+              Pendekatan satu-ke-satu sering merupakan langkah paling kuat — tetapi setiap perjalanan unik.
+              Temukan pendekatan pendukung bersama yang dapat mendampingi Anda dari sudut pandang yang berbeda.
+            </p>
+            <button className="hasil-link-sumber" onClick={() => navigate("/konselor")}>
+              Lihat semua sumber →
+            </button>
+          </div>
+
+          <div className="hasil-pendekatan-grid">
+            {pendekatan.map((p, i) => (
+              <div key={i} className="hasil-pend-card">
+                <div className="hasil-pend-icon">{p.icon}</div>
+                <h4 className="hasil-pend-judul">{p.judul}</h4>
+                <p className="hasil-pend-desc">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Aksi bawah ── */}
+        <div className="hasil-bottom-actions">
+          <button className="hasil-btn-dashboard" onClick={() => navigate("/dashboard")}>
+            Lihat Dashboard Saya
+          </button>
+          <button className="hasil-btn-ulang" onClick={onUlang}>
+            Ulangi Refleksi
+          </button>
+        </div>
+      </main>
+
+      <KuisFooter />
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ════════════════════════════════════════════════════════════════
 export default function Kuesioner() {
   const navigate = useNavigate();
-  const [langkah, setLangkah] = useState("soal"); // langsung ke soal
+  const [langkah, setLangkah] = useState("soal");
   const [soalIdx, setSoalIdx] = useState(0);
   const [jawaban, setJawaban] = useState({});
 
@@ -132,64 +314,37 @@ export default function Kuesioner() {
     if (soalIdx > 0) setSoalIdx(soalIdx - 1);
   };
 
-  // ===== HASIL =====
+  const handleUlang = () => {
+    setSoalIdx(0);
+    setJawaban({});
+    setLangkah("soal");
+  };
+
+  // ── HASIL ──
   if (langkah === "hasil") {
     const skor = hitungSkor(jawaban);
-    const hasil = hasilDariSkor(skor);
     return (
-      <div className="kuis-shell">
-        <KuisNav navigate={navigate} />
-        <main className="kuis-main">
-          <div className="kuis-hasil-box">
-            <div className="kuis-hasil-icon">{hasil.icon}</div>
-            <h2 className="kuis-hasil-h2">Terima Kasih atas Refleksimu</h2>
-            <p className="kuis-hasil-sub">Kami telah memproses jawabanmu dengan penuh perhatian.</p>
-            <div className="kuis-hasil-badge" style={{ borderColor: hasil.warna }}>
-              <span className="kuis-badge-label" style={{ background: hasil.warna }}>{hasil.level}</span>
-              <p className="kuis-hasil-desc">{hasil.desc}</p>
-            </div>
-            <div className="kuis-skor-bar">
-              <div className="kuis-skor-info">
-                <span>Tingkat Kebutuhan</span>
-                <strong>{skor}%</strong>
-              </div>
-              <div className="kuis-skor-track">
-                <div className="kuis-skor-fill" style={{ width: `${skor}%`, background: hasil.warna }} />
-              </div>
-            </div>
-            <div className="kuis-hasil-actions">
-              <button className="kuis-btn-lanjut" onClick={() => navigate("/konselor")}>
-                Temukan Konselor →
-              </button>
-              <button className="kuis-btn-outline" onClick={() => navigate("/dashboard")}>
-                Lihat Dashboard
-              </button>
-              <button className="kuis-btn-lewati" onClick={() => { setSoalIdx(0); setJawaban({}); setLangkah("soal"); }}>
-                Ulangi Tes
-              </button>
-            </div>
-          </div>
-        </main>
-        <KuisFooter />
-      </div>
+      <HalamanHasil
+        skor={skor}
+        jawaban={jawaban}
+        navigate={navigate}
+        onUlang={handleUlang}
+      />
     );
   }
 
-  // ===== SOAL =====
+  // ── SOAL ──
   return (
     <div className="kuis-shell">
       <KuisNav navigate={navigate} />
 
       <main className="kuis-main">
-        {/* Header */}
         <div className="kuis-header">
           <h1 className="kuis-h1">Refleksi Diri</h1>
           <p className="kuis-sub">
             Mari luangkan sejenak dalam ketenangan bersama. Refleksi ini dirancang untuk memberi kami memahami
             kondisi Anda saat ini dan bagaimana kami dapat mendukung perjalanan Anda dengan sebaik mungkin.
           </p>
-
-          {/* Progress */}
           <div className="kuis-progress-wrap">
             <div className="kuis-progress-top">
               <span className="kuis-progress-label">PROGRESS ANDA · {progres}%</span>
@@ -201,7 +356,6 @@ export default function Kuesioner() {
           </div>
         </div>
 
-        {/* Card Soal */}
         <div className="kuis-card">
           <h2 className="kuis-soal-q">{soal.pertanyaan}</h2>
 
@@ -228,9 +382,7 @@ export default function Kuesioner() {
                 <span>{soal.labelKanan}</span>
               </div>
               <input
-                type="range"
-                min="0"
-                max="100"
+                type="range" min="0" max="100"
                 value={jawabanSaatIni ?? 50}
                 onChange={(e) => setJawaban({ ...jawaban, [soal.id]: Number(e.target.value) })}
                 className="kuis-slider"
@@ -239,7 +391,6 @@ export default function Kuesioner() {
           )}
         </div>
 
-        {/* Navigasi */}
         <div className="kuis-nav-btn">
           <button className="kuis-btn-lewati" onClick={handleLanjut}>Lewati</button>
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -256,7 +407,6 @@ export default function Kuesioner() {
           </div>
         </div>
 
-        {/* Quote */}
         <p className="kuis-quote">
           "Pertumbuhan bukan tentang tujuan, melainkan cara menjalani hidup dengan penuh kesadaran terhadap diri sendiri."
         </p>

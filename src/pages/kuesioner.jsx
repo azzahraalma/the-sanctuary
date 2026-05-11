@@ -767,9 +767,8 @@ export default function Kuesioner() {
               {soal.pilihan.map((p) => (
                 <button
                   key={p.id}
-                  className={`kuis-kartu ${
-                    jawabanSaatIni === p.id ? "terpilih" : ""
-                  }`}
+                  className={`kuis-kartu ${jawabanSaatIni === p.id ? "terpilih" : ""
+                    }`}
                   onClick={() => handlePilih(p.id)}
                 >
                   <span className="kuis-kartu-icon">{p.icon}</span>
@@ -797,6 +796,9 @@ export default function Kuesioner() {
                 value={jawabanSaatIni ?? 50}
                 onChange={(e) => handleSlider(e.target.value)}
                 className="kuis-slider"
+                style={{
+                  background: `linear-gradient(to right, #2d6b68 0%, #2d6b68 ${jawabanSaatIni ?? 50}%, #d1d5db ${jawabanSaatIni ?? 50}%, #d1d5db 100%)`
+                }}
               />
 
               <p className="kuis-slider-val">

@@ -14,11 +14,24 @@ export default function Register() {
   const handleRegister = (e) => {
     e.preventDefault();
     setError("");
-    if (!name || !email || !password) { setError("Lengkapi semua kolom dulu ya."); return; }
-    if (password.length < 6) { setError("Password minimal 6 karakter."); return; }
-    if (isEmailTaken(email)) { setError("Email sudah terdaftar. Coba login."); return; }
+
+    if (!name || !email || !password) {
+      setError("Yuk lengkapi dulu semua datanya 😊");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password minimal 6 karakter ya.");
+      return;
+    }
+
+    if (isEmailTaken(email)) {
+      setError("Email ini sudah terdaftar. Coba masuk aja ya ✨");
+      return;
+    }
 
     setLoading(true);
+
     setTimeout(() => {
       const user = registerUser(name, email, password);
       localStorage.setItem("sanctuary_user", JSON.stringify(user));
@@ -31,53 +44,115 @@ export default function Register() {
     <div className="auth-shell">
       <div className="auth-panel-left">
         <div className="auth-overlay" />
+
         <div className="auth-left-brand">
-          <span className="auth-logo auth-logo--light">The Sanctuary</span>
+          <span className="auth-logo auth-logo--light">
+            The Sanctuary
+          </span>
         </div>
+
         <div className="auth-left-copy">
-          <h2 className="auth-left-h2">Ciptakan Ruang<br />Kedamaian Anda</h2>
+          <h2 className="auth-left-h2">
+            Yuk mulai<br />
+            perjalananmu<br />
+            di ruang aman ini
+          </h2>
+
           <p className="auth-left-p">
-            Tarik napas dalam-dalam. Mari mulai dari hal-hal dasar dan
-            bergabung bersama komunitas konseling sebaya Polimedia.
+            Tempat untuk berbagi cerita, mengenal diri sendiri,
+            dan tumbuh pelan-pelan tanpa harus merasa sendirian.
           </p>
         </div>
-        <div className="auth-left-footer">© 2026 THE SANCTUARY</div>
+
+        <div className="auth-left-footer">
+          © 2026 THE SANCTUARY
+        </div>
       </div>
 
       <div className="auth-panel-right">
         <div className="auth-form-wrap">
           <div className="auth-form-header">
-            <h1 className="auth-form-h1">Ciptakan Ruang<br />Kedamaian Anda</h1>
-            <p className="auth-form-sub">Tarik napas dalam-dalam. Mari mulai dari hal-hal dasar.</p>
+            <h1 className="auth-form-h1">
+              Hai,<br />
+              senang kamu<br />
+              ada di sini ✨
+            </h1>
+
+            <p className="auth-form-sub">
+              Buat akun dulu yuk supaya kamu bisa mengakses
+              ruang konseling sebaya dan fitur personal lainnya.
+            </p>
           </div>
 
           <form className="auth-form" onSubmit={handleRegister}>
             <div className="auth-field">
-              <label className="auth-label">Nama Lengkap</label>
-              <input type="text" className="auth-input" placeholder="Nama lengkap kamu"
-                value={name} onChange={(e) => setName(e.target.value)} />
+              <label className="auth-label">
+                Nama Lengkap
+              </label>
+
+              <input
+                type="text"
+                className="auth-input"
+                placeholder="Nama lengkap kamu"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
+
             <div className="auth-field">
-              <label className="auth-label">Alamat Email</label>
-              <input type="email" className="auth-input" placeholder="name@example.com"
-                value={email} onChange={(e) => setEmail(e.target.value)} />
+              <label className="auth-label">
+                Alamat Email
+              </label>
+
+              <input
+                type="email"
+                className="auth-input"
+                placeholder="contoh@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
+
             <div className="auth-field">
-              <label className="auth-label">Buat Password</label>
-              <input type="password" className="auth-input" placeholder="••••••••"
-                value={password} onChange={(e) => setPassword(e.target.value)} />
+              <label className="auth-label">
+                Buat Password
+              </label>
+
+              <input
+                type="password"
+                className="auth-input"
+                placeholder="Buat password kamu"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
 
             {error && <p className="auth-error">{error}</p>}
 
-            <button type="submit" className={`auth-submit ${loading ? "auth-submit--loading" : ""}`} disabled={loading}>
-              {loading ? <span className="auth-spinner" /> : <>Mulai Perjalanan Anda →</>}
+            <button
+              type="submit"
+              className={`auth-submit ${loading ? "auth-submit--loading" : ""}`}
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="auth-spinner" />
+              ) : (
+                <>Buat Akun Sekarang</>
+              )}
             </button>
           </form>
 
-          <p className="auth-switch" style={{ textAlign: "center", marginTop: "20px" }}>
-            Sudah memiliki tempat disini?{" "}
-            <span className="auth-switch-link" onClick={() => navigate("/login")}>Sign in</span>
+          <p
+            className="auth-switch"
+            style={{ textAlign: "center", marginTop: "20px" }}
+          >
+            Sudah punya akun?{" "}
+            <span
+              className="auth-switch-link"
+              onClick={() => navigate("/login")}
+            >
+              Masuk di sini
+            </span>
           </p>
 
           <div className="auth-support-wrapper">
@@ -96,7 +171,7 @@ export default function Register() {
                 <path d="M15 18l-6-6 6-6" />
               </svg>
 
-              Kembali ke Beranda
+              Balik ke Beranda
             </button>
           </div>
         </div>

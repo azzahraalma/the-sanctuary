@@ -14,13 +14,16 @@ export default function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
     setError("");
-    if (!email || !password) { setError("Lengkapi semua kolom dulu ya."); return; }
+    if (!email || !password) { 
+      setError("Yuk lengkapi email dan password dulu 😊"); 
+      return; 
+    }
 
     setLoading(true);
     setTimeout(() => {
       const user = findUser(email, password);
       if (!user) {
-        setError("Email atau password salah.");
+        setError("Hmm, email atau password kamu belum cocok. Coba cek lagi ya.");
         setLoading(false);
         return;
       }
@@ -40,39 +43,72 @@ export default function Login() {
           <span className="auth-logo auth-logo--light">The Sanctuary</span>
         </div>
         <div className="auth-left-copy">
-          <h2 className="auth-left-h2">Kembali ke cakrawala<br />ketangguhan Anda</h2>
+          <h2 className="auth-left-h2">
+            Senang melihat<br />
+            kamu kembali di<br />
+            ruang aman ini
+          </h2>
+
           <p className="auth-left-p">
-            Ruang khusus yang dikurasi untuk kesejahteraan mental Anda. Masuk
-            untuk melanjutkan perjalanan Anda di dalam ruang editorial kami.
+            Tempat kecil untuk beristirahat sejenak, bercerita, dan tumbuh
+            dengan lebih tenang. Masuk dulu yuk, ruangmu sudah menunggu.
           </p>
         </div>
+
         <div className="auth-left-footer">© 2026 THE SANCTUARY</div>
       </div>
 
       <div className="auth-panel-right">
         <div className="auth-form-wrap">
           <div className="auth-form-header">
-            <h1 className="auth-form-h1">Selamat datang<br />kembali di ruang<br />ketenangan Anda</h1>
+            <h1 className="auth-form-h1">
+              Halo,<br />
+              selamat datang<br />
+              kembali ✨
+            </h1>
+
             <p className="auth-form-sub">
-              Masukkan detail akun Anda untuk mengakses dashboard dan fitur yang dipersonalisasi.
+              Masukkan akun kamu untuk lanjut ngobrol, melihat dashboard,
+              dan mengakses ruang yang sudah dipersonalisasi buat kamu.
             </p>
           </div>
 
           <form className="auth-form" onSubmit={handleLogin}>
             <div className="auth-field">
               <label className="auth-label">Alamat Email</label>
-              <input type="email" className="auth-input" placeholder="nama@email.com"
-                value={email} onChange={(e) => setEmail(e.target.value)} />
+
+              <input
+                type="email"
+                className="auth-input"
+                placeholder="contoh@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
+
             <div className="auth-field">
               <div className="auth-label-row">
                 <label className="auth-label">Password</label>
-                <button type="button" className="auth-forgot">Lupa Kata Kunci?</button>
+
+                <button type="button" className="auth-forgot">
+                  Lupa password?
+                </button>
               </div>
+
               <div className="auth-input-wrap">
-                <input type={showPw ? "text" : "password"} className="auth-input"
-                  placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
+                <input
+                  type={showPw ? "text" : "password"}
+                  className="auth-input"
+                  placeholder="Masukkan password kamu"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+
+                <button
+                  type="button"
+                  className="auth-eye"
+                  onClick={() => setShowPw(!showPw)}
+                >
                   {showPw ? (
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
                       <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" />
@@ -91,20 +127,23 @@ export default function Login() {
 
             {error && <p className="auth-error">{error}</p>}
 
-            <div className="auth-hint">
-              <small style={{ color: "#999", fontSize: "12px" }}>
-                💡 Coba: <b>pras@sanctuary.com</b> / <b>pras123</b>
-              </small>
-            </div>
-
-            <button type="submit" className={`auth-submit ${loading ? "auth-submit--loading" : ""}`} disabled={loading}>
-              {loading ? <span className="auth-spinner" /> : "Masuk"}
+            <button
+              type="submit"
+              className={`auth-submit ${loading ? "auth-submit--loading" : ""}`}
+              disabled={loading}
+            >
+              {loading ? <span className="auth-spinner" /> : "Masuk ke Ruang Saya"}
             </button>
           </form>
 
           <p className="auth-switch" style={{ textAlign: "center" }}>
-            Baru di The Sanctuary?{" "}
-            <span className="auth-switch-link" onClick={() => navigate("/register")}>Buat akun anda</span>
+            Belum punya akun?{" "}
+            <span
+              className="auth-switch-link"
+              onClick={() => navigate("/register")}
+            >
+              Yuk daftar dulu
+            </span>
           </p>
 
           <div className="auth-support-wrapper">
@@ -123,7 +162,7 @@ export default function Login() {
                 <path d="M15 18l-6-6 6-6" />
               </svg>
 
-              Kembali ke Beranda
+              Balik ke Beranda
             </button>
           </div>
         </div>

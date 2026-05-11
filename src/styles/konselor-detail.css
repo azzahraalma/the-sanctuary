@@ -1,0 +1,763 @@
+/* ===== KONSELOR DETAIL PAGE — The Sanctuary ===== */
+
+.kd-page { background: var(--cream); }
+
+/* ── Breadcrumb ─────────────────────────────────────────────────── */
+.kd-breadcrumb-wrap {
+  width: 92%;
+  margin: 0 auto;
+  padding: 18px 0 0;
+}
+.kd-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--gray);
+  font-weight: 500;
+}
+.kd-breadcrumb span { cursor: pointer; transition: color .2s; }
+.kd-breadcrumb span:hover { color: var(--teal); }
+.kd-bc-sep { color: #ccc; }
+.kd-bc-active { color: #111; font-weight: 700; cursor: default; }
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+.kd-layout {
+  width: 92%;
+  margin: 28px auto 0;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  align-items: flex-start;
+  padding-bottom: 60px;
+}
+
+/* ── Section base ───────────────────────────────────────────────── */
+.kd-section {
+  background: white;
+  border: 1px solid rgba(47,125,121,0.08);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  animation: kdFadeUp .5s cubic-bezier(.22,1,.36,1) both;
+}
+
+@keyframes kdFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.kd-section-h {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.3px;
+  margin-bottom: 20px;
+}
+
+/* ── Hero card ──────────────────────────────────────────────────── */
+.kd-hero-card {
+  background: white;
+  border: 1px solid rgba(47,125,121,0.08);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 32px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.05);
+  position: relative;
+  overflow: hidden;
+  animation: kdFadeUp .45s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* subtle background decoration */
+.kd-hero-card::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: radial-gradient(circle, rgba(47,125,121,0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.kd-hero-photo-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.kd-hero-photo-wrap {
+  width: 200px;
+  height: 240px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+}
+
+.kd-hero-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.kd-avail-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e7d57;
+  background: #e8f5ee;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(46,125,87,0.20);
+}
+
+.kd-avail-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2e7d57;
+  box-shadow: 0 0 0 3px rgba(46,125,87,0.20);
+  animation: kdPulse 2s infinite;
+}
+
+@keyframes kdPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(46,125,87,0.20); }
+  50%       { box-shadow: 0 0 0 6px rgba(46,125,87,0.08); }
+}
+
+.kd-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.kd-hero-kat-pill {
+  display: inline-block;
+  background: rgba(47,125,121,0.10);
+  color: var(--teal);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(47,125,121,0.20);
+  width: fit-content;
+}
+
+.kd-hero-name {
+  font-size: 32px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+}
+
+.kd-hero-tagline {
+  font-size: 14px;
+  color: var(--gray);
+  line-height: 1.7;
+  max-width: 480px;
+}
+
+/* Quick stats */
+.kd-quick-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: linear-gradient(135deg, #eef8f7 0%, #f5fbfa 100%);
+  border: 1px solid rgba(47,125,121,0.12);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.kd-qs-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: 1;
+  min-width: 70px;
+}
+
+.kd-qs-val {
+  font-size: 26px;
+  font-weight: 800;
+  background: var(--grad-teal);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.kd-qs-label {
+  font-size: 10px;
+  color: #888;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.kd-qs-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(47,125,121,0.15);
+  flex-shrink: 0;
+}
+
+/* ── Tentang Saya ───────────────────────────────────────────────── */
+.kd-bio-p {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.85;
+  margin-bottom: 12px;
+}
+
+.kd-rating-breakdown {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #f5f4f0;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid #e8e5de;
+}
+
+.kd-rating-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kd-rating-bar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.kd-rating-bar-track {
+  flex: 1;
+  height: 8px;
+  background: #e0ddd6;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.kd-rating-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--teal-lt) 100%);
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+
+.kd-rating-bar-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--teal);
+  width: 28px;
+  text-align: right;
+}
+
+/* ── Spesialisasi ───────────────────────────────────────────────── */
+.kd-spesial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.kd-spesial-card {
+  background: #f5f4f0;
+  border: 1px solid #e8e5de;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform .25s, box-shadow .25s, border-color .2s;
+}
+
+.kd-spesial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(47,125,121,0.10);
+  border-color: rgba(47,125,121,0.25);
+}
+
+.kd-spesial-icon { font-size: 26px; }
+.kd-spesial-judul { font-size: 14px; font-weight: 800; color: #111; }
+.kd-spesial-desc  { font-size: 12px; color: #777; line-height: 1.6; }
+
+/* ── Testimoni ──────────────────────────────────────────────────── */
+.kd-testi-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  background: #f5f4f0;
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid #e8e5de;
+}
+
+.kd-testi-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.kd-testi-big {
+  font-size: 48px;
+  font-weight: 800;
+  background: var(--grad-teal);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.kd-testi-count {
+  font-size: 11px;
+  color: #999;
+  font-weight: 500;
+  display: block;
+  margin-top: 2px;
+}
+
+.kd-testi-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kd-testi-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kd-testi-bar-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.kd-testi-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #e0ddd6;
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 80px;
+}
+
+.kd-testi-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f5a623, #ffc857);
+  border-radius: 3px;
+  transition: width .8s ease;
+}
+
+.kd-testi-bar-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #888;
+  width: 16px;
+  text-align: right;
+}
+
+.kd-testi-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kd-testi-tags-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: #bbb;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+
+.kd-testi-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: white;
+  border: 1px solid #e0ddd6;
+  color: #666;
+  white-space: nowrap;
+}
+
+.kd-testi-tag.primary {
+  background: rgba(47,125,121,0.10);
+  border-color: rgba(47,125,121,0.25);
+  color: var(--teal);
+}
+
+.kd-testi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.kd-testi-card {
+  background: #faf9f7;
+  border: 1px solid #e8e5de;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow .25s, transform .25s;
+}
+
+.kd-testi-card:hover {
+  box-shadow: 0 8px 24px rgba(47,125,121,0.08);
+  transform: translateY(-2px);
+}
+
+.kd-testi-text {
+  font-size: 13px;
+  color: #444;
+  line-height: 1.75;
+  font-style: italic;
+  flex: 1;
+}
+
+.kd-testi-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.kd-testi-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--teal-lt) 100%);
+  color: white;
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kd-testi-name  { font-size: 13px; font-weight: 700; color: #111; }
+.kd-testi-peran { font-size: 11px; color: #999; }
+
+/* Stars in testimoni */
+.kd-stars { display: flex; align-items: center; gap: 2px; color: #f5a623; }
+.kd-star.s-empty { color: #ddd; }
+
+/* ── RIGHT — BOOKING ────────────────────────────────────────────── */
+.kd-right {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.kd-booking-card {
+  background: white;
+  border: 1px solid rgba(47,125,121,0.10);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  animation: kdFadeUp .5s .1s cubic-bezier(.22,1,.36,1) both;
+}
+
+.kd-booking-header {
+  background: linear-gradient(135deg, var(--teal) 0%, #5aa8a4 100%);
+  padding: 20px 24px;
+  color: white;
+}
+
+.kd-booking-h {
+  font-size: 17px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.kd-booking-sub {
+  font-size: 12px;
+  opacity: .82;
+  line-height: 1.5;
+}
+
+/* Calendar */
+.kd-cal { padding: 16px 20px; border-bottom: 1px solid #f0ede6; }
+
+.kd-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.kd-cal-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+}
+
+.kd-cal-arrow {
+  background: none;
+  border: 1px solid #e0ddd6;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  color: #555;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.kd-cal-arrow:hover { border-color: var(--teal); color: var(--teal); background: #eef8f7; }
+
+.kd-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.kd-cal-day-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #bbb;
+  text-align: center;
+  padding: 4px 0;
+  letter-spacing: 0.04em;
+}
+
+.kd-cal-day {
+  background: none;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  padding: 7px 4px;
+  text-align: center;
+  transition: all .18s;
+}
+.kd-cal-day:hover:not(:disabled):not(.kd-cal-empty) {
+  background: #eef8f7;
+  color: var(--teal);
+}
+.kd-cal-empty { cursor: default !important; }
+.kd-cal-today {
+  background: rgba(47,125,121,0.10);
+  color: var(--teal);
+  font-weight: 800;
+}
+.kd-cal-selected {
+  background: var(--teal) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(47,125,121,0.30);
+}
+.kd-cal-day:disabled { color: #ddd; cursor: not-allowed; }
+
+/* Slots */
+.kd-slots { padding: 14px 20px; border-bottom: 1px solid #f0ede6; }
+
+.kd-slots-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.kd-slots-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.kd-slot-btn {
+  padding: 9px 8px;
+  border: 1.5px solid #e0ddd6;
+  border-radius: 9px;
+  background: white;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: #555;
+  cursor: pointer;
+  transition: all .18s;
+  text-align: center;
+}
+.kd-slot-btn:hover { border-color: var(--teal); color: var(--teal); background: #eef8f7; }
+.kd-slot-selected {
+  background: #eef8f7 !important;
+  border-color: var(--teal) !important;
+  color: var(--teal) !important;
+  box-shadow: 0 0 0 3px rgba(47,125,121,0.10);
+}
+
+/* Confirm */
+.kd-confirm-btn {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 16px 20px;
+  padding: 14px;
+  background: var(--grad-teal);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+  box-shadow: 0 6px 20px rgba(47,125,121,0.30);
+  letter-spacing: 0.01em;
+}
+.kd-confirm-btn:hover {
+  opacity: .88;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(47,125,121,0.38);
+}
+
+.kd-booking-success {
+  margin: 16px 20px;
+  background: #e8f5ee;
+  border: 1px solid rgba(46,125,87,0.25);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.kd-booking-success-icon { font-size: 28px; }
+.kd-booking-success p { font-size: 14px; font-weight: 800; color: #2e7d57; }
+.kd-booking-success span { font-size: 12px; color: #555; }
+
+.kd-booking-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 11px;
+  color: #aaa;
+  line-height: 1.6;
+  padding: 0 20px 18px;
+}
+.kd-booking-note svg { flex-shrink: 0; margin-top: 2px; color: #ccc; }
+
+/* ── Other konselor card ────────────────────────────────────────── */
+.kd-other-card {
+  background: white;
+  border: 1px solid rgba(47,125,121,0.08);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  animation: kdFadeUp .5s .18s cubic-bezier(.22,1,.36,1) both;
+}
+
+.kd-other-label {
+  font-size: 10px;
+  font-weight: 800;
+  color: #bbb;
+  letter-spacing: 0.10em;
+  margin-bottom: 14px;
+}
+
+.kd-other-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .2s;
+  margin-bottom: 4px;
+}
+.kd-other-item:hover { background: #f5f4f0; }
+
+.kd-other-photo {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  flex-shrink: 0;
+  background: #eef8f7;
+}
+
+.kd-other-info { flex: 1; }
+.kd-other-name { font-size: 13px; font-weight: 700; color: #111; }
+.kd-other-kat  { font-size: 11px; color: #999; margin-top: 1px; }
+.kd-other-rating { display: flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; color: #333; margin-top: 2px; }
+.kd-other-star { color: #f5a623; }
+
+.kd-other-arrow { color: #ccc; }
+
+/* ── Not found ──────────────────────────────────────────────────── */
+.kd-notfound {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.kd-notfound h2 { font-size: 24px; font-weight: 800; color: #111; }
+.kd-notfound button {
+  padding: 12px 24px;
+  background: var(--teal);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .kd-layout { grid-template-columns: 1fr; }
+  .kd-right  { position: static; }
+  .kd-spesial-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+  .kd-hero-card { grid-template-columns: 1fr; }
+  .kd-hero-photo-wrap { width: 160px; height: 190px; }
+  .kd-hero-name { font-size: 26px; }
+  .kd-spesial-grid { grid-template-columns: 1fr; }
+  .kd-testi-header { grid-template-columns: 1fr; }
+  .kd-testi-grid { grid-template-columns: 1fr; }
+  .kd-quick-stats { gap: 8px; }
+}

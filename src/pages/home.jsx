@@ -135,7 +135,7 @@ const steps = [
     title: "Tes Refleksi Diri",
     body: "Jawab beberapa pertanyaan sederhana untuk membantu memahami kondisi dan kebutuhan Anda saat ini di lingkungan perkuliahan..",
     cta: "Mulai Tes Refleksi Diri",
-    dest: "/dashboard",
+    dest: "/kuesioner",
   },
   {
     n: "02",

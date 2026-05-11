@@ -6,6 +6,7 @@ import Register  from "./pages/register";
 import Dashboard from "./pages/dashboard";
 import Konselor  from "./pages/konselor";
 import Statistik from "./pages/statistik";
+import Kuesioner from "./pages/kuesioner";
 
 function isLoggedIn() {
   return !!localStorage.getItem("sanctuary_user");
@@ -28,6 +29,10 @@ export default function App() {
         <Route path="/dashboard" element={
           <ProtectedRoute><Dashboard /></ProtectedRoute>
         }/>
+
+        <Route path="/kuesioner" element={
+  <ProtectedRoute><Kuesioner /></ProtectedRoute>
+}/>
 
         <Route path="/statistik" element={
           <ProtectedRoute><Statistik /></ProtectedRoute>

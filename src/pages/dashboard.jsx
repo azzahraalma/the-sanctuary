@@ -77,26 +77,53 @@ function toIdx(mean) {
 
 // ── SmallDonut (hasil) ────────────────────────────────────────────
 function SmallDonut({ pct, color, label }) {
-  const r = 30, stroke = 9;
+  const size = 120;
+  const r = 45;
+  const stroke = 12;
+
   const circ = 2 * Math.PI * r;
   const dash = (pct / 100) * circ;
+
   return (
     <div className="db-kues-donut-item">
-      <div className="db-kues-donut-wrap">
-        <svg width="80" height="80" viewBox="0 0 80 80">
-          <circle cx="40" cy="40" r={r} fill="none" stroke="#e8e8e0" strokeWidth={stroke}/>
-          <circle cx="40" cy="40" r={r} fill="none"
-            stroke={color} strokeWidth={stroke}
+      <div
+        className="db-kues-donut-wrap"
+        style={{ width: size, height: size }}
+      >
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke="#e8e8e0"
+            strokeWidth={stroke}
+          />
+
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke={color}
+            strokeWidth={stroke}
             strokeDasharray={`${dash} ${circ}`}
             strokeDashoffset={circ * 0.25}
             strokeLinecap="round"
             style={{ transition: "stroke-dasharray 1s ease .15s" }}
           />
         </svg>
+
         <div className="db-kues-donut-center">
-          <span className="db-kues-donut-val" style={{ color }}>{pct}</span>
+          <span
+            className="db-kues-donut-val"
+            style={{ color }}
+          >
+            {pct}
+          </span>
         </div>
       </div>
+
       <span className="db-kues-donut-lbl">{label}</span>
     </div>
   );
@@ -437,7 +464,7 @@ export default function Dashboard() {
               </button>
             </div>
             <div className="db-hero-right">
-              <Donut pct={uxScore} size={110} stroke={12} color="#79d8d1" label="UX SCORE" />
+              <Donut pct={uxScore} size={150} stroke={16} color="#79d8d1" label="UX SCORE" />
               <div className="db-hero-badge">
                 <p className="db-hero-badge-title">Skor UX Platform</p>
                 <p className="db-hero-badge-desc">

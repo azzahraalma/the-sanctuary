@@ -5,18 +5,18 @@ import "../styles/auth.css";
 
 export default function Register() {
   const navigate = useNavigate();
-  const [name, setName]         = useState("");
-  const [email, setEmail]       = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleRegister = (e) => {
     e.preventDefault();
     setError("");
     if (!name || !email || !password) { setError("Lengkapi semua kolom dulu ya."); return; }
-    if (password.length < 6)          { setError("Password minimal 6 karakter."); return; }
-    if (isEmailTaken(email))          { setError("Email sudah terdaftar. Coba login."); return; }
+    if (password.length < 6) { setError("Password minimal 6 karakter."); return; }
+    if (isEmailTaken(email)) { setError("Email sudah terdaftar. Coba login."); return; }
 
     setLoading(true);
     setTimeout(() => {
@@ -79,6 +79,26 @@ export default function Register() {
             Sudah memiliki tempat disini?{" "}
             <span className="auth-switch-link" onClick={() => navigate("/login")}>Sign in</span>
           </p>
+
+          <div className="auth-support-wrapper">
+            <button
+              className="auth-support-btn"
+              onClick={() => navigate("/")}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                width="14"
+                height="14"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+
+              Kembali ke Beranda
+            </button>
+          </div>
         </div>
       </div>
     </div>

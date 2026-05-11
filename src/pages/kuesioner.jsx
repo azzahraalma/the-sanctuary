@@ -3,128 +3,291 @@ import { useNavigate } from "react-router-dom";
 import data_konselor from "../data/data_konselor";
 import "../styles/kuesioner.css";
 
-// ── Data Soal ────────────────────────────────────────────────────
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// DATA SOAL — bahasa friendly khas mahasiswa
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const soalList = [
   {
     id: 1,
     tipe: "pilihan_kartu",
-    pertanyaan: "Bagaimana perasaan energi Anda dalam beberapa hari terakhir?",
+    pertanyaan: "Jujur deh — energi kamu beberapa hari terakhir gimana?",
+    hint: "Nggak ada jawaban yang salah ya. Pilih yang paling jujur sama kondisi kamu sekarang.",
     pilihan: [
-      { id: "a", icon: "⚡", label: "Penuh Energi & Stabil", sub: "Saya merasa fokus" },
-      { id: "b", icon: "🌊", label: "Tenang namun Berfluktuasi", sub: "Kadang-kadang saya seperti gelombang" },
-      { id: "c", icon: "🌫️", label: "Mering Mendalam", sub: "Saya merasa ingin menyendiri diri" },
-      { id: "d", icon: "📦", label: "Berat atau Terganjal", sub: "Rasakan masa yang sulit dan terbengong" },
+      {
+        id: "a",
+        icon: "⚡",
+        label: "Oke dan stabil",
+        sub: "Cukup fokus, aktivitas berjalan kayak biasanya",
+      },
+      {
+        id: "b",
+        icon: "🌊",
+        label: "Naik-turun",
+        sub: "Kadang semangat, tapi tiba-tiba ngerasa beda aja",
+      },
+      {
+        id: "c",
+        icon: "🌫️",
+        label: "Lebih pengen menyendiri",
+        sub: "Kurang mood ketemu orang, nyaman di ruang sendiri dulu",
+      },
+      {
+        id: "d",
+        icon: "📦",
+        label: "Berat dan susah gerak",
+        sub: "Ngerasa nggak kuat, susah banget buat mulai sesuatu",
+      },
     ],
   },
   {
     id: 2,
     tipe: "slider",
-    pertanyaan: "Seberapa besar Anda mencari ketenangan hari ini?",
-    labelKiri: "SAYA INGIN MERASA TERHUBUNG",
-    labelKanan: "I NEED TOTAL STILLNESS",
+    pertanyaan: "Sekarang, seberapa besar sih kamu butuh ketenangan dan me-time?",
+    hint: "Geser ke arah yang paling menggambarkan kondisimu hari ini ya!",
+    labelKiri: "Pengen ngobrol dan connect sama orang",
+    labelKanan: "Butuh waktu sendiri dan hening dulu",
   },
   {
     id: 3,
     tipe: "pilihan_kartu",
-    pertanyaan: "Apa yang paling menggambarkan kondisi pikiran Anda saat ini?",
+    pertanyaan: "Kalau liat kondisi pikiran kamu sekarang, yang mana paling cocok?",
+    hint: "Pilih yang paling deket — nggak harus 100% sama persis.",
     pilihan: [
-      { id: "a", icon: "🧘", label: "Tenang & Jernih", sub: "Pikiran saya terasa damai" },
-      { id: "b", icon: "🌀", label: "Sibuk & Berputar", sub: "Banyak hal yang saya pikirkan" },
-      { id: "c", icon: "😶", label: "Kosong & Hampa", sub: "Saya merasa tidak bersemangat" },
-      { id: "d", icon: "😟", label: "Cemas & Gelisah", sub: "Ada rasa khawatir yang mengganggu" },
+      {
+        id: "a",
+        icon: "🧘",
+        label: "Adem dan jernih",
+        sub: "Pikiran lumayan tenang, bisa mikir dengan baik",
+      },
+      {
+        id: "b",
+        icon: "🌀",
+        label: "Rame banget di kepala",
+        sub: "Banyak hal muter-muter, susah fokus ke satu hal",
+      },
+      {
+        id: "c",
+        icon: "😶",
+        label: "Hampa dan kosong",
+        sub: "Nggak banyak semangat, kayak jalan di tempat aja",
+      },
+      {
+        id: "d",
+        icon: "😟",
+        label: "Cemas dan gelisah",
+        sub: "Ada kekhawatiran yang terus-terusan muncul dan ganggu",
+      },
     ],
   },
   {
     id: 4,
     tipe: "slider",
-    pertanyaan: "Seberapa nyaman Anda berbagi perasaan dengan orang lain saat ini?",
-    labelKiri: "SANGAT TERTUTUP",
-    labelKanan: "SANGAT TERBUKA",
+    pertanyaan: "Seberapa nyaman kamu kalau harus cerita soal perasaan ke orang lain?",
+    hint: "Ini soal kondisimu sekarang, bukan standar kamu sehari-hari ya.",
+    labelKiri: "Belum siap cerita ke siapapun dulu",
+    labelKanan: "Siap dan terbuka banget!",
   },
   {
     id: 5,
     tipe: "pilihan_kartu",
-    pertanyaan: "Bagaimana kualitas tidur Anda beberapa hari terakhir?",
+    pertanyaan: "Tidur kamu belakangan ini gimana?",
+    hint: "Tidur sering jadi cermin kondisi kita. Jawab yang paling jujur ya.",
     pilihan: [
-      { id: "a", icon: "😴", label: "Nyenyak & Segar", sub: "Bangun dengan penuh energi" },
-      { id: "b", icon: "🌙", label: "Cukup Baik", sub: "Tidur normal, tidak ada masalah berarti" },
-      { id: "c", icon: "😵", label: "Sering Terjaga", sub: "Tidur terganggu beberapa kali" },
-      { id: "d", icon: "💤", label: "Sangat Buruk", sub: "Sulit tidur atau tidur berlebihan" },
+      {
+        id: "a",
+        icon: "😴",
+        label: "Nyenyak dan segar",
+        sub: "Bangun dengan energi cukup, kualitas tidur oke",
+      },
+      {
+        id: "b",
+        icon: "🌙",
+        label: "Lumayan baik",
+        sub: "Normal aja sih, nggak ada yang terlalu ganggu",
+      },
+      {
+        id: "c",
+        icon: "😵",
+        label: "Sering kebangun",
+        sub: "Tidur terganggu beberapa kali, kurang nyenyak",
+      },
+      {
+        id: "d",
+        icon: "💤",
+        label: "Berantakan banget",
+        sub: "Susah tidur atau malah ketiduran terus tapi tetap capek",
+      },
     ],
   },
 ];
 
-// ── Hitung skor dari jawaban ─────────────────────────────────────
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// UTILS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 function hitungSkor(jawaban) {
-  let total = 0, count = 0;
+  let total = 0,
+    count = 0;
+
   soalList.forEach((s) => {
     const j = jawaban[s.id];
+
     if (j === undefined || j === null) return;
+
     if (s.tipe === "pilihan_kartu") {
-      const map = { a: 10, b: 40, c: 70, d: 90 };
+      const map = { a: 10, b: 35, c: 65, d: 90 };
       total += map[j] || 0;
     } else {
       total += Number(j);
     }
+
     count++;
   });
+
   return count > 0 ? Math.round(total / count) : 0;
 }
 
-// ── Tentukan kategori masalah dari jawaban ───────────────────────
 function tentukanKategori(jawaban, skor) {
-  const { KATEGORI } = { KATEGORI: {
+  const KATEGORI = {
     AKADEMIK: "Tekanan Akademik & Kesejahteraan Mahasiswa",
     KARIER: "Perencanaan Karier & Kehidupan Kampus",
     EMOSI: "Pengelolaan Kebiasaan & Emosi Mahasiswa",
     BURNOUT: "Kelelahan Akademik & Aktivitas Kampus",
-  }};
-  // Mapping jawaban ke kategori
-  const j1 = jawaban[1], j3 = jawaban[3];
+  };
+
+  const j1 = jawaban[1];
+  const j3 = jawaban[3];
+
   if (j1 === "d" || j3 === "d") return KATEGORI.EMOSI;
   if (j1 === "c" || j3 === "c") return KATEGORI.BURNOUT;
-  if (skor > 55) return KATEGORI.AKADEMIK;
+  if (skor > 50) return KATEGORI.AKADEMIK;
+
   return KATEGORI.KARIER;
 }
 
-// ── Hitung % match konselor ──────────────────────────────────────
 function hitungMatch(konselor, kategoriUser, skor) {
   let match = 60;
+
   if (konselor.Kategori_Masalah === kategoriUser) match += 25;
+
   match += Math.round(konselor["Rating_(Final)"] * 3);
-  if (skor > 55 && konselor["Rating_(Final)"] >= 4.5) match += 5;
+
+  if (skor > 50 && konselor["Rating_(Final)"] >= 4.5) match += 5;
+
   return Math.min(match, 99);
 }
 
-// ── Alasan cocok ─────────────────────────────────────────────────
 function alasanCocok(konselor, kategoriUser) {
   const alasan = [];
+
   if (konselor.Kategori_Masalah === kategoriUser)
-    alasan.push(`Spesialis di bidang ${konselor.Kategori_Masalah.toLowerCase()}`);
+    alasan.push(`Spesialis ${konselor.Kategori_Masalah}`);
+
   if (konselor["Rating_(Final)"] >= 4.5)
-    alasan.push(`Rating tinggi ${konselor["Rating_(Final)"]}/5`);
+    alasan.push(`Rating ${konselor["Rating_(Final)"]}/5`);
+
   if (konselor["Success_Rate"] >= 0.5)
     alasan.push(`Success rate ${Math.round(konselor["Success_Rate"] * 100)}%`);
+
   alasan.push(`${konselor.Pengalaman} pengalaman`);
+
   return alasan.slice(0, 3);
 }
 
-// ── Navbar ───────────────────────────────────────────────────────
+function generateInsight(jawaban, namaUser) {
+  const firstName =
+    namaUser?.split(" ")[1] || namaUser?.split(" ")[0] || "Kamu";
+
+  const j1 = jawaban[1];
+  const j3 = jawaban[3];
+  const j5 = jawaban[5];
+  const j4 = Number(jawaban[4] ?? 50);
+
+  const parts = [];
+
+  if (j1 === "a") parts.push("Energimu cukup stabil belakangan ini");
+  else if (j1 === "b")
+    parts.push("Energimu lagi naik-turun dan nggak menentu");
+  else if (j1 === "c")
+    parts.push("Kamu lagi lebih banyak menarik diri dari sekitar");
+  else if (j1 === "d")
+    parts.push("Kamu lagi menanggung beban yang terasa cukup berat");
+
+  if (j3 === "a") parts.push("tapi pikiran kamu cukup jernih");
+  else if (j3 === "b") parts.push("dan pikiran kamu lagi cukup rame");
+  else if (j3 === "c")
+    parts.push("dan ada rasa hampa yang perlu diperhatiin");
+  else if (j3 === "d")
+    parts.push("dan ada kecemasan yang ikut nempel");
+
+  if (j5 === "c")
+    parts.push("Tidur yang kurang nyenyak bisa jadi sinyal awal kelelahan");
+  else if (j5 === "d")
+    parts.push("Pola tidur yang berantakan perlu jadi prioritas buat diperbaiki");
+
+  if (j4 >= 60) {
+    parts.push(
+      `${firstName} cukup terbuka buat berbagi — itu modal bagus banget buat sesi konseling!`
+    );
+  } else {
+    parts.push(
+      `Wajar kalau belum siap terbuka sepenuhnya — konselor kami siap ngikutin ritme kamu`
+    );
+  }
+
+  return parts.join(". ") + ".";
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// STORE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+export const prasetyo_store = {
+  sudahIsi: false,
+  data: null,
+};
+
+function simpanJawabanPrasetyo(jawaban, skor) {
+  const entry = {
+    ID_Mahasiswa: "M-001",
+    Nama: "Muhammad Prasetyo Hanggara",
+    NIM: "202601001",
+    Angkatan: 2023,
+    jawaban: { ...jawaban },
+    tanggalIsi: new Date().toISOString(),
+    skor,
+  };
+
+  prasetyo_store.sudahIsi = true;
+  prasetyo_store.data = entry;
+
+  console.log("✅ Jawaban Prasetyo tersimpan:", entry);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// COMPONENTS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 function KuisNav({ navigate }) {
   return (
     <header className="kuis-nav">
-      <span className="kuis-nav-brand" onClick={() => navigate("/")}>The Sanctuary</span>
+      <span className="kuis-nav-brand" onClick={() => navigate("/")}>
+        The Sanctuary
+      </span>
+
       <nav className="kuis-nav-links">
         <span onClick={() => navigate("/")}>Beranda</span>
         <span onClick={() => navigate("/konselor")}>Mentor</span>
         <span onClick={() => navigate("/dashboard")}>Dashboard</span>
       </nav>
-      <button className="kuis-nav-cta" onClick={() => navigate("/konselor")}>Temukan Mentor</button>
+
+      <button className="kuis-nav-cta" onClick={() => navigate("/konselor")}>
+        Temukan Mentor
+      </button>
     </header>
   );
 }
 
-// ── Footer ───────────────────────────────────────────────────────
 function KuisFooter() {
   return (
     <footer className="kuis-footer">
@@ -132,6 +295,7 @@ function KuisFooter() {
         <strong>The Sanctuary</strong>
         <p>© 2025 The Sanctuary. A space for healing & hope.</p>
       </div>
+
       <div className="kuis-footer-links">
         <span>Privacy Policy</span>
         <span>Terms of Service</span>
@@ -142,27 +306,61 @@ function KuisFooter() {
   );
 }
 
-// ── Star Rating ──────────────────────────────────────────────────
 function Stars({ rating }) {
   return (
     <div className="hasil-stars">
-      {[1,2,3,4,5].map(n => (
-        <span key={n} className={n <= Math.round(rating) ? "star-on" : "star-off"}>★</span>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          className={n <= Math.round(rating) ? "star-on" : "star-off"}
+        >
+          ★
+        </span>
       ))}
+
       <span className="hasil-rating-val">{rating.toFixed(1)}</span>
     </div>
   );
 }
 
-// ════════════════════════════════════════════════════════════════
-// HALAMAN HASIL REKOMENDASI
-// ════════════════════════════════════════════════════════════════
-function HalamanHasil({ skor, jawaban, navigate, onUlang }) {
+function SkorLabel({ skor }) {
+  let label;
+  let warna;
+
+  if (skor < 30) {
+    label = "Kondisi Baik 💚";
+    warna = "#2d6b68";
+  } else if (skor < 55) {
+    label = "Perlu Diperhatiin 🟡";
+    warna = "#d97706";
+  } else {
+    label = "Butuh Dukungan Lebih 🧡";
+    warna = "#b45309";
+  }
+
+  return <span style={{ color: warna, fontWeight: 600 }}>{label}</span>;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// HALAMAN HASIL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+function HalamanHasil({
+  skor,
+  jawaban,
+  navigate,
+  onUlang,
+  namaUser,
+  dataResponden,
+  isPrasetyo,
+}) {
   const kategoriUser = tentukanKategori(jawaban, skor);
 
-  // Urutkan konselor berdasarkan % match
   const konselorRanked = [...data_konselor]
-    .map(k => ({ ...k, match: hitungMatch(k, kategoriUser, skor) }))
+    .map((k) => ({
+      ...k,
+      match: hitungMatch(k, kategoriUser, skor),
+    }))
     .sort((a, b) => b.match - a.match);
 
   const utama = konselorRanked[0];
@@ -170,10 +368,27 @@ function HalamanHasil({ skor, jawaban, navigate, onUlang }) {
 
   const alasan = alasanCocok(utama, kategoriUser);
 
+  const firstName =
+    namaUser?.split(" ")[1] || namaUser?.split(" ")[0] || "Kamu";
+
+  const insight = generateInsight(jawaban, namaUser);
+
   const pendekatan = [
-    { icon: "👥", judul: "Komunitas Sebaya", desc: "Bergabung dan berbagi pengalaman bersama komunitas dalam lingkungan yang aman dan mendukung." },
-    { icon: "🧘", judul: "Berlatih Mindfulness", desc: "Temukan ketenangan melalui latihan kesadaran diri, meditasi, dan teknik relaksasi." },
-    { icon: "📔", judul: "Jurnal Digital", desc: "Ekspresikan perasaan dan pikiran melalui jurnal reflektif sebagai terapi diri." },
+    {
+      icon: "👥",
+      judul: "Komunitas Sebaya",
+      desc: "Sharing bareng mahasiswa lain yang punya pengalaman serupa, di ruang yang aman dan supportif.",
+    },
+    {
+      icon: "🧘",
+      judul: "Latihan Mindfulness",
+      desc: "Latihan singkat buat bantu kamu kelola kecemasan, lebih hadir, dan istirahat lebih berkualitas.",
+    },
+    {
+      icon: "📔",
+      judul: "Jurnal Digital",
+      desc: "Nulis perasaan dan pikiranmu — kadang nulis aja udah bikin lega lebih dari yang kamu kira.",
+    },
   ];
 
   return (
@@ -181,107 +396,208 @@ function HalamanHasil({ skor, jawaban, navigate, onUlang }) {
       <KuisNav navigate={navigate} />
 
       <main className="hasil-main">
-        {/* ── Header ── */}
+        {isPrasetyo && (
+          <div className="hasil-saved-notice">
+            ✅ Jawaban kamu udah tersimpan di data sesi ini, Prasetyo!
+          </div>
+        )}
+
         <div className="hasil-header">
-          <h1 className="hasil-h1">Perjalanan Anda Menuju Kedamaian</h1>
+          <div className="hasil-greeting-badge">
+            ✨ Selesai, {firstName}! Makasih udah mau jujur sama diri sendiri.
+          </div>
+
+          <h1 className="hasil-h1">Ini langkah pertama yang berani.</h1>
+
           <p className="hasil-sub">
-            Berdasarkan refleksi Anda, kami telah mengidentifikasi mentor yang memiliki keahlian dalam membantu
-            menghadapi transisi yang Anda sebutkan. Koneksi ini dibangun atas dasar empati, pengalaman yang
-            serupa, dan ketangguhan profesional.
+            Dari apa yang kamu ceritain tadi, kami udah nemuin konselor yang
+            paling pas buat nemenin kamu.
           </p>
         </div>
 
-        {/* ── Konselor Utama ── */}
-        <div className="hasil-utama-grid">
-          {/* Card konselor utama */}
-          <div className="hasil-card-utama">
-            <div className="hasil-match-badge">{utama.match}% Resilience Match</div>
-            <div className="hasil-utama-foto-wrap">
-              <img src={utama.image} alt={utama.Nama} className="hasil-utama-foto" />
+        <div className="hasil-kondisi-wrap">
+          <div className="hasil-kondisi-header">
+            <span className="hasil-kondisi-label">
+              Gambaran kondisimu sekarang
+            </span>
+
+            <span className="hasil-kondisi-skor">
+              Skor {skor}/100 · <SkorLabel skor={skor} />
+            </span>
+          </div>
+
+          <div className="hasil-kondisi-bar-track">
+            <div
+              className="hasil-kondisi-bar-fill"
+              style={{ width: `${skor}%` }}
+            />
+          </div>
+
+          {dataResponden && (
+            <div className="hasil-dimensi-grid">
+              <div className="hasil-dimensi-card">
+                <span className="hasil-dimensi-val">
+                  {dataResponden.Kemudahan}/5
+                </span>
+                <span className="hasil-dimensi-label">
+                  Kemudahan Interaksi
+                </span>
+              </div>
+
+              <div className="hasil-dimensi-card">
+                <span className="hasil-dimensi-val">
+                  {dataResponden.Kejelasan}/5
+                </span>
+                <span className="hasil-dimensi-label">
+                  Kejelasan Pikiran
+                </span>
+              </div>
+
+              <div className="hasil-dimensi-card">
+                <span className="hasil-dimensi-val">
+                  {dataResponden.DayaTarik}/5
+                </span>
+                <span className="hasil-dimensi-label">
+                  Tingkat Energi
+                </span>
+              </div>
             </div>
+          )}
+
+          <div className="hasil-insight-box">
+            <span className="hasil-insight-icon">💬</span>
+            <p className="hasil-insight-text">{insight}</p>
+          </div>
+        </div>
+
+        <div className="hasil-utama-grid">
+          <div className="hasil-card-utama">
+            <div className="hasil-match-badge">
+              {utama.match}% paling cocok buat kamu
+            </div>
+
+            <div className="hasil-utama-foto-wrap">
+              <img
+                src={utama.image}
+                alt={utama.Nama}
+                className="hasil-utama-foto"
+              />
+            </div>
+
             <div className="hasil-utama-info">
               <h2 className="hasil-utama-nama">{utama.Nama}</h2>
-              <p className="hasil-utama-spesialis">Spesialis {utama.Kategori_Masalah}</p>
+
+              <p className="hasil-utama-spesialis">
+                {utama.Kategori_Masalah}
+              </p>
+
               <Stars rating={utama["Rating_(Final)"]} />
-              <p className="hasil-utama-exp">{utama.Pengalaman} pengalaman · {utama.Kasus_Selesai}/{utama.Jumlah_Kasus} kasus</p>
-              <button className="hasil-btn-jadwal" onClick={() => navigate("/konselor")}>
-                Jadwalkan Konsultasi Awal
+
+              <p className="hasil-utama-exp">
+                {utama.Pengalaman} pengalaman
+              </p>
+
+              <button
+                className="hasil-btn-jadwal"
+                onClick={() => navigate("/konselor")}
+              >
+                Jadwalin sesi pertama →
               </button>
             </div>
           </div>
 
-          {/* Kenapa cocok */}
           <div className="hasil-card-alasan">
             <div className="hasil-alasan-icon">↗</div>
-            <h3 className="hasil-alasan-h3">Mengapa cocok untuk Anda?</h3>
+
+            <h3 className="hasil-alasan-h3">
+              Kenapa {utama.Nama.split(" ")[0]} cocok buat {firstName}?
+            </h3>
+
             <p className="hasil-alasan-p">
-              {utama.Nama.split(" ")[0]} memiliki pengalaman mendampingi mahasiswa yang menghadapi tantangan
-              seperti yang Anda alami, dengan pendekatan berbasis empati dan <em>mindful movement</em>,
-              membantu Anda menemukan jalur yang paling sesuai dengan kebutuhan Anda saat ini.
+              {utama.Nama.split(" ")[0]} berpengalaman nemenin mahasiswa yang
+              lagi di fase yang mirip sama yang kamu rasain.
             </p>
+
             <div className="hasil-alasan-tags">
               {alasan.map((a, i) => (
-                <span key={i} className="hasil-tag">{a}</span>
+                <span key={i} className="hasil-tag">
+                  {a}
+                </span>
               ))}
             </div>
           </div>
         </div>
 
-        {/* ── Konselor Alternatif ── */}
         <div className="hasil-alternatif-grid">
           {alternatif.map((k) => (
             <div key={k.ID} className="hasil-card-alt">
               <div className="hasil-alt-top">
-                <img src={k.image} alt={k.Nama} className="hasil-alt-foto" />
+                <img
+                  src={k.image}
+                  alt={k.Nama}
+                  className="hasil-alt-foto"
+                />
+
                 <div>
-                  <span className="hasil-alt-match">{k.match}% Match</span>
+                  <span className="hasil-alt-match">{k.match}% match</span>
+
                   <h4 className="hasil-alt-nama">{k.Nama}</h4>
+
                   <p className="hasil-alt-kat">{k.Kategori_Masalah}</p>
+
                   <Stars rating={k["Rating_(Final)"]} />
                 </div>
               </div>
+
               <p className="hasil-alt-desc">
-                {k.Nama.split(" ")[0]} memiliki fokus pada {k.Kategori_Masalah.toLowerCase()},
-                dengan {k.Pengalaman} pengalaman mendampingi mahasiswa.
+                {k.Nama.split(" ")[0]} fokus di{" "}
+                {k.Kategori_Masalah.toLowerCase()}.
               </p>
-              <button className="hasil-btn-alt" onClick={() => navigate("/konselor")}>
-                Atur Sesi Konsultasi Awal
+
+              <button
+                className="hasil-btn-alt"
+                onClick={() => navigate("/konselor")}
+              >
+                Lihat profil lengkap →
               </button>
             </div>
           ))}
         </div>
 
-        {/* ── Pendekatan Alternatif ── */}
         <div className="hasil-pendekatan-wrap">
           <div className="hasil-pendekatan-header">
-            <h3 className="hasil-pendekatan-h3">Pendekatan Alternatif</h3>
+            <h3 className="hasil-pendekatan-h3">
+              Belum siap langsung sesi? Santai, nggak apa-apa kok!
+            </h3>
+
             <p className="hasil-pendekatan-sub">
-              Pendekatan satu-ke-satu sering merupakan langkah paling kuat — tetapi setiap perjalanan unik.
-              Temukan pendekatan pendukung bersama yang dapat mendampingi Anda dari sudut pandang yang berbeda.
+              Setiap orang punya ritme masing-masing.
             </p>
-            <button className="hasil-link-sumber" onClick={() => navigate("/konselor")}>
-              Lihat semua sumber →
-            </button>
           </div>
 
           <div className="hasil-pendekatan-grid">
             {pendekatan.map((p, i) => (
               <div key={i} className="hasil-pend-card">
                 <div className="hasil-pend-icon">{p.icon}</div>
+
                 <h4 className="hasil-pend-judul">{p.judul}</h4>
+
                 <p className="hasil-pend-desc">{p.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── Aksi bawah ── */}
         <div className="hasil-bottom-actions">
-          <button className="hasil-btn-dashboard" onClick={() => navigate("/dashboard")}>
+          <button
+            className="hasil-btn-dashboard"
+            onClick={() => navigate("/dashboard")}
+          >
             Lihat Dashboard Saya
           </button>
+
           <button className="hasil-btn-ulang" onClick={onUlang}>
-            Ulangi Refleksi
+            Isi Ulang Refleksi
           </button>
         </div>
       </main>
@@ -291,67 +607,150 @@ function HalamanHasil({ skor, jawaban, navigate, onUlang }) {
   );
 }
 
-// ════════════════════════════════════════════════════════════════
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// USER AKTIF
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const ACTIVE_USER = {
+  ID_Mahasiswa: "M-001",
+  Nama: "Muhammad Prasetyo Hanggara",
+  NIM: "202601001",
+  Angkatan: 2023,
+  Kemudahan: 4,
+  Kejelasan: 5,
+  DayaTarik: 3,
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // MAIN COMPONENT
-// ════════════════════════════════════════════════════════════════
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 export default function Kuesioner() {
   const navigate = useNavigate();
+
   const [langkah, setLangkah] = useState("soal");
   const [soalIdx, setSoalIdx] = useState(0);
   const [jawaban, setJawaban] = useState({});
+  const [isPrasetyoSave, setIsPrasetyoSave] = useState(false);
 
   const soal = soalList[soalIdx];
+
   const totalSoal = soalList.length;
+
   const progres = Math.round((soalIdx / totalSoal) * 100);
+
   const jawabanSaatIni = jawaban[soal?.id];
 
+  const namaUser = ACTIVE_USER.Nama;
+
+  const dataResponden = ACTIVE_USER;
+
+  const firstName =
+    namaUser.split(" ")[1] || namaUser.split(" ")[0];
+
+  const handlePilih = (id) => {
+    setJawaban((prev) => ({
+      ...prev,
+      [soal.id]: id,
+    }));
+  };
+
+  const handleSlider = (val) => {
+    setJawaban((prev) => ({
+      ...prev,
+      [soal.id]: Number(val),
+    }));
+  };
+
   const handleLanjut = () => {
-    if (soalIdx + 1 < totalSoal) setSoalIdx(soalIdx + 1);
-    else setLangkah("hasil");
+    if (soal.tipe === "slider" && jawaban[soal.id] === undefined) {
+      setJawaban((prev) => ({
+        ...prev,
+        [soal.id]: 50,
+      }));
+    }
+
+    if (soalIdx + 1 < totalSoal) {
+      setSoalIdx(soalIdx + 1);
+    } else {
+      const finalJawaban = { ...jawaban };
+
+      if (
+        soal.tipe === "slider" &&
+        finalJawaban[soal.id] === undefined
+      ) {
+        finalJawaban[soal.id] = 50;
+      }
+
+      const skor = hitungSkor(finalJawaban);
+
+      simpanJawabanPrasetyo(finalJawaban, skor);
+
+      setIsPrasetyoSave(true);
+
+      setLangkah("hasil");
+    }
   };
 
   const handleBack = () => {
-    if (soalIdx > 0) setSoalIdx(soalIdx - 1);
+    if (soalIdx > 0) {
+      setSoalIdx(soalIdx - 1);
+    }
   };
 
   const handleUlang = () => {
-    setSoalIdx(0);
     setJawaban({});
+    setSoalIdx(0);
     setLangkah("soal");
+    setIsPrasetyoSave(false);
   };
 
-  // ── HASIL ──
   if (langkah === "hasil") {
-    const skor = hitungSkor(jawaban);
     return (
       <HalamanHasil
-        skor={skor}
+        skor={hitungSkor(jawaban)}
         jawaban={jawaban}
         navigate={navigate}
         onUlang={handleUlang}
+        namaUser={namaUser}
+        dataResponden={dataResponden}
+        isPrasetyo={isPrasetyoSave}
       />
     );
   }
 
-  // ── SOAL ──
   return (
     <div className="kuis-shell">
       <KuisNav navigate={navigate} />
 
       <main className="kuis-main">
         <div className="kuis-header">
-          <h1 className="kuis-h1">Refleksi Diri</h1>
+          <div className="kuis-greeting">
+            Halo, {firstName}! 👋 Makasih udah mau luangin waktu buat ini
+          </div>
+
+          <h1 className="kuis-h1">Gimana kabarmu sekarang?</h1>
+
           <p className="kuis-sub">
-            Mari luangkan sejenak dalam ketenangan bersama. Refleksi ini dirancang untuk memberi kami memahami
-            kondisi Anda saat ini dan bagaimana kami dapat mendukung perjalanan Anda dengan sebaik mungkin.
+            Ini bukan tes dan nggak ada jawaban yang benar atau salah.
           </p>
+
           <div className="kuis-progress-wrap">
             <div className="kuis-progress-top">
-              <span className="kuis-progress-label">PROGRESS ANDA · {progres}%</span>
-              <span className="kuis-progress-step">Langkah {soalIdx + 1} dari {totalSoal}</span>
+              <span className="kuis-progress-label">
+                Progres · {progres}%
+              </span>
+
+              <span className="kuis-progress-step">
+                Pertanyaan {soalIdx + 1} dari {totalSoal}
+              </span>
             </div>
+
             <div className="kuis-progress-track">
-              <div className="kuis-progress-fill" style={{ width: `${progres}%` }} />
+              <div
+                className="kuis-progress-fill"
+                style={{ width: `${progres}%` }}
+              />
             </div>
           </div>
         </div>
@@ -359,16 +758,24 @@ export default function Kuesioner() {
         <div className="kuis-card">
           <h2 className="kuis-soal-q">{soal.pertanyaan}</h2>
 
+          {soal.hint && (
+            <p className="kuis-soal-hint">{soal.hint}</p>
+          )}
+
           {soal.tipe === "pilihan_kartu" && (
             <div className="kuis-kartu-grid">
               {soal.pilihan.map((p) => (
                 <button
                   key={p.id}
-                  className={`kuis-kartu ${jawabanSaatIni === p.id ? "terpilih" : ""}`}
-                  onClick={() => setJawaban({ ...jawaban, [soal.id]: p.id })}
+                  className={`kuis-kartu ${
+                    jawabanSaatIni === p.id ? "terpilih" : ""
+                  }`}
+                  onClick={() => handlePilih(p.id)}
                 >
                   <span className="kuis-kartu-icon">{p.icon}</span>
+
                   <span className="kuis-kartu-label">{p.label}</span>
+
                   <span className="kuis-kartu-sub">{p.sub}</span>
                 </button>
               ))}
@@ -381,34 +788,65 @@ export default function Kuesioner() {
                 <span>{soal.labelKiri}</span>
                 <span>{soal.labelKanan}</span>
               </div>
+
               <input
-                type="range" min="0" max="100"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
                 value={jawabanSaatIni ?? 50}
-                onChange={(e) => setJawaban({ ...jawaban, [soal.id]: Number(e.target.value) })}
+                onChange={(e) => handleSlider(e.target.value)}
                 className="kuis-slider"
               />
+
+              <p className="kuis-slider-val">
+                {jawabanSaatIni ?? 50}%
+              </p>
             </div>
           )}
         </div>
 
         <div className="kuis-nav-btn">
-          <button className="kuis-btn-lewati" onClick={handleLanjut}>Lewati</button>
-          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          <button
+            className="kuis-btn-lewati"
+            onClick={handleLanjut}
+          >
+            Lewatin pertanyaan ini
+          </button>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              alignItems: "center",
+            }}
+          >
             {soalIdx > 0 && (
-              <button className="kuis-btn-outline" onClick={handleBack}>← Kembali</button>
+              <button
+                className="kuis-btn-outline"
+                onClick={handleBack}
+              >
+                ← Balik
+              </button>
             )}
+
             <button
               className="kuis-btn-lanjut"
               onClick={handleLanjut}
-              disabled={soal.tipe === "pilihan_kartu" && jawabanSaatIni === undefined}
+              disabled={
+                soal.tipe === "pilihan_kartu" &&
+                jawabanSaatIni === undefined
+              }
             >
-              {soalIdx + 1 === totalSoal ? "Lihat Hasil ✨" : "Lanjutkan Perjalanan →"}
+              {soalIdx + 1 === totalSoal
+                ? "Lihat hasilnya ✨"
+                : "Lanjut →"}
             </button>
           </div>
         </div>
 
         <p className="kuis-quote">
-          "Pertumbuhan bukan tentang tujuan, melainkan cara menjalani hidup dengan penuh kesadaran terhadap diri sendiri."
+          "Ngomongin perasaan itu butuh keberanian — dan kamu udah ada di sini."
         </p>
       </main>
 

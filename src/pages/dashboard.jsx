@@ -2,9 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
 import data_booking from "../data/data_booking";
 import data_konselor from "../data/data_konselor";
+import progress_responden from "../data/progress_responden";
 import "../styles/dashboard.css";
 
-// ── Map email → ID_Mahasiswa ──────────────────────────────────────
 const EMAIL_TO_MID = {
   "pras@sanctuary.com": "M-001",
   "demo@sanctuary.com": "M-002",
@@ -39,32 +39,39 @@ function Donut({ pct, size = 88, stroke = 10, color = "#79d8d1", label }) {
   );
 }
 
-// ── Pertanyaan ────────────────────────────────────────────────────
+// ── Kuesioner — pertanyaan ────────────────────────────────────────
 const PERTANYAAN = {
   kemudahan: [
-    { id: "k1", teks: "Tampilan dashboard mudah dipahami",         desc: "Navigasi dan layout secara keseluruhan" },
-    { id: "k2", teks: "Menu dan fitur mudah ditemukan",            desc: "Kemudahan akses ke setiap fitur" },
-    { id: "k3", teks: "Proses booking konselor mudah dilakukan",   desc: "Alur pembuatan janji temu" },
-    { id: "k4", teks: "Informasi yang dibutuhkan mudah diakses",   desc: "Kelengkapan dan aksesibilitas data" },
+    { id: "k1", teks: "Tampilan website mudah dipahami",         desc: "Navigasi dan tampilan terasa nyaman digunakan" },
+    { id: "k2", teks: "Fitur dan menu mudah ditemukan",          desc: "Akses ke setiap halaman terasa jelas" },
+    { id: "k3", teks: "Proses booking konselor terasa mudah",    desc: "Alur membuat janji tidak membingungkan" },
+    { id: "k4", teks: "Informasi yang dibutuhkan mudah diakses", desc: "Data dan informasi tersedia dengan jelas" },
   ],
   kejelasan: [
-    { id: "j1", teks: "Ikon dan tombol memiliki label yang jelas", desc: "Kejelasan teks dan label elemen UI" },
-    { id: "j2", teks: "Status sesi konseling ditampilkan jelas",   desc: "Progress dan status sesi" },
-    { id: "j3", teks: "Feedback dari sistem mudah dimengerti",     desc: "Notifikasi dan pesan sistem" },
-    { id: "j4", teks: "Alur konseling dijelaskan dengan baik",     desc: "Panduan dan onboarding" },
+    { id: "j1", teks: "Ikon dan tombol mudah dimengerti",      desc: "Tulisan dan simbol terasa jelas" },
+    { id: "j2", teks: "Status sesi konseling terlihat jelas",  desc: "Progress dan perkembangan mudah dipantau" },
+    { id: "j3", teks: "Pesan dari sistem mudah dipahami",      desc: "Notifikasi dan informasi tidak membingungkan" },
+    { id: "j4", teks: "Alur penggunaan website terasa jelas",  desc: "Panduan dan proses penggunaan mudah diikuti" },
   ],
   daya_tarik: [
-    { id: "d1", teks: "Desain visual website menarik",             desc: "Estetika dan tampilan keseluruhan" },
-    { id: "d2", teks: "Kombinasi warna nyaman dipandang",          desc: "Skema warna dan kontras" },
-    { id: "d3", teks: "Tampilan website terasa profesional",       desc: "Kesan dan branding platform" },
-    { id: "d4", teks: "Saya ingin menggunakan platform ini lagi",  desc: "Keseluruhan pengalaman pengguna" },
+    { id: "d1", teks: "Tampilan website terasa menarik",          desc: "Desain keseluruhan nyaman dilihat" },
+    { id: "d2", teks: "Warna website terasa nyaman di mata",      desc: "Kombinasi warna terasa lembut dan tenang" },
+    { id: "d3", teks: "Website terasa nyaman dan profesional",    desc: "Kesan platform terasa positif" },
+    { id: "d4", teks: "Saya ingin menggunakan website ini lagi",  desc: "Pengalaman penggunaan terasa menyenangkan" },
   ],
 };
 
 const TAB_KEYS   = ["kemudahan", "kejelasan", "daya_tarik"];
-const TAB_LABELS = { kemudahan: "Kemudahan", kejelasan: "Kejelasan", daya_tarik: "Daya Tarik" };
-const DIM_COLOR  = { kemudahan: "#2f7d79", kejelasan: "#1a5e5a", daya_tarik: "#79d8d1" };
-
+const TAB_LABELS = {
+  kemudahan:  "Mudah Dipakai",
+  kejelasan:  "Mudah Dipahami",
+  daya_tarik: "Kenyamanan Tampilan",
+};
+const DIM_COLOR = {
+  kemudahan:  "#2f7d79",
+  kejelasan:  "#1a5e5a",
+  daya_tarik: "#79d8d1",
+};
 const LS_KEY = "sanctuary_ux_kuesioner";
 
 function calcMean(obj) {
@@ -75,61 +82,34 @@ function toIdx(mean) {
   return mean ? Math.round(((mean - 1) / 4) * 100) : 0;
 }
 
-// ── SmallDonut (hasil) ────────────────────────────────────────────
+// ── SmallDonut ────────────────────────────────────────────────────
 function SmallDonut({ pct, color, label }) {
-  const size = 120;
-  const r = 45;
-  const stroke = 12;
-
+  const r = 30, stroke = 9;
   const circ = 2 * Math.PI * r;
   const dash = (pct / 100) * circ;
-
   return (
     <div className="db-kues-donut-item">
-      <div
-        className="db-kues-donut-wrap"
-        style={{ width: size, height: size }}
-      >
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill="none"
-            stroke="#e8e8e0"
-            strokeWidth={stroke}
-          />
-
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill="none"
-            stroke={color}
-            strokeWidth={stroke}
+      <div className="db-kues-donut-wrap">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r={r} fill="none" stroke="#e8e8e0" strokeWidth={stroke}/>
+          <circle cx="40" cy="40" r={r} fill="none"
+            stroke={color} strokeWidth={stroke}
             strokeDasharray={`${dash} ${circ}`}
             strokeDashoffset={circ * 0.25}
             strokeLinecap="round"
             style={{ transition: "stroke-dasharray 1s ease .15s" }}
           />
         </svg>
-
         <div className="db-kues-donut-center">
-          <span
-            className="db-kues-donut-val"
-            style={{ color }}
-          >
-            {pct}
-          </span>
+          <span className="db-kues-donut-val" style={{ color }}>{pct}</span>
         </div>
       </div>
-
       <span className="db-kues-donut-lbl">{label}</span>
     </div>
   );
 }
 
-// ── Kuesioner component ───────────────────────────────────────────
+// ── KuesionerUX ───────────────────────────────────────────────────
 function KuesionerUX({ userName, onScoreChange, userKey }) {
   const storageKey = userKey ? `${LS_KEY}_${userKey}` : LS_KEY;
 
@@ -137,92 +117,85 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
   const [answers, setAnswers] = useState(() => {
     try {
       const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.answers ?? { kemudahan: {}, kejelasan: {}, daya_tarik: {} };
-      }
+      if (saved) return JSON.parse(saved).answers ?? { kemudahan:{}, kejelasan:{}, daya_tarik:{} };
     } catch {}
-    return { kemudahan: {}, kejelasan: {}, daya_tarik: {} };
+    return { kemudahan:{}, kejelasan:{}, daya_tarik:{} };
   });
   const [submitted, setSubmitted] = useState(() => {
     try {
       const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.submitted ?? false;
-      }
+      if (saved) return JSON.parse(saved).submitted ?? false;
     } catch {}
     return false;
   });
 
   const means   = TAB_KEYS.reduce((o, t) => ({ ...o, [t]: calcMean(answers[t]) }), {});
-  const indices = TAB_KEYS.reduce((o, t) => ({ ...o, [t]: toIdx(means[t])      }), {});
+  const indices = TAB_KEYS.reduce((o, t) => ({ ...o, [t]: toIdx(means[t]) }), {});
   const uxIdx   = Math.round(TAB_KEYS.reduce((s, t) => s + indices[t], 0) / TAB_KEYS.length);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ answers, submitted }));
-    } catch {}
+    try { localStorage.setItem(storageKey, JSON.stringify({ answers, submitted })); } catch {}
   }, [answers, submitted, storageKey]);
 
   useEffect(() => {
-    if (submitted) onScoreChange?.(uxIdx);
-    else           onScoreChange?.(0);
+    onScoreChange?.(submitted ? uxIdx : 0);
   }, [submitted, uxIdx]); // eslint-disable-line
 
-  const setAns = (t, id, val) =>
-    setAnswers(prev => ({ ...prev, [t]: { ...prev[t], [id]: val } }));
-
+  const setAns   = (t, id, val) => setAnswers(p => ({ ...p, [t]: { ...p[t], [id]: val } }));
   const totalQ   = TAB_KEYS.flatMap(t => PERTANYAAN[t]).length;
   const answered = TAB_KEYS.reduce((n, t) => n + Object.keys(answers[t]).length, 0);
   const allDone  = answered === totalQ;
   const tabDone  = (t) => Object.keys(answers[t]).length === PERTANYAAN[t].length;
+  const tabIdx   = TAB_KEYS.indexOf(tab);
 
-  const submit = () => { if (!allDone) return; setSubmitted(true); };
+  const submit = () => { if (allDone) setSubmitted(true); };
   const reset  = () => {
-    setAnswers({ kemudahan: {}, kejelasan: {}, daya_tarik: {} });
+    setAnswers({ kemudahan:{}, kejelasan:{}, daya_tarik:{} });
     setSubmitted(false);
     setTab("kemudahan");
     try { localStorage.removeItem(storageKey); } catch {}
   };
 
-  const uxLabel = uxIdx >= 75 ? "Sangat Baik 😊" : uxIdx >= 50 ? "Cukup Baik 😐" : "Perlu Peningkatan 😟";
-  const tabIdx  = TAB_KEYS.indexOf(tab);
-  const badgeClass = submitted ? "db-kues-badge db-kues-badge--done" : "db-kues-badge";
+  const uxLabel = uxIdx >= 75 ? "Website terasa sangat nyaman! 😊"
+                : uxIdx >= 50 ? "Website sudah cukup nyaman 😐"
+                : "Ada yang perlu kita tingkatkan bareng 😟";
 
+  // ── Hasil ──
   if (submitted) return (
     <div className="db-kuesioner-card">
       <div className="db-kues-header">
         <div>
-          <h3 className="db-kues-h3">Penilaian UX Website</h3>
-          <p className="db-kues-sub">Hasil evaluasi {userName}</p>
+          <h3 className="db-kues-h3">Gimana Pengalaman Kamu? ✨</h3>
+          <p className="db-kues-sub">Hasil penilaian dari {userName}</p>
         </div>
-        <span className={badgeClass}>Selesai ✓</span>
+        <span className="db-kues-badge db-kues-badge--done">Selesai ✓</span>
       </div>
+
       <div className="db-ux-index">
         <span className="db-ux-index-val">{uxIdx}%</span>
-        <span className="db-ux-index-lbl">Skor UX Keseluruhan</span>
+        <span className="db-ux-index-lbl">Skor Pengalaman Website</span>
         <span className="db-ux-index-sub">{uxLabel}</span>
       </div>
+
       <div className="db-kues-donuts-row">
-        {TAB_KEYS.map(k => (
-          <SmallDonut key={k} pct={indices[k]} color={DIM_COLOR[k]} label={TAB_LABELS[k]} />
-        ))}
+        {TAB_KEYS.map(k => <SmallDonut key={k} pct={indices[k]} color={DIM_COLOR[k]} label={TAB_LABELS[k]} />)}
       </div>
+
       <div className="db-kues-hasil">
-        <p className="db-kues-hasil-h">Skor Per Dimensi</p>
+        <p className="db-kues-hasil-h">Skor Per Aspek</p>
         {TAB_KEYS.map(k => (
           <div key={k} className="db-kues-result-row">
             <span className="db-kues-result-label">{TAB_LABELS[k]}</span>
             <div className="db-kues-result-track">
-              <div className="db-kues-result-fill" style={{ width: `${indices[k]}%`, background: `linear-gradient(90deg,${DIM_COLOR[k]},#79d8d1)` }} />
+              <div className="db-kues-result-fill" style={{ width:`${indices[k]}%`, background:`linear-gradient(90deg,${DIM_COLOR[k]},#79d8d1)` }} />
             </div>
             <span className="db-kues-result-val" style={{ color: DIM_COLOR[k] }}>{indices[k]}%</span>
           </div>
         ))}
       </div>
+
       <div className="db-kues-detail">
-        <p className="db-kues-hasil-h">Detail Jawaban</p>
+        <p className="db-kues-hasil-h">Detail Jawaban Kamu</p>
         {TAB_KEYS.map(k => (
           <div key={k} className="db-kues-detail-group">
             <p className="db-kues-detail-dim" style={{ color: DIM_COLOR[k] }}>{TAB_LABELS[k]}</p>
@@ -232,7 +205,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
                 <div key={q.id} className="db-kues-detail-row">
                   <span className="db-kues-detail-q">{i + 1}. {q.teks}</span>
                   <div className="db-kues-detail-track">
-                    <div className="db-kues-detail-fill" style={{ width: `${(val/5)*100}%`, background: DIM_COLOR[k] }} />
+                    <div className="db-kues-detail-fill" style={{ width:`${(val/5)*100}%`, background:DIM_COLOR[k] }} />
                   </div>
                   <span className="db-kues-detail-val">{val}/5</span>
                 </div>
@@ -241,30 +214,34 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
           </div>
         ))}
       </div>
-      <button className="db-kues-submit" onClick={reset} style={{ width: "100%", textAlign: "center" }}>
-        Isi Ulang Kuesioner
+
+      <button className="db-kues-submit" onClick={reset} style={{ width:"100%", textAlign:"center" }}>
+        Isi Ulang Penilaian
       </button>
     </div>
   );
 
+  // ── Form ──
   return (
     <div className="db-kuesioner-card">
       <div className="db-kues-header">
         <div>
-          <h3 className="db-kues-h3">Penilaian UX Website</h3>
-          <p className="db-kues-sub">Bantu kami dengan mengisi kuesioner singkat ini</p>
+          <h3 className="db-kues-h3">Gimana Pengalaman Kamu? ✨</h3>
+          <p className="db-kues-sub">Bantu kami jadi lebih baik dengan cerita pengalamanmu</p>
         </div>
         <span className="db-kues-badge">Skala 1 – 5</span>
       </div>
+
       <div className="db-kues-progress-wrap">
         <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"var(--gray)", fontWeight:600 }}>
-          <span>Progress pengisian</span>
-          <span>{answered} / {totalQ} pertanyaan</span>
+          <span>Progres pengisian</span>
+          <span>{answered} dari {totalQ} pertanyaan</span>
         </div>
         <div className="db-kues-progress-track">
           <div className="db-kues-progress-fill" style={{ width:`${(answered/totalQ)*100}%` }} />
         </div>
       </div>
+
       <div className="db-kues-tabs">
         {TAB_KEYS.map(t => (
           <button key={t} className={`db-kues-tab ${tab === t ? "db-kues-tab--active" : ""}`} onClick={() => setTab(t)}>
@@ -273,6 +250,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
           </button>
         ))}
       </div>
+
       <div className="db-kues-form">
         {PERTANYAAN[tab].map((q, i) => (
           <div key={q.id} className="db-kues-question">
@@ -293,12 +271,13 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
               ))}
             </div>
             <div className="db-kues-scale-lbl">
-              <span>Tidak Setuju</span>
-              <span>Sangat Setuju</span>
+              <span>Nggak setuju</span>
+              <span>Sangat setuju</span>
             </div>
           </div>
         ))}
       </div>
+
       <div className="db-kues-nav-row">
         <div style={{ display:"flex", gap:8 }}>
           {tabIdx > 0 && (
@@ -318,7 +297,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
   );
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────
+// ── Dashboard utama ───────────────────────────────────────────────
 export default function Dashboard() {
   const navigate  = useNavigate();
   const [uxScore, setUxScore] = useState(0);
@@ -330,72 +309,56 @@ export default function Dashboard() {
 
   const mid = getMID(user);
 
-  // ── Seed uxScore dari localStorage saat mount ─────────────────
   useEffect(() => {
-    const userKey = user?.email?.toLowerCase() ?? "guest";
-    const storageKey = `sanctuary_ux_kuesioner_${userKey}`;
+    const userKey    = user?.email?.toLowerCase() ?? "guest";
+    const storageKey = `${LS_KEY}_${userKey}`;
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const { answers, submitted } = JSON.parse(saved);
         if (submitted && answers) {
-          const calcMeanLocal = (obj) => {
-            const v = Object.values(obj).filter(Boolean);
-            return v.length ? v.reduce((a, b) => a + b, 0) / v.length : 0;
-          };
-          const toIdxLocal = (mean) => mean ? Math.round(((mean - 1) / 4) * 100) : 0;
-          const indices = TAB_KEYS.reduce((o, t) => ({ ...o, [t]: toIdxLocal(calcMeanLocal(answers[t] ?? {})) }), {});
-          const uxIdx   = Math.round(TAB_KEYS.reduce((s, t) => s + indices[t], 0) / TAB_KEYS.length);
-          setUxScore(uxIdx);
+          const indices = TAB_KEYS.reduce((o, t) => ({ ...o, [t]: toIdx(calcMean(answers[t] ?? {})) }), {});
+          setUxScore(Math.round(TAB_KEYS.reduce((s, t) => s + indices[t], 0) / TAB_KEYS.length));
         }
       }
     } catch {}
   }, [user]);
 
-  // ── Data dari dataset ─────────────────────────────────────────
+  const myProgress = useMemo(() =>
+    progress_responden.filter(p => p.ID_Mahasiswa === mid && p.Sesi_Konseling),
+  [mid]);
+
   const myBookings = useMemo(() =>
     data_booking.filter(b => b.ID_Mahasiswa === mid && b.ID_Booking),
   [mid]);
 
-  const totalSesi = myBookings.length;
-
-  // Tanggal sesi terakhir dari booking terakhir
-  const lastBooking = myBookings[myBookings.length - 1] ?? null;
-  const lastTanggal = lastBooking
-    ? new Date(lastBooking.Tanggal_Sesi)
-        .toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })
+  const latest         = myProgress[myProgress.length - 1] ?? null;
+  const totalSesi      = myBookings.length;
+  const lastBooking    = myBookings[myBookings.length - 1] ?? null;
+  const lastTanggal    = lastBooking
+    ? new Date(lastBooking.Tanggal_Sesi).toLocaleDateString("id-ID", { day:"2-digit", month:"2-digit", year:"numeric" })
     : "-";
+  const myKonselorIDs  = [...new Set(myBookings.map(b => b.ID_Konselor))];
+  const myKonselor     = data_konselor.filter(k => myKonselorIDs.includes(k.ID));
 
-  // Konselor yang pernah ditangani user
-  const myKonselorIDs = [...new Set(myBookings.map(b => b.ID_Konselor))];
-  const myKonselor    = data_konselor.filter(k => myKonselorIDs.includes(k.ID));
-
-  // Kategori masalah dari booking pertama user
-  const kategoriMasalah = lastBooking?.Kategori_Masalah ?? "-";
-
-  // Kondisi saat ini dari booking terakhir (sebagai persentase)
-  const kondisiSaatIni = lastBooking
-    ? Math.round(lastBooking.Kondisi_Saat_Ini * 100)
-    : 0;
-
-  // Status sesi terakhir
-  const statusTerakhir = lastBooking?.Status ?? "-";
+  // Mindfulness dari progress terakhir — sama persis seperti banner statistik
+  const mindfulnessPct = Math.round((latest?.Mindfulness ?? 0) * 100);
 
   const handleLogout = () => { localStorage.removeItem("sanctuary_user"); navigate("/login"); };
-  const firstName    = user?.name?.split(" ")[0] ?? "User";
+  const firstName    = user?.name?.split(" ")[0] ?? "Kamu";
   const userKey      = user?.email?.toLowerCase() ?? "guest";
 
   return (
     <div className="db-shell">
 
-      {/* SIDEBAR */}
+      {/* ── SIDEBAR ── */}
       <aside className="db-sidebar">
         <div className="db-sidebar-top">
           <span className="db-logo" onClick={() => navigate("/")}>The Sanctuary</span>
           <nav className="db-nav">
             <div className="db-nav-item db-nav-item--active">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              Home
+              Beranda
             </div>
             <div className="db-nav-item" onClick={() => navigate("/statistik")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -413,10 +376,10 @@ export default function Dashboard() {
         </button>
       </aside>
 
-      {/* MAIN */}
+      {/* ── MAIN ── */}
       <main className="db-main">
 
-        {/* TOPBAR */}
+        {/* ── TOPBAR ── */}
         <header className="db-topbar">
           <div className="db-topbar-l">
             <span className="db-topbar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -427,7 +390,7 @@ export default function Dashboard() {
             </nav>
           </div>
           <div className="db-topbar-r">
-            <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>Temukan Konselor</button>
+            <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
             <button className="db-icon-btn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -442,105 +405,105 @@ export default function Dashboard() {
 
         <div className="db-content">
 
-          {/* GREETING */}
+          {/* ── GREETING ── */}
           <div className="db-greeting">
-            <p className="db-greeting-sub">Selamat Datang, {firstName} 👋</p>
-            <p className="db-greeting-hint">Temukan kedamaian dan pantau progres perjalananmu</p>
+            <p className="db-greeting-sub">Halo, {firstName} 👋</p>
+            <p className="db-greeting-hint">
+              Senang kamu ada di sini. Yuk pantau perjalanan konselingmu hari ini 🌱
+            </p>
           </div>
 
-          {/* HERO */}
+          {/* ── HERO — mindfulness dari progress data ── */}
           <div className="db-hero-card">
             <div className="db-hero-left">
-              <span className="db-hero-tag">REFLEKSI HARIAN</span>
+              <span className="db-hero-tag">RUANG CERITA HARI INI</span>
               <h2 className="db-hero-h2">
-                Momen kecil penuh syukur apa yang<br />ingin Anda genggam hari ini?
+                Apa yang sedang kamu rasakan<br />akhir-akhir ini?
               </h2>
               <p className="db-hero-p">
-                Ceritakan perasaanmu kepada konselor sebaya yang siap mendengarkan.<br />
-                Setiap langkah kecil adalah kemajuan yang berarti.
+                Kamu nggak harus menghadapi semuanya sendiri.<br />
+                Ceritakan apa yang kamu rasakan kepada konselor sebaya yang siap mendengarkan.
               </p>
               <button className="db-hero-btn" onClick={() => navigate("/konselor")}>
-                Temukan Konselor
+                Cari Teman Cerita
               </button>
             </div>
             <div className="db-hero-right">
-              <Donut pct={uxScore} size={150} stroke={16} color="#79d8d1" label="UX SCORE" />
+              {/* Mindfulness dari progress sesi terakhir — sama seperti di statistik */}
+              <Donut pct={mindfulnessPct} size={150} stroke={16} color="#79d8d1" label="MINDFULNESS" />
               <div className="db-hero-badge">
-                <p className="db-hero-badge-title">Skor UX Platform</p>
+                <p className="db-hero-badge-title">Progres Mindfulness Kamu</p>
                 <p className="db-hero-badge-desc">
-                  {uxScore ? `Kamu memberi skor ${uxScore}%` : "Isi kuesioner di bawah untuk melihat skormu!"}
+                  {mindfulnessPct > 0
+                    ? `Sudah di ${mindfulnessPct}% — terus jaga konsistensinya ya! 🌿`
+                    : "Mulai sesi pertama untuk lihat perkembangan mindfulness-mu ✨"}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* STAT CARDS — semua dari dataset M-001 */}
+          {/* ── STAT CARDS ── */}
           <div className="db-stats-row">
             <div className="db-stat-card">
-              <span className="db-stat-icon">📋</span>
-              {/* Total sesi dari data_booking M-001 */}
+              <span className="db-stat-icon">💬</span>
               <div className="db-stat-val">{totalSesi}</div>
-              <div className="db-stat-lbl">Sesi Konseling</div>
+              <div className="db-stat-lbl">Total Sesi Cerita</div>
             </div>
             <div className="db-stat-card">
               <span className="db-stat-icon">📅</span>
-              {/* Tanggal sesi terakhir dari booking terakhir */}
               <div className="db-stat-val" style={{ fontSize:16 }}>{lastTanggal}</div>
-              <div className="db-stat-lbl">Sesi Terakhir</div>
+              <div className="db-stat-lbl">Terakhir Konseling</div>
             </div>
             <div className="db-stat-card">
-              <span className="db-stat-icon">🎯</span>
-              {/* Skor UX dari kuesioner */}
-              <div className="db-stat-val">{uxScore ? `${uxScore}%` : "—"}</div>
-              <div className="db-stat-lbl">Skor UX Kamu</div>
+              <span className="db-stat-icon">🌿</span>
+              <div className="db-stat-val">{mindfulnessPct ? `${mindfulnessPct}%` : "—"}</div>
+              <div className="db-stat-lbl">Progres Mindfulness</div>
             </div>
             <div className="db-stat-card">
-              <span className="db-stat-icon">🧠</span>
-              {/* Jumlah konselor unik yang menangani M-001 */}
+              <span className="db-stat-icon">🤝</span>
               <div className="db-stat-val">{myKonselor.length}</div>
-              <div className="db-stat-lbl">Konselor Aktif</div>
+              <div className="db-stat-lbl">Teman Konselor</div>
             </div>
           </div>
 
-          {/* GRID */}
+          {/* ── GRID ── */}
           <div className="db-grid">
 
-            {/* Kuesioner */}
+            {/* Kuesioner UX */}
             <KuesionerUX
               userName={firstName}
               onScoreChange={setUxScore}
               userKey={userKey}
             />
 
-            {/* Konsultasi — dari data booking + konselor M-001 */}
+            {/* Sesi Konseling */}
             <div className="db-card">
               <div className="db-card-hd">
                 <div>
-                  <h3 className="db-card-h3">Konsultasi</h3>
-                  <p className="db-card-sub">Daftar konselor yang mendampingimu</p>
+                  <h3 className="db-card-h3">Sesi Konseling Kamu</h3>
+                  <p className="db-card-sub">Teman konselor yang sudah menemanimu cerita</p>
                 </div>
-                <button className="db-card-link" onClick={() => navigate("/konselor")}>Lihat Jadwal →</button>
+                <button className="db-card-link" onClick={() => navigate("/konselor")}>Lihat Semua →</button>
               </div>
               <div className="db-konsul-list">
-                {myKonselor.length === 0 && <p className="db-empty">Belum ada sesi konseling.</p>}
+                {myKonselor.length === 0 && (
+                  <p className="db-empty">Kamu belum punya sesi konseling. Yuk mulai cerita 🌱</p>
+                )}
                 {myKonselor.map(k => {
-                  // Ambil booking yang sesuai konselor ini untuk user M-001
-                  const bk = myBookings.find(b => b.ID_Konselor === k.ID);
+                  const bk  = myBookings.find(b => b.ID_Konselor === k.ID);
                   const tgl = bk
-                    ? new Date(bk.Tanggal_Sesi).toLocaleDateString("id-ID", { weekday: "long" })
+                    ? new Date(bk.Tanggal_Sesi).toLocaleDateString("id-ID", { weekday:"long" })
                     : "-";
                   return (
                     <div key={k.ID} className="db-konsul-item">
                       <img src={k.image} alt={k.Nama} className="db-konsul-img" />
                       <div className="db-konsul-info">
                         <p className="db-konsul-name">{k.Nama}</p>
-                        {/* Kategori masalah dari booking, bukan hardcode */}
                         <p className="db-konsul-cat">{bk?.Kategori_Masalah ?? k.Kategori_Masalah}</p>
                       </div>
                       <div className="db-konsul-tgl">
                         <span className="db-konsul-day">{tgl}</span>
                         <span className={`db-konsul-status ${bk?.Status === "Selesai" ? "s-done" : "s-run"}`}>
-                          {/* Status dari data_booking langsung */}
                           {bk?.Status ?? "-"}
                         </span>
                       </div>
@@ -550,19 +513,18 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Pesan — nama konselor dari dataset, bukan placeholder */}
+            {/* Pesan Masuk */}
             <div className="db-card">
               <div className="db-card-hd">
                 <div>
-                  <h3 className="db-card-h3">Pesan Terkini</h3>
-                  <p className="db-card-sub">Pesan dari konselor dan tim</p>
+                  <h3 className="db-card-h3">Pesan Masuk</h3>
+                  <p className="db-card-sub">Dukungan dan pesan terbaru untukmu</p>
                 </div>
                 <span className="db-badge-new">2 NEW</span>
               </div>
               <div className="db-pesan-list">
                 {myKonselor.slice(0, 1).map(k => {
-                  const bk = myBookings.find(b => b.ID_Konselor === k.ID);
-                  // Pesan berisi info nyata: kategori masalah & sesi
+                  const bk       = myBookings.find(b => b.ID_Konselor === k.ID);
                   const kategori = bk?.Kategori_Masalah ?? k.Kategori_Masalah;
                   const sesiKe   = bk?.Sesi_Konseling ?? 1;
                   return (
@@ -573,9 +535,8 @@ export default function Dashboard() {
                           <span className="db-pesan-name">{k.Nama}</span>
                           <span className="db-pesan-time">20m ago</span>
                         </div>
-                        {/* Preview pesan yang relevan dengan data sesi */}
                         <p className="db-pesan-text">
-                          "Sesi {sesiKe} terkait {kategori} berjalan sangat baik. Kamu menunjukkan perkembangan yang luar biasa..."
+                          "Sesi {sesiKe} tentang {kategori} berjalan baik. Makasih udah mau cerita 🌻"
                         </p>
                       </div>
                     </div>
@@ -588,9 +549,8 @@ export default function Dashboard() {
                       <span className="db-pesan-name">The Sanctuary Team</span>
                       <span className="db-pesan-time">yesterday</span>
                     </div>
-                    {/* Pesan tim yang relevan dengan status sesi user */}
                     <p className="db-pesan-text">
-                      "Selamat! Sesi konselingmu berstatus {statusTerakhir.toLowerCase()}. Terus semangat dalam perjalananmu..."
+                      "Makasih udah jadi bagian dari Sanctuary 💛 Semoga hari-harimu terasa lebih ringan."
                     </p>
                   </div>
                 </div>
@@ -600,15 +560,16 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* FOOTER */}
+        {/* ── FOOTER ── */}
         <footer className="db-footer">
           <div>
             <span className="db-footer-brand">The Sanctuary</span>
-            <p className="db-footer-copy">© 2024 The Editorial Sanctuary. Menciptakan kedamaian melalui data dan empati</p>
+            <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan 🌱</p>
           </div>
           <div className="db-footer-links">
-            <span>Privacy Policy</span><span>Terms of Service</span>
-            <span>Contact Support</span><span>Our Methodology</span>
+            <span>Kebijakan Privasi</span>
+            <span>Syarat dan Ketentuan</span>
+            <span>Bantuan</span>
           </div>
         </footer>
 

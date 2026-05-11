@@ -254,7 +254,7 @@ export default function Home() {
           </p>
           <div className="hero-btns">
             {/* Mulai Perjalanan → kalau login → /dashboard, kalau belum → /login */}
-            <button className="btn-primary" onClick={() => goTo("/dashboard")}>
+            <button className="btn-primary" onClick={() => goTo("/konselor")}>
               Mulai Perjalananmu
             </button>
             <button className="btn-ghost" onClick={handleScrollToStats}>
@@ -548,7 +548,7 @@ export default function Home() {
             yang menyediakan ruang aman untuk saling mendengarkan dan mendukung di lingkungan kampus.
           </p>
           <small className="footer-copy">
-            © 2024 TheSanctuary. Politeknik Negeri Media Kreatif.
+            © 2026 TheSanctuary. Politeknik Negeri Media Kreatif.
           </small>
         </div>
         {[

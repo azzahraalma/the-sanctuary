@@ -17,6 +17,40 @@ export const DUMMY_USERS = [
     password: "demo123",
     role: "user",
   },
+  // ─── AKUN KONSELOR ─────────────────────────────────────────────
+  // konselorId harus cocok dengan ID di data_konselor.js (K-001 dst)
+  {
+    id: 3,
+    name: "Alma",
+    email: "alma@sanctuary.com",
+    password: "alma123",
+    role: "konselor",
+    konselorId: "K-001",
+  },
+  {
+    id: 4,
+    name: "Felicia",
+    email: "felicia@sanctuary.com",
+    password: "felicia123",
+    role: "konselor",
+    konselorId: "K-002",
+  },
+  {
+    id: 5,
+    name: "Haris",
+    email: "haris@sanctuary.com",
+    password: "haris123",
+    role: "konselor",
+    konselorId: "K-003",
+  },
+  {
+    id: 6,
+    name: "Haikal",
+    email: "haikal@sanctuary.com",
+    password: "haikal123",
+    role: "konselor",
+    konselorId: "K-004",
+  },
 ];
 
 /**

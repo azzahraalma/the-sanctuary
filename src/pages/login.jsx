@@ -14,9 +14,9 @@ export default function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
     setError("");
-    if (!email || !password) { 
-      setError("Yuk lengkapi email dan password dulu 😊"); 
-      return; 
+    if (!email || !password) {
+      setError("Yuk lengkapi email dan password dulu 😊");
+      return;
     }
 
     setLoading(true);
@@ -27,11 +27,20 @@ export default function Login() {
         setLoading(false);
         return;
       }
+
       localStorage.setItem("sanctuary_user", JSON.stringify(user));
-      const redirect = sessionStorage.getItem("redirect_after_login") || "/";
-      sessionStorage.removeItem("redirect_after_login");
       setLoading(false);
-      navigate(redirect, { replace: true });
+
+      // ─── Redirect berdasarkan role ──────────────────────────────
+      if (user.role === "konselor") {
+        // Konselor selalu masuk ke dashboard konselor
+        navigate("/konselor-dashboard", { replace: true });
+      } else {
+        // Mahasiswa / admin: ikuti redirect_after_login atau ke home
+        const redirect = sessionStorage.getItem("redirect_after_login") || "/";
+        sessionStorage.removeItem("redirect_after_login");
+        navigate(redirect, { replace: true });
+      }
     }, 800);
   };
 

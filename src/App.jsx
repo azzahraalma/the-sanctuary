@@ -1,5 +1,3 @@
-// App.jsx
-
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/home";
@@ -10,18 +8,51 @@ import Konselor from "./pages/konselor";
 import Statistik from "./pages/statistik";
 import Kuesioner from "./pages/kuesioner";
 import KonselorDetail from "./pages/KonselorDetail";
+import KonselorDashboard from "./pages/KonselorDashboard";
 
-function isLoggedIn() {
-  return !!localStorage.getItem("sanctuary_user");
+// ─── HELPERS ──────────────────────────────────────────────────────
+
+function getUser() {
+  try {
+    return JSON.parse(localStorage.getItem("sanctuary_user"));
+  } catch {
+    return null;
+  }
 }
 
+function isLoggedIn() {
+  return !!getUser();
+}
+
+function isKonselor() {
+  const user = getUser();
+  return user?.role === "konselor";
+}
+
+// ─── ROUTE GUARDS ─────────────────────────────────────────────────
+
+/** Hanya user yang sudah login yang bisa masuk */
 function ProtectedRoute({ children }) {
   return isLoggedIn() ? children : <Navigate to="/login" replace />;
 }
 
-function AuthRoute({ children }) {
-  return isLoggedIn() ? <Navigate to="/" replace /> : children;
+/** Hanya konselor yang bisa masuk — selain itu redirect ke /dashboard */
+function KonselorRoute({ children }) {
+  if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  if (!isKonselor()) return <Navigate to="/dashboard" replace />;
+  return children;
 }
+
+/** Kalau sudah login, jangan tampilkan halaman login/register lagi */
+function AuthRoute({ children }) {
+  if (!isLoggedIn()) return children;
+  // Kalau konselor, langsung ke dashboard konselor
+  return isKonselor()
+    ? <Navigate to="/konselor-dashboard" replace />
+    : <Navigate to="/" replace />;
+}
+
+// ─── APP ──────────────────────────────────────────────────────────
 
 export default function App() {
   return (
@@ -29,6 +60,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
 
+        {/* Dashboard mahasiswa */}
         <Route
           path="/dashboard"
           element={
@@ -71,6 +103,16 @@ export default function App() {
             <ProtectedRoute>
               <KonselorDetail />
             </ProtectedRoute>
+          }
+        />
+
+        {/* Dashboard khusus konselor */}
+        <Route
+          path="/konselor-dashboard"
+          element={
+            <KonselorRoute>
+              <KonselorDashboard />
+            </KonselorRoute>
           }
         />
 

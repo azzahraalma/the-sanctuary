@@ -16,6 +16,7 @@
   --radius-md: 16px;
   --radius-sm: 12px;
   --grad-teal: linear-gradient(135deg, #2f7d79 0%, #79d8d1 100%);
+  --grad-konselor: linear-gradient(135deg, #1a5e5a 0%, #2f7d79 100%);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
   --shadow-md: 0 8px 28px rgba(0,0,0,0.10);
   --shadow-lg: 0 24px 64px rgba(0,0,0,0.13);
@@ -117,6 +118,15 @@ body {
 .auth-submit:disabled { opacity: .65; cursor: not-allowed; }
 .auth-submit--loading { pointer-events: none; }
 
+/* Konselor submit — warna lebih gelap */
+.auth-submit--konselor {
+  background: var(--grad-konselor);
+  box-shadow: 0 6px 24px rgba(26,94,90,0.38), 0 2px 6px rgba(26,94,90,0.22);
+}
+.auth-submit--konselor:hover:not(:disabled) {
+  box-shadow: 0 12px 32px rgba(26,94,90,0.46), 0 4px 10px rgba(26,94,90,0.24);
+}
+
 /* Spinner */
 .auth-spinner {
   width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.35);
@@ -143,6 +153,49 @@ body {
 }
 .auth-switch-link:hover { opacity: .75; }
 
+/* ─── MODE TOGGLE (Mahasiswa / Konselor) ─────────────────────────── */
+
+.auth-mode-toggle {
+  display: flex;
+  gap: 6px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 14px;
+  padding: 5px;
+  border: 1.5px solid rgba(0,0,0,0.07);
+}
+
+.auth-mode-btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  background: transparent;
+  color: #999;
+  letter-spacing: 0.02em;
+  transition: background .22s, color .22s, box-shadow .22s, transform .15s;
+}
+
+.auth-mode-btn--active {
+  background: #fff;
+  color: var(--teal);
+  box-shadow: 0 2px 10px rgba(47,125,121,0.13), 0 1px 3px rgba(0,0,0,0.07);
+  transform: translateY(-1px);
+}
+
+.auth-mode-btn--active.konselor-active {
+  color: #1a5e5a;
+  box-shadow: 0 2px 10px rgba(26,94,90,0.16), 0 1px 3px rgba(0,0,0,0.07);
+}
+
+.auth-mode-btn:not(.auth-mode-btn--active):hover {
+  background: rgba(255,255,255,0.5);
+  color: #666;
+}
+
 /* ─── LOGIN — SPLIT LAYOUT ──────────────────────────────────────── */
 
 .auth-shell {
@@ -161,6 +214,12 @@ body {
   justify-content: space-between;
   padding: 2.5rem;
   overflow: hidden;
+  transition: background 0.5s ease;
+}
+
+/* Panel kiri — mode konselor */
+.auth-panel-left--konselor {
+  background: linear-gradient(160deg, #071e1c 0%, #1a5e5a 50%, #0f3e3c 100%);
 }
 
 /* Decorative circles */
@@ -191,6 +250,24 @@ body {
     linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
+}
+
+/* Badge mode di panel kiri */
+.auth-left-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 20px;
+  width: fit-content;
 }
 
 .auth-bg-img {
@@ -243,7 +320,7 @@ body {
 
 .auth-form-wrap {
   width: 100%; max-width: 400px;
-  display: flex; flex-direction: column; gap: 28px;
+  display: flex; flex-direction: column; gap: 24px;
 }
 
 /* Floating card feel */
@@ -265,9 +342,9 @@ body {
   font-size: 14px; color: var(--gray); line-height: 1.7; font-weight: 400;
 }
 
-/* Divider between header and form */
-.auth-form-header + .auth-form::before {
-  display: none;
+.auth-support-wrapper {
+  display: flex;
+  justify-content: center;
 }
 
 .auth-support-btn {
@@ -276,7 +353,7 @@ body {
   border: 1.5px solid rgba(0,0,0,0.09);
   border-radius: var(--radius-sm); padding: 11px 18px;
   font-size: 13px; font-weight: 600; font-family: inherit; color: #666;
-  cursor: pointer; width: fit-content; align-self: flex-end;
+  cursor: pointer; width: fit-content;
   transition: border-color .2s, color .2s, background .2s, box-shadow .2s;
   box-shadow: var(--shadow-sm);
 }
@@ -289,8 +366,9 @@ body {
 /* ─── RESPONSIVE ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .auth-shell { flex-direction: column; }
-  .auth-panel-left { width: 100%; min-height: 280px; }
+  .auth-panel-left { width: 100%; min-height: 240px; }
   .auth-panel-right { padding: 36px 24px; }
   .auth-form-h1 { font-size: 28px; }
   .auth-left-h2 { font-size: 30px; }
+  .auth-mode-btn { font-size: 12px; padding: 9px 10px; }
 }

@@ -9,7 +9,7 @@ import Statistik from "./pages/statistik";
 import Kuesioner from "./pages/kuesioner";
 import KonselorDetail from "./pages/KonselorDetail";
 import KonselorDashboard from "./pages/KonselorDashboard";
-
+import Settings from "./pages/settings";
 // ─── HELPERS ──────────────────────────────────────────────────────
 
 function getUser() {
@@ -87,7 +87,14 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/konselor"
           element={

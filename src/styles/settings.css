@@ -1,0 +1,407 @@
+/* ─────────────────────────────────────────────
+   Settings Page — settings.css
+   Companion to dashboard.css
+───────────────────────────────────────────── */
+
+/* ── Page Header ─────────────────────────────── */
+.stg-page-header {
+  margin-bottom: 28px;
+}
+.stg-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a3d3a;
+  margin: 0 0 4px;
+  letter-spacing: -0.5px;
+}
+.stg-page-sub {
+  font-size: 13px;
+  color: #6b8f8c;
+  margin: 0;
+}
+
+/* ── Layout ──────────────────────────────────── */
+.stg-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* ── Left Nav ────────────────────────────────── */
+.stg-leftnav {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid #e8f0ef;
+  box-shadow: 0 2px 12px rgba(31,80,76,0.06);
+}
+.stg-leftnav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5a7876;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s, color 0.18s;
+}
+.stg-leftnav-item:hover {
+  background: #f0faf9;
+  color: #1f504c;
+}
+.stg-leftnav-item--active {
+  background: #e8f5f4;
+  color: #1f504c;
+  font-weight: 600;
+}
+.stg-leftnav-item svg {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+/* ── Panels ──────────────────────────────────── */
+.stg-panels {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* ── Section ─────────────────────────────────── */
+.stg-section {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px solid #e8f0ef;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(31,80,76,0.05);
+}
+.stg-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a3d3a;
+  margin: 0;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f5f4;
+}
+.stg-section-body {
+  padding: 20px 24px 24px;
+}
+
+/* ── Profile Card ────────────────────────────── */
+.stg-profile-card {}
+.stg-profile-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+.stg-profile-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.stg-profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2f7d79 0%, #79d8d1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  border: 3px solid #e8f5f4;
+}
+.stg-avatar-change {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #d0e8e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #2f7d79;
+  transition: background 0.15s;
+}
+.stg-avatar-change:hover { background: #f0faf9; }
+
+.stg-profile-info {
+  flex: 1;
+  min-width: 0;
+}
+.stg-profile-row {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 10px;
+}
+.stg-profile-field {}
+.stg-field-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #9bb8b5;
+  margin: 0 0 3px;
+}
+.stg-field-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a3d3a;
+  margin: 0;
+}
+.stg-bio-text {
+  font-size: 13px;
+  color: #6b8f8c;
+  font-style: italic;
+  margin: 4px 0 0;
+  line-height: 1.6;
+}
+
+/* ── Grid 2-col ──────────────────────────────── */
+.stg-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 700px) {
+  .stg-grid-2 { grid-template-columns: 1fr; }
+  .stg-layout { flex-direction: column; }
+  .stg-leftnav { width: 100%; }
+}
+
+/* ── Info Card ───────────────────────────────── */
+.stg-info-card {
+  background: #f8fbfb;
+  border: 1px solid #e0eeec;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.stg-info-card--full {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.stg-info-card--bordered {
+  border: 1px solid #e0eeec;
+}
+.stg-info-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e8f5f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2f7d79;
+  flex-shrink: 0;
+}
+.stg-info-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a3d3a;
+  margin: 0 0 2px;
+}
+.stg-info-sub {
+  font-size: 11.5px;
+  color: #6b8f8c;
+  margin: 0;
+  line-height: 1.5;
+}
+.stg-input-wrap {}
+.stg-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid #d0e8e6;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #1a3d3a;
+  background: #fff;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.stg-input:focus { border-color: #2f7d79; }
+.stg-select {
+  padding: 8px 12px;
+  border: 1px solid #d0e8e6;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #1a3d3a;
+  background: #fff;
+  outline: none;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+/* ── Buttons ─────────────────────────────────── */
+.stg-btn-outline {
+  padding: 9px 18px;
+  border: 1.5px solid #2f7d79;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f7d79;
+  background: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.stg-btn-outline:hover {
+  background: #2f7d79;
+  color: #fff;
+}
+.stg-btn-sm {
+  padding: 7px 14px;
+  font-size: 12px;
+}
+.stg-btn-light {
+  border-color: rgba(255,255,255,0.5);
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+}
+.stg-btn-light:hover {
+  background: rgba(255,255,255,0.25);
+  color: #fff;
+}
+
+/* ── Notifications ───────────────────────────── */
+.stg-notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.stg-notif-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f5f4;
+}
+.stg-notif-item:last-child { border-bottom: none; }
+.stg-notif-item--bordered {
+  background: #f8fbfb;
+  border: 1px solid #e0eeec;
+  border-radius: 14px;
+  padding: 16px;
+}
+.stg-notif-info { flex: 1; }
+.stg-notif-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a3d3a;
+  margin: 0 0 4px;
+}
+.stg-notif-sub {
+  font-size: 12px;
+  color: #6b8f8c;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* ── Toggle Switch ───────────────────────────── */
+.stg-toggle {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.stg-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.stg-toggle-track {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: #d0e8e6;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  padding: 0 3px;
+  box-sizing: border-box;
+}
+.stg-toggle input:checked + .stg-toggle-track {
+  background: #2f7d79;
+}
+.stg-toggle-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: transform 0.2s;
+}
+.stg-toggle input:checked + .stg-toggle-track .stg-toggle-thumb {
+  transform: translateX(20px);
+}
+
+/* ── Serenity Mode Card ──────────────────────── */
+.stg-serenity-card {
+  background: linear-gradient(135deg, #1f504c 0%, #2f7d79 100%);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.stg-serenity-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.stg-serenity-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.stg-serenity-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 5px;
+}
+.stg-serenity-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+  margin: 0;
+  line-height: 1.55;
+}
+.stg-badge-active {
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.18);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #fff;
+  flex-shrink: 0;
+}

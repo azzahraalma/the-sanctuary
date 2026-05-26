@@ -53,11 +53,11 @@ function Donut({ pct, size = 90, stroke = 10, color = "#79d8d1", label, sublabel
 }
 
 // ── Star Rating ──────────────────────────────────────────────────
-function Stars({ rating, max = 5 }) {
+function Stars({ rating, max = 5, size = "lg" }) {
     return (
         <div className="kd-stars">
             {Array.from({ length: max }).map((_, i) => (
-                <span key={i} className={i < Math.round(rating) ? "kd-star kd-star--on" : "kd-star"}>★</span>
+                <span key={i} className={`kd-star kd-star--${size} ${i < Math.round(rating) ? "kd-star--on" : ""}`}>★</span>
             ))}
         </div>
     );
@@ -73,6 +73,41 @@ function ProgressBar({ value, max, color = "var(--grad-teal)" }) {
     );
 }
 
+// ── Spesialisasi data (statis, sesuai referensi gambar) ──────────
+const SPESIALISASI = [
+    {
+        icon: "📊",
+        title: "Manajemen Stres Akademik",
+        desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan.",
+    },
+    {
+        icon: "🧠",
+        title: "Kesejahteraan Mental",
+        desc: "Pendampingan untuk menjaga keseimbangan mental di tengah tuntutan perkuliahan yang tinggi.",
+    },
+    {
+        icon: "🎯",
+        title: "Fokus & Produktivitas",
+        desc: "Teknik dan strategi untuk meningkatkan konsentrasi belajar dan produktivitas akademik sehari-hari.",
+    },
+];
+
+// ── Testimoni data (statis dummy) ────────────────────────────────
+const TESTIMONI = [
+    {
+        nama: "Rizki Pratama",
+        sub: "Mahasiswa Semester 6",
+        rating: 5,
+        teks: "Konselor sangat sabar dan penuh empati. Beliau membantu saya menemukan cara belajar yang lebih efektif saat menghadapi tekanan skripsi. Sangat recommended!",
+    },
+    {
+        nama: "Sari Dewi",
+        sub: "Mahasiswa Semester 4",
+        rating: 5,
+        teks: "Sesi bersama konselor benar-benar mengubah cara pandang saya terhadap stres akademik. Sekarang saya lebih tenang menghadapi ujian.",
+    },
+];
+
 // ── Main Component ───────────────────────────────────────────────
 export default function KonselorDashboard() {
     const navigate = useNavigate();
@@ -85,13 +120,11 @@ export default function KonselorDashboard() {
 
     const kid = getKID(user);
 
-    // Data konselor yang login
     const konselor = useMemo(
         () => data_konselor.find((k) => k.ID === kid) ?? data_konselor[0],
         [kid]
     );
 
-    // Booking yang ditangani konselor ini
     const myBookings = useMemo(
         () => data_booking.filter((b) => b.ID_Konselor === kid && b.ID_Booking !== null),
         [kid]
@@ -102,7 +135,6 @@ export default function KonselorDashboard() {
     const total = myBookings.length;
     const successRate = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
-    // Rata-rata kondisi progress klien aktif
     const avgProgress = useMemo(() => {
         const aktif = myBookings.filter((b) => b.Status === "Berjalan");
         if (!aktif.length) return 0;
@@ -110,12 +142,10 @@ export default function KonselorDashboard() {
         return Math.round(avg * 100);
     }, [myBookings]);
 
-    // Analisis tim
     const ratingTim = analisis_konselor.find((a) => a.Metrik_Tim === "Rata-rata Rating Konselor")?.Rumus_Excel ?? 0;
     const kasusTim = analisis_konselor.find((a) => a.Metrik_Tim === "Total Kasus Teratasi")?.Rumus_Excel ?? 0;
     const probTim = analisis_konselor.find((a) => a.Metrik_Tim === "Probabilitas Sukses Tim")?.Rumus_Excel ?? 0;
 
-    // Distribusi kategori
     const kategoriMap = useMemo(() => {
         const map = {};
         myBookings.forEach((b) => {
@@ -134,10 +164,23 @@ export default function KonselorDashboard() {
         .split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
     const navItems = [
-        { key: "overview", label: "Overview", icon: "⊡" },
-        { key: "klien", label: "Klien Saya", icon: "👥" },
-        { key: "performa", label: "Performa", icon: "📊" },
+        { key: "overview",  label: "Overview",   icon: "⊡" },
+        { key: "klien",     label: "Klien Saya", icon: "👥" },
+        { key: "performa",  label: "Performa",   icon: "📊" },
+        { key: "profil",    label: "Profil Saya",icon: "👤" },
     ];
+
+    // Rating breakdown untuk tab Profil
+    const keramahan  = konselor?.["Keramahan_(30%)"]  ?? 0;
+    const solusi     = konselor?.["Solusi_(50%)"]      ?? 0;
+    const respon     = konselor?.["Respon_(20%)"]      ?? 0;
+    const ratingFinal = konselor?.["Rating_(Final)"]   ?? 0;
+
+    // Distribusi rating bintang (dummy dari testimoni)
+    const ratingDist = [5, 4, 3, 2, 1].map((bintang) => ({
+        bintang,
+        count: TESTIMONI.filter((t) => t.rating === bintang).length,
+    }));
 
     return (
         <div className="kd-shell">
@@ -146,7 +189,6 @@ export default function KonselorDashboard() {
                 <div>
                     <span className="kd-logo" onClick={() => navigate("/konselor-dashboard")}>The Sanctuary</span>
 
-                    {/* Profile mini */}
                     <div className="kd-profile-mini">
                         <div className="kd-profile-avatar">{initials}</div>
                         <div>
@@ -169,9 +211,7 @@ export default function KonselorDashboard() {
                     </nav>
                 </div>
 
-                <button className="kd-logout" onClick={handleLogout}>
-                    ← Keluar
-                </button>
+                <button className="kd-logout" onClick={handleLogout}>← Keluar</button>
             </aside>
 
             {/* ── MAIN ────────────────────────────────── */}
@@ -193,7 +233,7 @@ export default function KonselorDashboard() {
                         </div>
                     </div>
                     <div className="kd-topbar-r">
-                        <div className="kd-avatar" title={konselor?.Nama} onClick={() => setActiveTab("overview")} style={{ cursor: "pointer" }}>
+                        <div className="kd-avatar" title={konselor?.Nama} onClick={() => setActiveTab("profil")} style={{ cursor: "pointer" }}>
                             {initials}
                         </div>
                     </div>
@@ -210,7 +250,6 @@ export default function KonselorDashboard() {
                                 <p className="kd-greeting-sub">Berikut ringkasan aktivitas konselingmu hari ini.</p>
                             </div>
 
-                            {/* Hero card */}
                             <div className="kd-hero">
                                 <div className="kd-hero-left">
                                     <span className="kd-hero-tag">KONSELOR AKTIF</span>
@@ -218,30 +257,20 @@ export default function KonselorDashboard() {
                                     <p className="kd-hero-p">
                                         Spesialisasi <strong>{konselor?.Kategori_Masalah}</strong> · Pengalaman {konselor?.Pengalaman}
                                     </p>
-                                    <Stars rating={konselor?.["Rating_(Final)"] ?? 0} />
-                                    <p className="kd-hero-rating-val">
-                                        {(konselor?.["Rating_(Final)"] ?? 0).toFixed(1)} / 5.0
-                                    </p>
+                                    <Stars rating={ratingFinal} />
+                                    <p className="kd-hero-rating-val">{ratingFinal.toFixed(1)} / 5.0</p>
                                 </div>
                                 <div className="kd-hero-right">
-                                    <Donut
-                                        pct={successRate}
-                                        size={110}
-                                        stroke={12}
-                                        color="#79d8d1"
-                                        label={`${successRate}%`}
-                                        sublabel="Success Rate"
-                                    />
+                                    <Donut pct={successRate} size={110} stroke={12} color="#79d8d1" label={`${successRate}%`} sublabel="Success Rate" />
                                 </div>
                             </div>
 
-                            {/* Stat cards */}
                             <div className="kd-stats-row">
                                 {[
-                                    { icon: "⭐", val: (konselor?.["Rating_(Final)"] ?? 0).toFixed(1), lbl: "Rating Saya" },
-                                    { icon: "📂", val: total, lbl: "Total Kasus" },
+                                    { icon: "⭐", val: ratingFinal.toFixed(1), lbl: "Rating Saya" },
+                                    { icon: "📂", val: total,   lbl: "Total Kasus" },
                                     { icon: "✅", val: selesai, lbl: "Kasus Selesai" },
-                                    { icon: "🔄", val: berjalan, lbl: "Sedang Berjalan" },
+                                    { icon: "🔄", val: berjalan,lbl: "Sedang Berjalan" },
                                 ].map((s, i) => (
                                     <div key={i} className="kd-stat-card">
                                         <span className="kd-stat-icon">{s.icon}</span>
@@ -251,18 +280,14 @@ export default function KonselorDashboard() {
                                 ))}
                             </div>
 
-                            {/* Grid bawah */}
                             <div className="kd-grid">
-                                {/* Sesi terbaru */}
                                 <div className="kd-card">
                                     <div className="kd-card-hd">
                                         <div>
                                             <div className="kd-card-h3">Sesi Terbaru</div>
                                             <div className="kd-card-sub">{myBookings.length} total sesi</div>
                                         </div>
-                                        <button className="kd-card-link" onClick={() => setActiveTab("klien")}>
-                                            Lihat semua →
-                                        </button>
+                                        <button className="kd-card-link" onClick={() => setActiveTab("klien")}>Lihat semua →</button>
                                     </div>
                                     <div className="kd-sesi-list">
                                         {myBookings.slice(0, 4).map((b) => (
@@ -275,22 +300,15 @@ export default function KonselorDashboard() {
                                                     <div className="kd-sesi-kat">{b.Kategori_Masalah} · Sesi ke-{b.Sesi_Konseling}</div>
                                                 </div>
                                                 <div className="kd-sesi-right">
-                                                    <span className={`kd-badge ${b.Status === "Selesai" ? "kd-badge--done" : "kd-badge--run"}`}>
-                                                        {b.Status}
-                                                    </span>
-                                                    <div className="kd-sesi-date">
-                                                        {new Date(b.Tanggal_Sesi).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
-                                                    </div>
+                                                    <span className={`kd-badge ${b.Status === "Selesai" ? "kd-badge--done" : "kd-badge--run"}`}>{b.Status}</span>
+                                                    <div className="kd-sesi-date">{new Date(b.Tanggal_Sesi).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}</div>
                                                 </div>
                                             </div>
                                         ))}
-                                        {myBookings.length === 0 && (
-                                            <p className="kd-empty">Belum ada sesi yang ditangani.</p>
-                                        )}
+                                        {myBookings.length === 0 && <p className="kd-empty">Belum ada sesi yang ditangani.</p>}
                                     </div>
                                 </div>
 
-                                {/* Indikator Performa */}
                                 <div className="kd-card">
                                     <div className="kd-card-hd">
                                         <div>
@@ -300,9 +318,9 @@ export default function KonselorDashboard() {
                                     </div>
                                     <div className="kd-performa-list">
                                         {[
-                                            { lbl: "Keramahan (30%)", val: konselor?.["Keramahan_(30%)"] ?? 0, max: 5 },
-                                            { lbl: "Solusi (50%)", val: konselor?.["Solusi_(50%)"] ?? 0, max: 5 },
-                                            { lbl: "Respon (20%)", val: konselor?.["Respon_(20%)"] ?? 0, max: 5 },
+                                            { lbl: "Keramahan (30%)", val: keramahan, max: 5 },
+                                            { lbl: "Solusi (50%)",    val: solusi,    max: 5 },
+                                            { lbl: "Respon (20%)",    val: respon,    max: 5 },
                                         ].map((p) => (
                                             <div key={p.lbl} className="kd-perf-row">
                                                 <div className="kd-perf-lbl">{p.lbl}</div>
@@ -311,10 +329,7 @@ export default function KonselorDashboard() {
                                             </div>
                                         ))}
                                     </div>
-
                                     <div className="kd-divider" />
-
-                                    {/* Tim stats */}
                                     <div className="kd-card-h3" style={{ marginBottom: 12 }}>Performa Tim</div>
                                     <div className="kd-tim-row">
                                         <div className="kd-tim-item">
@@ -332,7 +347,6 @@ export default function KonselorDashboard() {
                                     </div>
                                 </div>
 
-                                {/* Distribusi Kategori */}
                                 <div className="kd-card kd-card--wide">
                                     <div className="kd-card-hd">
                                         <div>
@@ -365,14 +379,11 @@ export default function KonselorDashboard() {
                                 <h2 className="kd-greeting-h2">Klien Saya</h2>
                                 <p className="kd-greeting-sub">{total} klien terdaftar · {berjalan} sedang berjalan</p>
                             </div>
-
-                            {/* Filter pills */}
                             <div className="kd-filter-row">
                                 {["Semua", "Berjalan", "Selesai"].map((f) => (
                                     <button key={f} className="kd-filter-pill kd-filter-pill--active">{f}</button>
                                 ))}
                             </div>
-
                             <div className="kd-klien-table">
                                 <div className="kd-table-head">
                                     <span>Klien</span>
@@ -404,31 +415,20 @@ export default function KonselorDashboard() {
                                             </div>
                                             <div className="kd-table-cell kd-cell-progress">
                                                 <div className="kd-prog-bar-sm">
-                                                    <div className="kd-prog-fill-sm" style={{
-                                                        width: `${progPct}%`,
-                                                        background: kondisiColor(b.Kondisi_Saat_Ini)
-                                                    }} />
+                                                    <div className="kd-prog-fill-sm" style={{ width: `${progPct}%`, background: kondisiColor(b.Kondisi_Saat_Ini) }} />
                                                 </div>
                                                 <div className="kd-prog-detail">
-                                                    <span style={{ color: kondisiColor(b.Kondisi_Saat_Ini) }}>
-                                                        {kondisiLabel(b.Kondisi_Saat_Ini)}
-                                                    </span>
-                                                    <span className={`kd-gain ${gain >= 0 ? "kd-gain--pos" : "kd-gain--neg"}`}>
-                                                        {gain >= 0 ? "+" : ""}{gain}%
-                                                    </span>
+                                                    <span style={{ color: kondisiColor(b.Kondisi_Saat_Ini) }}>{kondisiLabel(b.Kondisi_Saat_Ini)}</span>
+                                                    <span className={`kd-gain ${gain >= 0 ? "kd-gain--pos" : "kd-gain--neg"}`}>{gain >= 0 ? "+" : ""}{gain}%</span>
                                                 </div>
                                             </div>
                                             <div className="kd-table-cell">
-                                                <span className={`kd-badge ${b.Status === "Selesai" ? "kd-badge--done" : "kd-badge--run"}`}>
-                                                    {b.Status}
-                                                </span>
+                                                <span className={`kd-badge ${b.Status === "Selesai" ? "kd-badge--done" : "kd-badge--run"}`}>{b.Status}</span>
                                             </div>
                                         </div>
                                     );
                                 })}
-                                {myBookings.length === 0 && (
-                                    <p className="kd-empty" style={{ padding: "32px 0" }}>Belum ada klien yang ditangani.</p>
-                                )}
+                                {myBookings.length === 0 && <p className="kd-empty" style={{ padding: "32px 0" }}>Belum ada klien yang ditangani.</p>}
                             </div>
                         </>
                     )}
@@ -440,32 +440,19 @@ export default function KonselorDashboard() {
                                 <h2 className="kd-greeting-h2">Analisis Performa</h2>
                                 <p className="kd-greeting-sub">Detail metrik dan komparasi performa konselor.</p>
                             </div>
-
                             <div className="kd-perf-grid">
-                                {/* Rating donut */}
                                 <div className="kd-card kd-card--center">
                                     <div className="kd-card-h3" style={{ marginBottom: 20, textAlign: "center" }}>Rating Final</div>
-                                    <Donut
-                                        pct={Math.round((konselor?.["Rating_(Final)"] / 5) * 100)}
-                                        size={130}
-                                        stroke={14}
-                                        color="#2f7d79"
-                                        label={(konselor?.["Rating_(Final)"] ?? 0).toFixed(1)}
-                                        sublabel="/ 5.0"
-                                    />
-                                    <Stars rating={konselor?.["Rating_(Final)"] ?? 0} />
-                                    <p className="kd-card-sub" style={{ marginTop: 8, textAlign: "center" }}>
-                                        Berdasarkan keramahan, solusi & respon
-                                    </p>
+                                    <Donut pct={Math.round((ratingFinal / 5) * 100)} size={130} stroke={14} color="#2f7d79" label={ratingFinal.toFixed(1)} sublabel="/ 5.0" />
+                                    <Stars rating={ratingFinal} />
+                                    <p className="kd-card-sub" style={{ marginTop: 8, textAlign: "center" }}>Berdasarkan keramahan, solusi & respon</p>
                                 </div>
-
-                                {/* Komponen rating */}
                                 <div className="kd-card">
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Breakdown Rating</div>
                                     {[
-                                        { lbl: "Keramahan", bobot: "30%", val: konselor?.["Keramahan_(30%)"] ?? 0, color: "#2f7d79" },
-                                        { lbl: "Solusi", bobot: "50%", val: konselor?.["Solusi_(50%)"] ?? 0, color: "#79d8d1" },
-                                        { lbl: "Respon", bobot: "20%", val: konselor?.["Respon_(20%)"] ?? 0, color: "#1a5e5a" },
+                                        { lbl: "Keramahan", bobot: "30%", val: keramahan, color: "#2f7d79" },
+                                        { lbl: "Solusi",    bobot: "50%", val: solusi,    color: "#79d8d1" },
+                                        { lbl: "Respon",    bobot: "20%", val: respon,    color: "#1a5e5a" },
                                     ].map((p) => (
                                         <div key={p.lbl} className="kd-perf-breakdown">
                                             <div className="kd-perf-bd-head">
@@ -479,8 +466,6 @@ export default function KonselorDashboard() {
                                         </div>
                                     ))}
                                 </div>
-
-                                {/* Progress klien aktif */}
                                 <div className="kd-card">
                                     <div className="kd-card-hd">
                                         <div>
@@ -496,17 +481,11 @@ export default function KonselorDashboard() {
                                                 <div key={b.ID_Booking} className="kd-prog-item">
                                                     <div className="kd-prog-head">
                                                         <span className="kd-prog-name">{b.Nama_Mahasiswa?.split(" ")[0]}</span>
-                                                        <span className="kd-prog-pct" style={{ color: kondisiColor(b.Kondisi_Saat_Ini) }}>
-                                                            {now}%
-                                                        </span>
+                                                        <span className="kd-prog-pct" style={{ color: kondisiColor(b.Kondisi_Saat_Ini) }}>{now}%</span>
                                                     </div>
                                                     <div className="kd-prog-track">
-                                                        {/* awal marker */}
                                                         <div className="kd-prog-awal" style={{ left: `${awal}%` }} title={`Awal: ${awal}%`} />
-                                                        <div className="kd-prog-fill" style={{
-                                                            width: `${now}%`,
-                                                            background: kondisiColor(b.Kondisi_Saat_Ini)
-                                                        }} />
+                                                        <div className="kd-prog-fill" style={{ width: `${now}%`, background: kondisiColor(b.Kondisi_Saat_Ini) }} />
                                                     </div>
                                                     <div className="kd-prog-foot">
                                                         <span>Awal: {awal}%</span>
@@ -515,37 +494,15 @@ export default function KonselorDashboard() {
                                                 </div>
                                             );
                                         })}
-                                        {myBookings.filter((b) => b.Status === "Berjalan").length === 0 && (
-                                            <p className="kd-empty">Tidak ada klien aktif.</p>
-                                        )}
+                                        {myBookings.filter((b) => b.Status === "Berjalan").length === 0 && <p className="kd-empty">Tidak ada klien aktif.</p>}
                                     </div>
                                 </div>
-
-                                {/* Komparasi dengan tim */}
                                 <div className="kd-card">
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Komparasi vs Tim</div>
                                     {[
-                                        {
-                                            lbl: "Rating",
-                                            saya: konselor?.["Rating_(Final)"] ?? 0,
-                                            tim: ratingTim,
-                                            max: 5,
-                                            fmt: (v) => v.toFixed(1),
-                                        },
-                                        {
-                                            lbl: "Success Rate",
-                                            saya: successRate / 100,
-                                            tim: probTim,
-                                            max: 1,
-                                            fmt: (v) => `${Math.round(v * 100)}%`,
-                                        },
-                                        {
-                                            lbl: "Kasus Selesai",
-                                            saya: selesai,
-                                            tim: kasusTim / data_konselor.length,
-                                            max: Math.max(selesai, kasusTim),
-                                            fmt: (v) => Math.round(v),
-                                        },
+                                        { lbl: "Rating",       saya: ratingFinal,    tim: ratingTim,                       max: 5,                              fmt: (v) => v.toFixed(1) },
+                                        { lbl: "Success Rate", saya: successRate/100, tim: probTim,                         max: 1,                              fmt: (v) => `${Math.round(v * 100)}%` },
+                                        { lbl: "Kasus Selesai",saya: selesai,         tim: kasusTim/data_konselor.length,   max: Math.max(selesai, kasusTim),    fmt: (v) => Math.round(v) },
                                     ].map((c) => (
                                         <div key={c.lbl} className="kd-compare-row">
                                             <div className="kd-compare-lbl">{c.lbl}</div>
@@ -572,9 +529,173 @@ export default function KonselorDashboard() {
                         </>
                     )}
 
-                </div>{/* end kd-content */}
+                    {/* ══ TAB: PROFIL SAYA ════════════════════════════════════ */}
+                    {activeTab === "profil" && (
+                        <>
+                            <div className="kd-greeting">
+                                <h2 className="kd-greeting-h2">Profil Saya</h2>
+                                <p className="kd-greeting-sub">Tampilan profil publikmu seperti yang dilihat oleh mahasiswa.</p>
+                            </div>
 
-                {/* Footer */}
+                            {/* ── Hero Profil ── */}
+                            <div className="kd-profil-hero">
+                                <div className="kd-profil-hero-left">
+                                    {konselor?.image ? (
+                                        <img src={konselor.image} alt={konselor.Nama} className="kd-profil-photo" />
+                                    ) : (
+                                        <div className="kd-profil-photo kd-profil-photo--placeholder">{initials}</div>
+                                    )}
+                                    <div className="kd-profil-available">
+                                        <span className="kd-available-dot" />
+                                        Tersedia untuk sesi
+                                    </div>
+                                </div>
+                                <div className="kd-profil-hero-info">
+                                    <span className="kd-profil-kategori-badge">{konselor?.Kategori_Masalah}</span>
+                                    <h2 className="kd-profil-nama">{konselor?.Nama}</h2>
+                                    <p className="kd-profil-bio">
+                                        {konselor?.Nama?.split(" ")[0]} adalah konselor sebaya yang berfokus pada pendampingan
+                                        mahasiswa dalam menghadapi tekanan akademik dan menjaga kesejahteraan mental selama perkuliahan.
+                                    </p>
+                                    <div className="kd-profil-stat-row">
+                                        <div className="kd-profil-stat-item">
+                                            <span className="kd-profil-stat-val" style={{ color: "var(--teal)" }}>{ratingFinal.toFixed(1)}</span>
+                                            <span className="kd-profil-stat-lbl">Rating</span>
+                                        </div>
+                                        <div className="kd-profil-stat-divider" />
+                                        <div className="kd-profil-stat-item">
+                                            <span className="kd-profil-stat-val">{total}</span>
+                                            <span className="kd-profil-stat-lbl">Total Kasus</span>
+                                        </div>
+                                        <div className="kd-profil-stat-divider" />
+                                        <div className="kd-profil-stat-item">
+                                            <span className="kd-profil-stat-val">{selesai}</span>
+                                            <span className="kd-profil-stat-lbl">Kasus Selesai</span>
+                                        </div>
+                                        <div className="kd-profil-stat-divider" />
+                                        <div className="kd-profil-stat-item">
+                                            <span className="kd-profil-stat-val">{successRate}%</span>
+                                            <span className="kd-profil-stat-lbl">Success Rate</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* ── Grid bawah: Tentang + Rating ── */}
+                            <div className="kd-profil-grid">
+
+                                {/* Tentang Saya */}
+                                <div className="kd-card kd-profil-about">
+                                    <div className="kd-card-h3" style={{ marginBottom: 16 }}>Tentang Saya</div>
+                                    <p className="kd-profil-about-text">
+                                        {konselor?.Nama?.split(" ")[0]} adalah konselor sebaya yang berfokus pada pendampingan
+                                        mahasiswa dalam menghadapi tekanan akademik dan menjaga kesejahteraan mental selama perkuliahan.
+                                        Dengan pengalaman {konselor?.Pengalaman ?? "2 tahun"}, ia telah mendampingi puluhan mahasiswa
+                                        menemukan strategi belajar yang lebih sehat dan efektif.
+                                    </p>
+                                    <p className="kd-profil-about-text" style={{ marginTop: 12 }}>
+                                        Melalui pendekatan yang hangat dan empatik, {konselor?.Nama?.split(" ")[0]} percaya bahwa
+                                        setiap mahasiswa memiliki potensi untuk bangkit dari tekanan akademik dan meraih
+                                        keseimbangan antara prestasi dan kebahagiaan.
+                                    </p>
+
+                                    {/* Rating breakdown */}
+                                    <div style={{ marginTop: 24 }}>
+                                        {[
+                                            { lbl: "Keramahan",          val: keramahan },
+                                            { lbl: "Kualitas Solusi",    val: solusi    },
+                                            { lbl: "Kecepatan Respon",   val: respon    },
+                                        ].map((p) => (
+                                            <div key={p.lbl} className="kd-profil-rating-row">
+                                                <span className="kd-profil-rating-lbl">{p.lbl}</span>
+                                                <div className="kd-bar-track" style={{ flex: 1 }}>
+                                                    <div className="kd-bar-fill" style={{ width: `${(p.val / 5) * 100}%` }} />
+                                                </div>
+                                                <span className="kd-profil-rating-val">{p.val.toFixed(1)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Spesialisasi Keahlian */}
+                                <div className="kd-card">
+                                    <div className="kd-card-h3" style={{ marginBottom: 16 }}>Spesialisasi Keahlian</div>
+                                    <div className="kd-spesialis-list">
+                                        {SPESIALISASI.map((s) => (
+                                            <div key={s.title} className="kd-spesialis-item">
+                                                <div className="kd-spesialis-icon">{s.icon}</div>
+                                                <div>
+                                                    <div className="kd-spesialis-title">{s.title}</div>
+                                                    <div className="kd-spesialis-desc">{s.desc}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Testimoni Klien */}
+                                <div className="kd-card kd-card--wide">
+                                    <div className="kd-card-h3" style={{ marginBottom: 20 }}>Testimoni Klien</div>
+                                    <div className="kd-testimoni-wrap">
+                                        {/* Rating summary */}
+                                        <div className="kd-testimoni-summary">
+                                            <div className="kd-testi-big-rating">
+                                                <span className="kd-testi-big-num">{ratingFinal.toFixed(1)}</span>
+                                                <Stars rating={ratingFinal} size="sm" />
+                                                <span className="kd-testi-ulasan">{TESTIMONI.length} ulasan</span>
+                                            </div>
+                                            <div className="kd-testi-dist">
+                                                {ratingDist.map((r) => (
+                                                    <div key={r.bintang} className="kd-testi-dist-row">
+                                                        <span className="kd-testi-dist-bintang">{r.bintang} ★</span>
+                                                        <div className="kd-bar-track" style={{ flex: 1, height: 6 }}>
+                                                            <div className="kd-bar-fill"
+                                                                style={{
+                                                                    width: TESTIMONI.length > 0 ? `${(r.count / TESTIMONI.length) * 100}%` : "0%",
+                                                                    background: "#f5c842",
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <span className="kd-testi-dist-count">{r.count}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Kategori masalah yang ditangani */}
+                                            <div className="kd-testi-kat-wrap">
+                                                <div className="kd-testi-kat-label">KATEGORI MASALAH DITANGANI</div>
+                                                <div className="kd-testi-kat-pills">
+                                                    {kategoriMap.slice(0, 4).map(([kat]) => (
+                                                        <span key={kat} className="kd-testi-kat-pill">{kat}</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Kartu testimoni */}
+                                        <div className="kd-testi-cards">
+                                            {TESTIMONI.map((t, i) => (
+                                                <div key={i} className="kd-testi-card">
+                                                    <p className="kd-testi-text">"{t.teks}"</p>
+                                                    <div className="kd-testi-foot">
+                                                        <div className="kd-testi-avatar">{t.nama.charAt(0)}</div>
+                                                        <div>
+                                                            <div className="kd-testi-nama">{t.nama}</div>
+                                                            <div className="kd-testi-sub">{t.sub}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </>
+                    )}
+
+                </div>
+
                 <footer className="kd-footer">
                     <div>
                         <span className="kd-footer-brand">The Sanctuary</span>

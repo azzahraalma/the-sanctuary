@@ -107,7 +107,15 @@ function getCalendarDays(year, month) {
 const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 // ── Main Component ────────────────────────────────────────────────────────────
-
+// ── Baca profil dari localStorage (hasil edit konselor) ───────────────────────
+function getProfilOverride(konselorId) {
+    try {
+        const saved = localStorage.getItem(`sanctuary_profil_${konselorId}`);
+        return saved ? JSON.parse(saved) : {};
+    } catch {
+        return {};
+    }
+}
 export default function KonselorDetail() {
   const { id } = useParams();
   const navigate = useNavigate();

@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { useMemo, useState } from "react";
-import data_konselor from "../data/data_konselor";
-import data_booking from "../data/data_booking";
+import { useMemo, useState, useEffect, useCallback } from "react";
+import { supabase } from "../supabase";
 import analisis_konselor from "../data/analisis_konselor";
 import "../styles/konselor-dashboard.css";
+import EditProfilModal from "./EditProfilModal";
+
 
 // ── Email → ID Konselor mapping ──────────────────────────────────
 function getKID(user) {
@@ -113,34 +114,131 @@ export default function KonselorDashboard() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("overview");
 
+    // ── State data dari Supabase ──────────────────────────────
+    const [konselor, setKonselor] = useState(null);
+    const [myBookings, setMyBookings] = useState([]);
+    const [loadingData, setLoadingData] = useState(true);
+    const [showEditModal, setShowEditModal] = useState(false);
+
     const user = useMemo(() => {
         try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
         catch { return null; }
     }, []);
 
-    const kid = getKID(user);
+    const kid = user?.konselorId ?? null;
 
-    const konselor = useMemo(
-        () => data_konselor.find((k) => k.ID === kid) ?? data_konselor[0],
-        [kid]
-    );
+    // ── Fetch konselor & booking dari Supabase ────────────────
+    useEffect(() => {
+        if (!kid) return;
+        async function fetchData() {
+            setLoadingData(true);
 
-    const myBookings = useMemo(
-        () => data_booking.filter((b) => b.ID_Konselor === kid && b.ID_Booking !== null),
-        [kid]
-    );
+            const [{ data: kData }, { data: bData }] = await Promise.all([
+                supabase.from("konselor").select("*").eq("id", kid).single(),
+                supabase.from("booking").select("*").eq("id_konselor", kid),
+            ]);
 
+            if (kData) {
+                // Normalize field names agar JSX tidak perlu diubah banyak
+                setKonselor({
+                    ID: kData.id,
+                    Nama: kData.nama,
+                    Kategori_Masalah: kData.kategori_masalah,
+                    Pengalaman: kData.pengalaman,
+                    "Rating_(Final)": kData.rating_final,
+                    "Keramahan_(30%)": kData.keramahan,
+                    "Solusi_(50%)": kData.solusi,
+                    "Respon_(20%)": kData.respon,
+                    Jumlah_Kasus: kData.jumlah_kasus,
+                    Kasus_Selesai: kData.kasus_selesai,
+                    Success_Rate: kData.success_rate,
+                    image: kData.image_url,
+                    foto: kData.foto_url,
+                    bio: kData.bio,
+                    spesialisasi: kData.spesialisasi,
+                });
+            }
+
+            if (bData) {
+                setMyBookings(bData.map((b) => ({
+                    ID_Booking: b.id,
+                    ID_Konselor: b.id_konselor,
+                    ID_Mahasiswa: b.id_mahasiswa,
+                    Nama_Mahasiswa: b.nama_mahasiswa,
+                    Kategori_Masalah: b.kategori_masalah,
+                    Tanggal_Sesi: b.tanggal_sesi,
+                    Sesi_Konseling: b.sesi_konseling,
+                    Status: b.status,
+                    Kondisi_Awal: b.kondisi_awal,
+                    Kondisi_Saat_Ini: b.kondisi_saat_ini,
+                })));
+            }
+
+            setLoadingData(false);
+        }
+        fetchData();
+    }, [kid]);
+
+    // ── Hook update profil ke Supabase ────────────────────────
+    const updateProfil = useCallback(async (fields) => {
+    if (!kid) return;
+
+    let fotoUrl = konselor?.foto || konselor?.image || null;
+
+    // Kalau foto adalah base64 (file baru dipilih), upload ke Storage dulu
+    if (fields.foto && fields.foto.startsWith("data:")) {
+        // Convert base64 ke File object
+        const res = await fetch(fields.foto);
+        const blob = await res.blob();
+        const ext = blob.type.split("/")[1] || "jpg";
+        const fileName = `${kid}_${Date.now()}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from("konselor-foto")
+            .upload(fileName, blob, {
+                contentType: blob.type,
+                upsert: true,
+            });
+
+        if (!uploadError) {
+            const { data: urlData } = supabase.storage
+                .from("konselor-foto")
+                .getPublicUrl(fileName);
+            fotoUrl = urlData.publicUrl;
+        } else {
+            console.error("Upload foto gagal:", uploadError.message);
+        }
+    } else if (fields.foto === null) {
+        // User hapus foto
+        fotoUrl = null;
+    }
+
+    const { error } = await supabase
+        .from("konselor")
+        .update({
+            foto_url: fotoUrl,
+            bio: fields.bio,
+            spesialisasi: fields.spesialisasi,
+        })
+        .eq("id", kid);
+
+    if (!error) {
+        setKonselor((prev) => ({
+            ...prev,
+            foto: fotoUrl,
+            bio: fields.bio,
+            spesialisasi: fields.spesialisasi,
+        }));
+    } else {
+        console.error("Update profil gagal:", error.message);
+    }
+}, [kid, konselor]);
+
+    // ── Kalkulasi dari booking ────────────────────────────────
     const selesai = myBookings.filter((b) => b.Status === "Selesai").length;
     const berjalan = myBookings.filter((b) => b.Status === "Berjalan").length;
     const total = myBookings.length;
     const successRate = total > 0 ? Math.round((selesai / total) * 100) : 0;
-
-    const avgProgress = useMemo(() => {
-        const aktif = myBookings.filter((b) => b.Status === "Berjalan");
-        if (!aktif.length) return 0;
-        const avg = aktif.reduce((s, b) => s + (b.Kondisi_Saat_Ini ?? 0), 0) / aktif.length;
-        return Math.round(avg * 100);
-    }, [myBookings]);
 
     const ratingTim = analisis_konselor.find((a) => a.Metrik_Tim === "Rata-rata Rating Konselor")?.Rumus_Excel ?? 0;
     const kasusTim = analisis_konselor.find((a) => a.Metrik_Tim === "Total Kasus Teratasi")?.Rumus_Excel ?? 0;
@@ -164,23 +262,43 @@ export default function KonselorDashboard() {
         .split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
     const navItems = [
-        { key: "overview",  label: "Overview",   icon: "⊡" },
-        { key: "klien",     label: "Klien Saya", icon: "👥" },
-        { key: "performa",  label: "Performa",   icon: "📊" },
-        { key: "profil",    label: "Profil Saya",icon: "👤" },
+    { key: "overview", label: "Overview", icon: "📊" },
+    { key: "klien", label: "Klien Saya", icon: "👥" },
+    { key: "performa", label: "Performa", icon: "📈" },
+    { key: "profil", label: "Profil Saya", icon: "👤" },
+];
+
+    const keramahan = konselor?.["Keramahan_(30%)"] ?? 0;
+    const solusi = konselor?.["Solusi_(50%)"] ?? 0;
+    const respon = konselor?.["Respon_(20%)"] ?? 0;
+    const ratingFinal = konselor?.["Rating_(Final)"] ?? 0;
+
+    const SPESIALISASI_DEFAULT = [
+        { icon: "📊", title: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline." },
+        { icon: "🧠", title: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental." },
+        { icon: "🎯", title: "Fokus & Produktivitas", desc: "Teknik untuk meningkatkan konsentrasi belajar." },
     ];
 
-    // Rating breakdown untuk tab Profil
-    const keramahan  = konselor?.["Keramahan_(30%)"]  ?? 0;
-    const solusi     = konselor?.["Solusi_(50%)"]      ?? 0;
-    const respon     = konselor?.["Respon_(20%)"]      ?? 0;
-    const ratingFinal = konselor?.["Rating_(Final)"]   ?? 0;
+    const TESTIMONI = [
+        { nama: "Rizki Pratama", sub: "Mahasiswa Semester 6", rating: 5, teks: "Konselor sangat sabar dan penuh empati. Sangat recommended!" },
+        { nama: "Sari Dewi", sub: "Mahasiswa Semester 4", rating: 5, teks: "Sesi bersama konselor benar-benar mengubah cara pandang saya." },
+    ];
 
-    // Distribusi rating bintang (dummy dari testimoni)
     const ratingDist = [5, 4, 3, 2, 1].map((bintang) => ({
         bintang,
         count: TESTIMONI.filter((t) => t.rating === bintang).length,
     }));
+
+    // ── Loading state ─────────────────────────────────────────
+    if (loadingData) {
+        return (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", flexDirection: "column", gap: 12 }}>
+                <div style={{ width: 40, height: 40, border: "4px solid #e0e0e0", borderTop: "4px solid #2f7d79", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                <p style={{ color: "#2f7d79", fontWeight: 600 }}>Memuat dashboard...</p>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+        );
+    }
 
     return (
         <div className="kd-shell">
@@ -268,9 +386,9 @@ export default function KonselorDashboard() {
                             <div className="kd-stats-row">
                                 {[
                                     { icon: "⭐", val: ratingFinal.toFixed(1), lbl: "Rating Saya" },
-                                    { icon: "📂", val: total,   lbl: "Total Kasus" },
+                                    { icon: "📂", val: total, lbl: "Total Kasus" },
                                     { icon: "✅", val: selesai, lbl: "Kasus Selesai" },
-                                    { icon: "🔄", val: berjalan,lbl: "Sedang Berjalan" },
+                                    { icon: "🔄", val: berjalan, lbl: "Sedang Berjalan" },
                                 ].map((s, i) => (
                                     <div key={i} className="kd-stat-card">
                                         <span className="kd-stat-icon">{s.icon}</span>
@@ -319,8 +437,8 @@ export default function KonselorDashboard() {
                                     <div className="kd-performa-list">
                                         {[
                                             { lbl: "Keramahan (30%)", val: keramahan, max: 5 },
-                                            { lbl: "Solusi (50%)",    val: solusi,    max: 5 },
-                                            { lbl: "Respon (20%)",    val: respon,    max: 5 },
+                                            { lbl: "Solusi (50%)", val: solusi, max: 5 },
+                                            { lbl: "Respon (20%)", val: respon, max: 5 },
                                         ].map((p) => (
                                             <div key={p.lbl} className="kd-perf-row">
                                                 <div className="kd-perf-lbl">{p.lbl}</div>
@@ -451,8 +569,8 @@ export default function KonselorDashboard() {
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Breakdown Rating</div>
                                     {[
                                         { lbl: "Keramahan", bobot: "30%", val: keramahan, color: "#2f7d79" },
-                                        { lbl: "Solusi",    bobot: "50%", val: solusi,    color: "#79d8d1" },
-                                        { lbl: "Respon",    bobot: "20%", val: respon,    color: "#1a5e5a" },
+                                        { lbl: "Solusi", bobot: "50%", val: solusi, color: "#79d8d1" },
+                                        { lbl: "Respon", bobot: "20%", val: respon, color: "#1a5e5a" },
                                     ].map((p) => (
                                         <div key={p.lbl} className="kd-perf-breakdown">
                                             <div className="kd-perf-bd-head">
@@ -500,9 +618,9 @@ export default function KonselorDashboard() {
                                 <div className="kd-card">
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Komparasi vs Tim</div>
                                     {[
-                                        { lbl: "Rating",       saya: ratingFinal,    tim: ratingTim,                       max: 5,                              fmt: (v) => v.toFixed(1) },
-                                        { lbl: "Success Rate", saya: successRate/100, tim: probTim,                         max: 1,                              fmt: (v) => `${Math.round(v * 100)}%` },
-                                        { lbl: "Kasus Selesai",saya: selesai,         tim: kasusTim/data_konselor.length,   max: Math.max(selesai, kasusTim),    fmt: (v) => Math.round(v) },
+                                        { lbl: "Rating", saya: ratingFinal, tim: ratingTim, max: 5, fmt: (v) => v.toFixed(1) },
+                                        { lbl: "Success Rate", saya: successRate / 100, tim: probTim, max: 1, fmt: (v) => `${Math.round(v * 100)}%` },
+                                        { lbl: "Kasus Selesai", saya: selesai, tim: kasusTim / (analisis_konselor.length || 1), max: Math.max(selesai, kasusTim / (analisis_konselor.length || 1), 1), fmt: (v) => Math.round(v) },
                                     ].map((c) => (
                                         <div key={c.lbl} className="kd-compare-row">
                                             <div className="kd-compare-lbl">{c.lbl}</div>
@@ -533,15 +651,27 @@ export default function KonselorDashboard() {
                     {activeTab === "profil" && (
                         <>
                             <div className="kd-greeting">
-                                <h2 className="kd-greeting-h2">Profil Saya</h2>
-                                <p className="kd-greeting-sub">Tampilan profil publikmu seperti yang dilihat oleh mahasiswa.</p>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                    <div>
+                                        <h2 className="kd-greeting-h2">Profil Saya</h2>
+                                        <p className="kd-greeting-sub">Tampilan profil publikmu seperti yang dilihat oleh mahasiswa.</p>
+                                    </div>
+                                    <button className="kd-card-link" onClick={() => setShowEditModal(true)}>✏️ Edit Profil</button>
+                                </div>
                             </div>
 
-                            {/* ── Hero Profil ── */}
+                            {showEditModal && (
+                                <EditProfilModal
+                                    profil={konselor}
+                                    onSave={updateProfil}
+                                    onClose={() => setShowEditModal(false)}
+                                />
+                            )}
+
                             <div className="kd-profil-hero">
                                 <div className="kd-profil-hero-left">
-                                    {konselor?.image ? (
-                                        <img src={konselor.image} alt={konselor.Nama} className="kd-profil-photo" />
+                                    {(konselor?.foto || konselor?.image) ? (
+                                        <img src={konselor.foto || konselor.image} alt={konselor?.Nama} className="kd-profil-photo" />
                                     ) : (
                                         <div className="kd-profil-photo kd-profil-photo--placeholder">{initials}</div>
                                     )}
@@ -554,8 +684,7 @@ export default function KonselorDashboard() {
                                     <span className="kd-profil-kategori-badge">{konselor?.Kategori_Masalah}</span>
                                     <h2 className="kd-profil-nama">{konselor?.Nama}</h2>
                                     <p className="kd-profil-bio">
-                                        {konselor?.Nama?.split(" ")[0]} adalah konselor sebaya yang berfokus pada pendampingan
-                                        mahasiswa dalam menghadapi tekanan akademik dan menjaga kesejahteraan mental selama perkuliahan.
+                                        {konselor?.bio || `${konselor?.Nama?.split(" ")[0]} adalah konselor sebaya yang berfokus pada pendampingan mahasiswa.`}
                                     </p>
                                     <div className="kd-profil-stat-row">
                                         <div className="kd-profil-stat-item">
@@ -581,30 +710,22 @@ export default function KonselorDashboard() {
                                 </div>
                             </div>
 
-                            {/* ── Grid bawah: Tentang + Rating ── */}
                             <div className="kd-profil-grid">
-
-                                {/* Tentang Saya */}
                                 <div className="kd-card kd-profil-about">
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Tentang Saya</div>
                                     <p className="kd-profil-about-text">
-                                        {konselor?.Nama?.split(" ")[0]} adalah konselor sebaya yang berfokus pada pendampingan
-                                        mahasiswa dalam menghadapi tekanan akademik dan menjaga kesejahteraan mental selama perkuliahan.
-                                        Dengan pengalaman {konselor?.Pengalaman ?? "2 tahun"}, ia telah mendampingi puluhan mahasiswa
-                                        menemukan strategi belajar yang lebih sehat dan efektif.
+                                        {konselor?.bio || `${konselor?.Nama?.split(" ")[0]} adalah konselor sebaya yang berfokus pada pendampingan mahasiswa dalam menghadapi tekanan akademik. Dengan pengalaman ${konselor?.Pengalaman ?? "2 tahun"}, ia telah mendampingi puluhan mahasiswa menemukan strategi belajar yang lebih sehat dan efektif.`}
                                     </p>
-                                    <p className="kd-profil-about-text" style={{ marginTop: 12 }}>
-                                        Melalui pendekatan yang hangat dan empatik, {konselor?.Nama?.split(" ")[0]} percaya bahwa
-                                        setiap mahasiswa memiliki potensi untuk bangkit dari tekanan akademik dan meraih
-                                        keseimbangan antara prestasi dan kebahagiaan.
-                                    </p>
-
-                                    {/* Rating breakdown */}
+                                    {!konselor?.bio && (
+                                        <p className="kd-profil-about-text" style={{ marginTop: 12 }}>
+                                            Melalui pendekatan yang hangat dan empatik, {konselor?.Nama?.split(" ")[0]} percaya bahwa setiap mahasiswa memiliki potensi untuk bangkit dari tekanan akademik dan meraih keseimbangan antara prestasi dan kebahagiaan.
+                                        </p>
+                                    )}
                                     <div style={{ marginTop: 24 }}>
                                         {[
-                                            { lbl: "Keramahan",          val: keramahan },
-                                            { lbl: "Kualitas Solusi",    val: solusi    },
-                                            { lbl: "Kecepatan Respon",   val: respon    },
+                                            { lbl: "Keramahan", val: keramahan },
+                                            { lbl: "Kualitas Solusi", val: solusi },
+                                            { lbl: "Kecepatan Respon", val: respon },
                                         ].map((p) => (
                                             <div key={p.lbl} className="kd-profil-rating-row">
                                                 <span className="kd-profil-rating-lbl">{p.lbl}</span>
@@ -617,11 +738,10 @@ export default function KonselorDashboard() {
                                     </div>
                                 </div>
 
-                                {/* Spesialisasi Keahlian */}
                                 <div className="kd-card">
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Spesialisasi Keahlian</div>
                                     <div className="kd-spesialis-list">
-                                        {SPESIALISASI.map((s) => (
+                                        {(konselor?.spesialisasi ?? SPESIALISASI_DEFAULT).map((s) => (
                                             <div key={s.title} className="kd-spesialis-item">
                                                 <div className="kd-spesialis-icon">{s.icon}</div>
                                                 <div>
@@ -633,11 +753,9 @@ export default function KonselorDashboard() {
                                     </div>
                                 </div>
 
-                                {/* Testimoni Klien */}
                                 <div className="kd-card kd-card--wide">
                                     <div className="kd-card-h3" style={{ marginBottom: 20 }}>Testimoni Klien</div>
                                     <div className="kd-testimoni-wrap">
-                                        {/* Rating summary */}
                                         <div className="kd-testimoni-summary">
                                             <div className="kd-testi-big-rating">
                                                 <span className="kd-testi-big-num">{ratingFinal.toFixed(1)}</span>
@@ -649,19 +767,15 @@ export default function KonselorDashboard() {
                                                     <div key={r.bintang} className="kd-testi-dist-row">
                                                         <span className="kd-testi-dist-bintang">{r.bintang} ★</span>
                                                         <div className="kd-bar-track" style={{ flex: 1, height: 6 }}>
-                                                            <div className="kd-bar-fill"
-                                                                style={{
-                                                                    width: TESTIMONI.length > 0 ? `${(r.count / TESTIMONI.length) * 100}%` : "0%",
-                                                                    background: "#f5c842",
-                                                                }}
-                                                            />
+                                                            <div className="kd-bar-fill" style={{
+                                                                width: TESTIMONI.length > 0 ? `${(r.count / TESTIMONI.length) * 100}%` : "0%",
+                                                                background: "#f5c842",
+                                                            }} />
                                                         </div>
                                                         <span className="kd-testi-dist-count">{r.count}</span>
                                                     </div>
                                                 ))}
                                             </div>
-
-                                            {/* Kategori masalah yang ditangani */}
                                             <div className="kd-testi-kat-wrap">
                                                 <div className="kd-testi-kat-label">KATEGORI MASALAH DITANGANI</div>
                                                 <div className="kd-testi-kat-pills">
@@ -671,8 +785,6 @@ export default function KonselorDashboard() {
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Kartu testimoni */}
                                         <div className="kd-testi-cards">
                                             {TESTIMONI.map((t, i) => (
                                                 <div key={i} className="kd-testi-card">
@@ -689,7 +801,6 @@ export default function KonselorDashboard() {
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </>
                     )}

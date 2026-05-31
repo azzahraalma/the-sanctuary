@@ -1,10 +1,9 @@
-import { supabase } from "../supabase";
+import { supabase } from "../lib/supabase";
 import data_konselor from "../data/data_konselor";
 import data_booking from "../data/data_booking";
 import users from "../data/users";
 
 export async function seedAll() {
-    // 1. Seed konselor
     const konselorRows = data_konselor.map((k) => ({
         id: k.ID,
         nama: k.Nama,
@@ -24,7 +23,6 @@ export async function seedAll() {
     if (e1) console.error("❌ Konselor:", e1.message);
     else console.log("✅ Konselor selesai!");
 
-    // 2. Seed booking
     const bookingRows = data_booking
         .filter((b) => b.ID_Booking !== null)
         .map((b) => ({
@@ -44,7 +42,6 @@ export async function seedAll() {
     if (e2) console.error("❌ Booking:", e2.message);
     else console.log("✅ Booking selesai!");
 
-    // 3. Seed users
     const userRows = users.map((u) => ({
         email: u.email,
         nama: u.nama ?? u.Nama,

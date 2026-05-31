@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabase";
+import { supabase } from "../lib/supabase";
 import "../styles/auth.css";
 
 export default function Register() {
-  const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const navigate    = useNavigate();
+  const [name, setName]         = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -26,39 +26,59 @@ export default function Register() {
 
     setLoading(true);
 
-    // Cek apakah email sudah terdaftar
-    const { data: existing } = await supabase
-      .from("users")
-      .select("id")
-      .eq("email", email)
-      .single();
+    const emailLower = email.toLowerCase();
 
-    if (existing) {
-      setError("Email ini sudah terdaftar. Coba masuk aja ya ✨");
+    // ── 1. Generate student_id unik: M-XXXXXX ──────────────────
+    const suffix    = Date.now().toString().slice(-6);
+    const studentId = `M-${suffix}`;
+
+    // ── 2. Daftar via Supabase Auth ─────────────────────────────
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          nama:       name,
+          name:       name,
+          role:       "mahasiswa",
+          student_id: studentId,
+        },
+      },
+    });
+
+    if (authError) {
+      if (authError.message.includes("already registered")) {
+        setError("Email ini sudah terdaftar. Coba masuk aja ya ✨");
+      } else {
+        setError("Gagal membuat akun. Coba lagi ya.");
+      }
       setLoading(false);
       return;
     }
 
-    // Simpan user baru ke Supabase
-    const { data: newUser, error: insertError } = await supabase
-      .from("users")
-      .insert({ nama: name, email, password, role: "mahasiswa" })
-      .select()
-      .single();
+    // ── 3. Upsert ke profil_pengguna dengan student_id ──────────
+    await supabase
+      .from("profil_pengguna")
+      .upsert(
+        {
+          email:      emailLower,
+          nama:       name,
+          role:       "mahasiswa",
+          student_id: studentId,   // ← kunci utama untuk semua query data
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "email" }
+      );
 
-    if (insertError || !newUser) {
-      setError("Gagal membuat akun. Coba lagi ya.");
-      setLoading(false);
-      return;
-    }
-
-    // Simpan ke localStorage
+    // ── 4. Simpan ke localStorage (termasuk student_id) ─────────
     localStorage.setItem("sanctuary_user", JSON.stringify({
-      id: newUser.id,
-      name: newUser.nama,
-      email: newUser.email,
-      role: newUser.role,
+      id:         authData.user.id,
+      name,
+      nama:       name,
+      email:      emailLower,
+      role:       "mahasiswa",
       konselorId: null,
+      student_id: studentId,  // ← disimpan agar dashboard langsung bisa pakai
     }));
 
     setLoading(false);
@@ -89,20 +109,42 @@ export default function Register() {
           <form className="auth-form" onSubmit={handleRegister}>
             <div className="auth-field">
               <label className="auth-label">Nama Lengkap</label>
-              <input type="text" className="auth-input" placeholder="Nama lengkap kamu" value={name} onChange={(e) => setName(e.target.value)} />
+              <input
+                type="text"
+                className="auth-input"
+                placeholder="Nama lengkap kamu"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
             <div className="auth-field">
               <label className="auth-label">Alamat Email</label>
-              <input type="email" className="auth-input" placeholder="contoh@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                type="email"
+                className="auth-input"
+                placeholder="contoh@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <div className="auth-field">
               <label className="auth-label">Buat Password</label>
-              <input type="password" className="auth-input" placeholder="Buat password kamu" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <input
+                type="password"
+                className="auth-input"
+                placeholder="Minimal 6 karakter"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
 
             {error && <p className="auth-error">{error}</p>}
 
-            <button type="submit" className={`auth-submit ${loading ? "auth-submit--loading" : ""}`} disabled={loading}>
+            <button
+              type="submit"
+              className={`auth-submit ${loading ? "auth-submit--loading" : ""}`}
+              disabled={loading}
+            >
               {loading ? <span className="auth-spinner" /> : <>Buat Akun Sekarang</>}
             </button>
           </form>
@@ -114,7 +156,9 @@ export default function Register() {
 
           <div className="auth-support-wrapper">
             <button className="auth-support-btn" onClick={() => navigate("/")}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><path d="M15 18l-6-6 6-6" /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
               Balik ke Beranda
             </button>
           </div>

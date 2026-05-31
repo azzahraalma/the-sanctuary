@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabase";
+import { supabase } from "../lib/supabase";
 import "../styles/auth.css";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState("mahasiswa");
-  const [email, setEmail] = useState("");
+  const [mode, setMode]         = useState("mahasiswa");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [showPw, setShowPw]     = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
 
   const handleModeSwitch = (newMode) => {
     setMode(newMode);
@@ -30,44 +30,87 @@ export default function Login() {
 
     setLoading(true);
 
-    // Cari user di tabel users Supabase
-    const { data: users, error: dbError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("email", email)
-      .eq("password", password)
-      .single();
+    // ── 1. Login via Supabase Auth ──────────────────────────────
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (dbError || !users) {
+    if (authError || !authData.user) {
       setError("Hmm, email atau password kamu belum cocok. Coba cek lagi ya.");
       setLoading(false);
       return;
     }
 
-    // Validasi role sesuai mode
-    if (mode === "konselor" && users.role !== "konselor") {
+    const emailLower = email.toLowerCase();
+
+    // ── 2. Fetch profil dari profil_pengguna ────────────────────
+    let { data: profil } = await supabase
+      .from("profil_pengguna")
+      .select("*")
+      .eq("email", emailLower)
+      .maybeSingle();
+
+    const role       = profil?.role        ?? authData.user.user_metadata?.role        ?? "mahasiswa";
+    const nama       = profil?.nama        ?? authData.user.user_metadata?.nama        ?? emailLower.split("@")[0];
+    const konselorId = profil?.konselor_id ?? authData.user.user_metadata?.konselor_id ?? null;
+
+    // ── 3. Validasi role sesuai mode ────────────────────────────
+    if (mode === "konselor" && role !== "konselor") {
       setError("Akun ini bukan akun konselor. Coba login sebagai Mahasiswa ya.");
+      await supabase.auth.signOut();
       setLoading(false);
       return;
     }
-    if (mode === "mahasiswa" && users.role === "konselor") {
+    if (mode === "mahasiswa" && role === "konselor") {
       setError("Akun ini adalah akun konselor. Silakan login sebagai Konselor.");
+      await supabase.auth.signOut();
       setLoading(false);
       return;
     }
 
-    // Simpan ke localStorage
+    // ── 4. Upsert profil_pengguna — pastikan baris selalu ada ───
+    //       Kalau profil belum punya student_id, generate sekarang
+    let studentId = profil?.student_id ?? null;
+
+    if (!studentId && role === "mahasiswa") {
+      // Generate student_id dari timestamp agar unik: M-XXXXXX
+      const suffix = Date.now().toString().slice(-6);
+      studentId = `M-${suffix}`;
+    }
+
+    const { data: upserted } = await supabase
+      .from("profil_pengguna")
+      .upsert(
+        {
+          email:      emailLower,
+          nama,
+          role,
+          student_id: studentId,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "email" }
+      )
+      .select()
+      .maybeSingle();
+
+    // Pakai hasil upsert kalau ada (paling fresh)
+    if (upserted?.student_id) studentId = upserted.student_id;
+
+    // ── 5. Simpan ke localStorage (termasuk student_id) ─────────
     localStorage.setItem("sanctuary_user", JSON.stringify({
-      id: users.id,
-      name: users.nama,
-      email: users.email,
-      role: users.role,
-      konselorId: users.konselor_id,
+      id:         authData.user.id,
+      name:       nama,
+      nama:       nama,
+      email:      emailLower,
+      role,
+      konselorId,
+      student_id: studentId,  // ← disimpan agar bisa dipakai langsung
     }));
 
     setLoading(false);
 
-    if (users.role === "konselor") {
+    if (role === "konselor") {
       navigate("/konselor-dashboard", { replace: true });
     } else {
       const redirect = sessionStorage.getItem("redirect_after_login") || "/";
@@ -104,19 +147,41 @@ export default function Login() {
       <div className="auth-panel-right">
         <div className="auth-form-wrap">
           <div className="auth-mode-toggle">
-            <button className={`auth-mode-btn ${!isKonselor ? "auth-mode-btn--active" : ""}`} onClick={() => handleModeSwitch("mahasiswa")}>🎓 Mahasiswa</button>
-            <button className={`auth-mode-btn ${isKonselor ? "auth-mode-btn--active" : ""}`} onClick={() => handleModeSwitch("konselor")}>🤝 Konselor</button>
+            <button
+              className={`auth-mode-btn ${!isKonselor ? "auth-mode-btn--active" : ""}`}
+              onClick={() => handleModeSwitch("mahasiswa")}
+            >
+              🎓 Mahasiswa
+            </button>
+            <button
+              className={`auth-mode-btn ${isKonselor ? "auth-mode-btn--active" : ""}`}
+              onClick={() => handleModeSwitch("konselor")}
+            >
+              🤝 Konselor
+            </button>
           </div>
 
           <div className="auth-form-header">
-            <h1 className="auth-form-h1">{isKonselor ? <>Masuk sebagai<br />Konselor ✨</> : <>Halo,<br />selamat datang<br />kembali ✨</>}</h1>
-            <p className="auth-form-sub">{isKonselor ? "Masukkan akun konselor kamu untuk mengakses dashboard dan jadwal sesimu." : "Masukkan akun kamu untuk lanjut ngobrol, melihat dashboard, dan mengakses ruang yang sudah dipersonalisasi buat kamu."}</p>
+            <h1 className="auth-form-h1">
+              {isKonselor ? <>Masuk sebagai<br />Konselor ✨</> : <>Halo,<br />selamat datang<br />kembali ✨</>}
+            </h1>
+            <p className="auth-form-sub">
+              {isKonselor
+                ? "Masukkan akun konselor kamu untuk mengakses dashboard dan jadwal sesimu."
+                : "Masukkan akun kamu untuk lanjut ngobrol, melihat dashboard, dan mengakses ruang yang sudah dipersonalisasi buat kamu."}
+            </p>
           </div>
 
           <form className="auth-form" onSubmit={handleLogin}>
             <div className="auth-field">
               <label className="auth-label">Alamat Email</label>
-              <input type="email" className="auth-input" placeholder={isKonselor ? "email.konselor@sanctuary.com" : "contoh@email.com"} value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                type="email"
+                className="auth-input"
+                placeholder={isKonselor ? "email.konselor@sanctuary.com" : "contoh@email.com"}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
 
             <div className="auth-field">
@@ -125,12 +190,25 @@ export default function Login() {
                 <button type="button" className="auth-forgot">Lupa password?</button>
               </div>
               <div className="auth-input-wrap">
-                <input type={showPw ? "text" : "password"} className="auth-input" placeholder="Masukkan password kamu" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <input
+                  type={showPw ? "text" : "password"}
+                  className="auth-input"
+                  placeholder="Masukkan password kamu"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
                 <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
                   {showPw ? (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
                   ) : (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
                   )}
                 </button>
               </div>
@@ -138,7 +216,11 @@ export default function Login() {
 
             {error && <p className="auth-error">{error}</p>}
 
-            <button type="submit" className={`auth-submit ${loading ? "auth-submit--loading" : ""} ${isKonselor ? "auth-submit--konselor" : ""}`} disabled={loading}>
+            <button
+              type="submit"
+              className={`auth-submit ${loading ? "auth-submit--loading" : ""} ${isKonselor ? "auth-submit--konselor" : ""}`}
+              disabled={loading}
+            >
               {loading ? <span className="auth-spinner" /> : isKonselor ? "Masuk sebagai Konselor" : "Masuk ke Ruang Saya"}
             </button>
           </form>
@@ -152,7 +234,9 @@ export default function Login() {
 
           <div className="auth-support-wrapper">
             <button className="auth-support-btn" onClick={() => navigate("/")}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><path d="M15 18l-6-6 6-6" /></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                <path d="M15 18l-6-6 6-6"/>
+              </svg>
               Balik ke Beranda
             </button>
           </div>

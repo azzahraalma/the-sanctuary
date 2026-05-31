@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { supabase } from "../supabase";
 import analisis_konselor from "../data/analisis_konselor";
 import "../styles/konselor-dashboard.css";
 import EditProfilModal from "./EditProfilModal";
+import { supabase } from "../lib/supabase";
 
 
 // ── Email → ID Konselor mapping ──────────────────────────────────

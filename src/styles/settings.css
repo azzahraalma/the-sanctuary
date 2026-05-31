@@ -38,7 +38,7 @@
   border-radius: 16px;
   padding: 12px;
   border: 1px solid #e8f0ef;
-  box-shadow: 0 2px 12px rgba(31,80,76,0.06);
+  box-shadow: 0 2px 12px rgba(31, 80, 76, 0.06);
 }
 .stg-leftnav-item {
   display: flex;
@@ -84,7 +84,7 @@
   border-radius: 18px;
   border: 1px solid #e8f0ef;
   overflow: hidden;
-  box-shadow: 0 2px 16px rgba(31,80,76,0.05);
+  box-shadow: 0 2px 16px rgba(31, 80, 76, 0.05);
 }
 .stg-section-title {
   font-size: 16px;
@@ -138,8 +138,9 @@
   color: #2f7d79;
   transition: background 0.15s;
 }
-.stg-avatar-change:hover { background: #f0faf9; }
-
+.stg-avatar-change:hover {
+  background: #f0faf9;
+}
 .stg-profile-info {
   flex: 1;
   min-width: 0;
@@ -176,11 +177,6 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
-}
-@media (max-width: 700px) {
-  .stg-grid-2 { grid-template-columns: 1fr; }
-  .stg-layout { flex-direction: column; }
-  .stg-leftnav { width: 100%; }
 }
 
 /* ── Info Card ───────────────────────────────── */
@@ -226,7 +222,11 @@
   margin: 0;
   line-height: 1.5;
 }
-.stg-input-wrap {}
+
+/* ── Input & Select ──────────────────────────── */
+.stg-input-wrap {
+  width: 100%;
+}
 .stg-input {
   width: 100%;
   padding: 9px 12px;
@@ -239,7 +239,9 @@
   box-sizing: border-box;
   transition: border-color 0.15s;
 }
-.stg-input:focus { border-color: #2f7d79; }
+.stg-input:focus {
+  border-color: #2f7d79;
+}
 .stg-select {
   padding: 8px 12px;
   border: 1px solid #d0e8e6;
@@ -275,13 +277,32 @@
   font-size: 12px;
 }
 .stg-btn-light {
-  border-color: rgba(255,255,255,0.5);
+  border-color: rgba(255, 255, 255, 0.5);
   color: #fff;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.12);
 }
 .stg-btn-light:hover {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
   color: #fff;
+}
+.stg-btn-primary {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #2f7d79 0%, #79d8d1 100%);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.stg-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.stg-btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
 }
 
 /* ── Notifications ───────────────────────────── */
@@ -298,14 +319,18 @@
   padding: 16px 0;
   border-bottom: 1px solid #f0f5f4;
 }
-.stg-notif-item:last-child { border-bottom: none; }
+.stg-notif-item:last-child {
+  border-bottom: none;
+}
 .stg-notif-item--bordered {
   background: #f8fbfb;
   border: 1px solid #e0eeec;
   border-radius: 14px;
   padding: 16px;
 }
-.stg-notif-info { flex: 1; }
+.stg-notif-info {
+  flex: 1;
+}
 .stg-notif-title {
   font-size: 14px;
   font-weight: 600;
@@ -351,7 +376,7 @@
   height: 18px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
   transition: transform 0.2s;
 }
 .stg-toggle input:checked + .stg-toggle-track .stg-toggle-thumb {
@@ -376,7 +401,7 @@
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -391,17 +416,42 @@
 }
 .stg-serenity-sub {
   font-size: 12px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
   margin: 0;
   line-height: 1.55;
 }
 .stg-badge-active {
   padding: 4px 10px;
   border-radius: 99px;
-  background: rgba(255,255,255,0.18);
+  background: rgba(255, 255, 255, 0.18);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.8px;
   color: #fff;
   flex-shrink: 0;
+}
+
+/* ── Toast Animation ─────────────────────────── */
+@keyframes stgFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 700px) {
+  .stg-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .stg-layout {
+    flex-direction: column;
+  }
+  .stg-leftnav {
+    width: 100%;
+  }
 }

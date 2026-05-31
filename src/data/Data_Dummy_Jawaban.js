@@ -1,18 +1,4 @@
-/**
- * data_dummy_jawaban.js
- * Jawaban kuesioner refleksi kesehatan mental mahasiswa
- * M-001 (Prasetyo) TIDAK ADA di sini — dia user prototype yang ngisi sendiri
- *
- * Struktur jawaban:
- *   soal 1, 3, 5 → pilihan_kartu: "a" | "b" | "c" | "d"
- *   soal 2, 4    → slider: 0–100 (angka)
- *
- * Kemudahan (K), Kejelasan (J), DayaTarik (DT) diambil dari data_responden.
- */
-
 const data_dummy_jawaban = [
-  // ─── M-002 · Siti Aminah Zulfa · Angkatan 2024 ───────────────────────────
-  // K=2 (rendah), J=3 (biasa), DT=4 (baik) → kondisi lumayan berat
   {
     ID_Mahasiswa: "M-002",
     Nama: "Siti Aminah Zulfa",
@@ -31,9 +17,6 @@ const data_dummy_jawaban = [
     },
   },
 
-  // ─── M-003 · Budi Santoso · Angkatan 2023 ────────────────────────────────
-  // K=1 (sangat rendah), J=2 (buruk), DT=5 (sangat baik)
-  // Daya tarik tinggi tapi kejelasan & kemudahan rendah → banyak beban tersembunyi
   {
     ID_Mahasiswa: "M-003",
     Nama: "Budi Santoso",
@@ -44,16 +27,14 @@ const data_dummy_jawaban = [
     DayaTarik: 5,
     Keterangan: "Tekanan akademik tinggi",
     jawaban: {
-      1: "d", // berat dan sulit bergerak
-      2: 80,  // sangat butuh ruang pribadi
-      3: "d", // cemas dan nggak tenang
-      4: 20,  // belum siap cerita
-      5: "d", // tidur buruk banget
+      1: "d", 
+      2: 80,  
+      3: "d", 
+      4: 20, 
+      5: "d", 
     },
   },
 
-  // ─── M-004 · Rina Putri Wahyuni · Angkatan 2022 ──────────────────────────
-  // K=3, J=4, DT=5 → kondisi biasa, ada tantangan karier
   {
     ID_Mahasiswa: "M-004",
     Nama: "Rina Putri Wahyuni",
@@ -64,16 +45,14 @@ const data_dummy_jawaban = [
     DayaTarik: 5,
     Keterangan: "Galau soal karier & relasi",
     jawaban: {
-      1: "b", // naik-turun
-      2: 45,  // antara mau ngobrol dan mau sendiri
-      3: "b", // pikiran rame
-      4: 55,  // agak siap cerita
-      5: "b", // tidur lumayan
+      1: "b",
+      2: 45,
+      3: "b",
+      4: 55,  
+      5: "b", 
     },
   },
 
-  // ─── M-005 · Fajar Shidiq Permana · Angkatan 2023 ────────────────────────
-  // K=4, J=3, DT=4 → cukup baik tapi ada kecemasan
   {
     ID_Mahasiswa: "M-005",
     Nama: "Fajar Shidiq Permana",

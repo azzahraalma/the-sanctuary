@@ -1,0 +1,511 @@
+/* ─── RIWAYAT SESI — turunan dari Statistik, selaras penuh ─────── */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,700&display=swap');
+
+/* ── Semua variabel diwarisi dari statistik.css ───────────────────
+   Kalau riwayat.css di-import terpisah tanpa statistik.css,
+   variabel ini harus ada di sini. Kalau sudah di-import bersama,
+   blok :root ini tidak merusak apapun (override-safe).            */
+:root {
+  --teal:               #2f7d79;
+  --teal-lt:            #79d8d1;
+  --teal-bg:            #d9f0da;
+  --teal-glow:          rgba(47,125,121,0.18);
+  --teal-glow-strong:   rgba(47,125,121,0.32);
+  --cream:              #f2f2ea;
+  --dark:               #1a2e2c;
+  --gray:               #666;
+  --gray-lt:            #e4e4dc;
+  --white:              #ffffff;
+  --radius-lg:          28px;
+  --radius-md:          18px;
+  --radius-sm:          12px;
+  --grad-teal:          linear-gradient(135deg,#2f7d79 0%,#79d8d1 100%);
+  --grad-hero:          linear-gradient(160deg,#d9f0da 0%,#f2f2ea 60%);
+  --grad-card:          linear-gradient(145deg,#ffffff 0%,#f5f5ef 100%);
+  --grad-dark:          linear-gradient(145deg,#1a2e2c 0%,#0f1e1c 100%);
+  --grad-stat:          linear-gradient(160deg,#ffffff 0%,#eef8f7 100%);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   EMPTY STATE
+   ───────────────────────────────────────────────────────────────── */
+.rw-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  background: var(--grad-card);
+  border: 1px dashed rgba(47,125,121,0.20);
+  border-radius: var(--radius-lg);
+}
+.rw-empty-icon  { font-size: 48px; margin-bottom: 16px; }
+.rw-empty-title { font-size: 16px; font-weight: 800; color: #111; margin-bottom: 6px; }
+.rw-empty-sub   { font-size: 13px; color: var(--gray); }
+
+/* ─────────────────────────────────────────────────────────────────
+   LIST WRAPPER
+   ───────────────────────────────────────────────────────────────── */
+.rw-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   RIWAYAT ITEM — kartu accordion
+   ───────────────────────────────────────────────────────────────── */
+.rw-item {
+  background: var(--grad-card);
+  border: 1px solid rgba(47,125,121,0.09);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.04);
+  transition:
+    transform   .28s cubic-bezier(.22,1,.36,1),
+    box-shadow  .28s cubic-bezier(.22,1,.36,1),
+    border-color .2s;
+
+  /* staggered fade-up dari parent */
+  animation: rwFadeUp .45s cubic-bezier(.22,1,.36,1) both;
+}
+.rw-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(47,125,121,0.11);
+  border-color: rgba(47,125,121,0.18);
+}
+.rw-item--open {
+  border-color: rgba(47,125,121,0.25);
+  box-shadow: 0 8px 32px rgba(47,125,121,0.13);
+}
+.rw-item--open .rw-header {
+  border-bottom: 1px solid rgba(47,125,121,0.10);
+  background: linear-gradient(135deg,rgba(47,125,121,0.04) 0%,rgba(121,216,209,0.04) 100%);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ITEM HEADER (clickable row)
+   ───────────────────────────────────────────────────────────────── */
+.rw-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  cursor: pointer;
+  transition: background .18s;
+}
+.rw-header:hover {
+  background: rgba(47,125,121,0.03);
+}
+
+/* Session badge: "S1" pill */
+.rw-badge {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--grad-teal);
+  color: white;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px var(--teal-glow-strong);
+  letter-spacing: -0.3px;
+}
+
+/* Meta block (title + sub info) */
+.rw-meta     { flex: 1; min-width: 0; }
+.rw-meta-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.rw-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.2px;
+}
+.rw-konselor {
+  font-size: 12px;
+  color: var(--gray);
+  font-weight: 500;
+}
+.rw-meta-sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--gray);
+  font-weight: 500;
+}
+
+/* Delta badge (perubahan skor) */
+.rw-delta-pos {
+  color: #2f7d79;
+  font-weight: 700;
+  background: rgba(47,125,121,0.10);
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+.rw-delta-neg {
+  color: #c0392b;
+  font-weight: 700;
+  background: rgba(192,57,43,0.09);
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+/* Right side: skor + chevron */
+.rw-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.rw-skor {
+  text-align: center;
+  min-width: 48px;
+}
+.rw-skor-val {
+  font-size: 20px;
+  font-weight: 800;
+  background: var(--grad-teal);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.rw-skor-lbl {
+  font-size: 9px;
+  color: var(--gray);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Chevron icon */
+.rw-chevron {
+  color: var(--gray);
+  transition: transform .25s cubic-bezier(.4,0,.2,1), color .2s;
+  flex-shrink: 0;
+}
+.rw-chevron--open {
+  transform: rotate(180deg);
+  color: var(--teal);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   MOOD BADGE
+   ───────────────────────────────────────────────────────────────── */
+.rw-mood {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.mood-sangat-baik {
+  background: rgba(47,125,121,0.12);
+  color: var(--teal);
+  border: 1px solid rgba(47,125,121,0.20);
+}
+.mood-baik {
+  background: rgba(121,216,209,0.18);
+  color: #1a7a74;
+  border: 1px solid rgba(121,216,209,0.30);
+}
+.mood-netral {
+  background: rgba(100,100,100,0.09);
+  color: #555;
+  border: 1px solid rgba(100,100,100,0.14);
+}
+.mood-stres {
+  background: rgba(212,133,74,0.12);
+  color: #a05a20;
+  border: 1px solid rgba(212,133,74,0.22);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   EXPANDED BODY
+   ───────────────────────────────────────────────────────────────── */
+.rw-body {
+  padding: 20px 22px 22px;
+  animation: rwBodyIn .3s cubic-bezier(.22,1,.36,1) both;
+}
+
+.rw-body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PANEL (child card di dalam body)
+   ───────────────────────────────────────────────────────────────── */
+.rw-panel {
+  background: linear-gradient(145deg,#f8f8f4 0%,#eef8f7 100%);
+  border: 1px solid rgba(47,125,121,0.09);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rw-panel-title {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Konselor row ── */
+.rw-k-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rw-k-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(47,125,121,0.20);
+  flex-shrink: 0;
+}
+.rw-k-fallback {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--grad-teal);
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rw-k-name { font-size: 13px; font-weight: 700; color: #111; }
+.rw-k-cat  { font-size: 11px; color: var(--gray); margin-top: 1px; }
+
+/* Konselor status badge */
+.rw-k-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 999px;
+  align-self: flex-start;
+}
+.ks-done {
+  background: rgba(47,125,121,0.12);
+  color: var(--teal);
+  border: 1px solid rgba(47,125,121,0.18);
+}
+.ks-run {
+  background: rgba(212,133,74,0.12);
+  color: #a05a20;
+  border: 1px solid rgba(212,133,74,0.20);
+}
+
+/* ── Dimensi progress bars ── */
+.rw-dim-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rw-dim-label {
+  font-size: 11px;
+  color: #444;
+  font-weight: 500;
+  width: 118px;
+  flex-shrink: 0;
+}
+.rw-dim-track {
+  flex: 1;
+  height: 7px;
+  background: rgba(47,125,121,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.rw-dim-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal) 0%, var(--teal-lt) 100%);
+  border-radius: 4px;
+  transition: width .8s cubic-bezier(.22,1,.36,1);
+}
+.rw-dim-val {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal);
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Mini Donut row ── */
+.rw-donut-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 6px 0 4px;
+}
+.rw-donut-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.rw-donut-lbl {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+/* ── Kondisi sebelum vs sesudah ── */
+.rw-kondisi-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 0 4px;
+}
+.rw-kondisi-box {
+  text-align: center;
+  flex: 1;
+}
+.rw-kondisi-val {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+}
+.rw-kondisi-lbl {
+  font-size: 10px;
+  color: var(--gray);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.rw-kondisi-arrow {
+  font-size: 18px;
+  color: var(--teal);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.rw-kondisi-note {
+  font-size: 11px;
+  color: #555;
+  line-height: 1.6;
+  background: rgba(47,125,121,0.06);
+  border-radius: 8px;
+  padding: 8px 10px;
+  border-left: 3px solid var(--teal);
+}
+
+/* ── Catatan sesi ── */
+.rw-catatan {
+  background: linear-gradient(135deg,rgba(47,125,121,0.07) 0%,rgba(121,216,209,0.07) 100%);
+  border: 1px solid rgba(47,125,121,0.14);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  flex: 1;
+}
+.rw-catatan p {
+  font-size: 12px;
+  color: #333;
+  line-height: 1.7;
+  font-style: italic;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ANIMATIONS
+   ───────────────────────────────────────────────────────────────── */
+@keyframes rwFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes rwBodyIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* stagger delay — diset di JSX via style animationDelay sudah oke,
+   tapi ini fallback jika ingin pure CSS:                         */
+.rw-list .rw-item:nth-child(1) { animation-delay: .04s; }
+.rw-list .rw-item:nth-child(2) { animation-delay: .08s; }
+.rw-list .rw-item:nth-child(3) { animation-delay: .12s; }
+.rw-list .rw-item:nth-child(4) { animation-delay: .16s; }
+.rw-list .rw-item:nth-child(5) { animation-delay: .20s; }
+.rw-list .rw-item:nth-child(6) { animation-delay: .24s; }
+.rw-list .rw-item:nth-child(7) { animation-delay: .28s; }
+.rw-list .rw-item:nth-child(8) { animation-delay: .32s; }
+
+/* ─────────────────────────────────────────────────────────────────
+   RESPONSIVE
+   ───────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .rw-body-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .rw-header {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+  .rw-body {
+    padding: 14px 16px 18px;
+  }
+  .rw-meta-sub {
+    gap: 8px;
+  }
+  .rw-skor-val {
+    font-size: 17px;
+  }
+  .rw-dim-label {
+    width: 90px;
+    font-size: 10px;
+  }
+  .rw-kondisi-val {
+    font-size: 18px;
+  }
+  .rw-badge {
+    width: 34px;
+    height: 34px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rw-meta-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .rw-right {
+    gap: 8px;
+  }
+  .rw-donut-row {
+    gap: 4px;
+  }
+}

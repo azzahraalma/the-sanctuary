@@ -10,7 +10,7 @@ import Kuesioner from "./pages/kuesioner";
 import KonselorDetail from "./pages/KonselorDetail";
 import KonselorDashboard from "./pages/KonselorDashboard";
 import Settings from "./pages/settings";
-// ─── HELPERS ──────────────────────────────────────────────────────
+import RiwayatSesi from "./pages/RiwayatSesi";
 
 function getUser() {
   try {
@@ -29,30 +29,24 @@ function isKonselor() {
   return user?.role === "konselor";
 }
 
-// ─── ROUTE GUARDS ─────────────────────────────────────────────────
 
-/** Hanya user yang sudah login yang bisa masuk */
 function ProtectedRoute({ children }) {
   return isLoggedIn() ? children : <Navigate to="/login" replace />;
 }
 
-/** Hanya konselor yang bisa masuk — selain itu redirect ke /dashboard */
 function KonselorRoute({ children }) {
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
   if (!isKonselor()) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
-/** Kalau sudah login, jangan tampilkan halaman login/register lagi */
 function AuthRoute({ children }) {
   if (!isLoggedIn()) return children;
-  // Kalau konselor, langsung ke dashboard konselor
   return isKonselor()
     ? <Navigate to="/konselor-dashboard" replace />
     : <Navigate to="/" replace />;
 }
 
-// ─── APP ──────────────────────────────────────────────────────────
 
 export default function App() {
   return (
@@ -113,7 +107,6 @@ export default function App() {
           }
         />
 
-        {/* Dashboard khusus konselor */}
         <Route
           path="/konselor-dashboard"
           element={
@@ -139,6 +132,13 @@ export default function App() {
               <Register />
             </AuthRoute>
           }
+        />
+
+        <Route 
+        path="/riwayat" 
+        element={
+        <RiwayatSesi />
+        } 
         />
 
         <Route path="*" element={<Navigate to="/" replace />} />

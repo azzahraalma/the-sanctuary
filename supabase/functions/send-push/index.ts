@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
 
 // ── Util: base64url encode ────────────────────────────────────────
 function base64UrlEncode(buffer: ArrayBuffer): string {
@@ -10,26 +10,42 @@ function base64UrlEncode(buffer: ArrayBuffer): string {
 
 // ── Util: import VAPID private key ───────────────────────────────
 async function importPrivateKey(base64: string): Promise<CryptoKey> {
-  const raw = Uint8Array.from(atob(base64.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
-  return crypto.subtle.importKey(
+  const raw = Uint8Array.from(
+    atob(base64.replace(/-/g, "+").replace(/_/g, "/")),
+    (c) => c.charCodeAt(0),
+  );
+  return await crypto.subtle.importKey(
     "pkcs8",
-    raw.buffer,
+    raw.buffer as ArrayBuffer,
     { name: "ECDSA", namedCurve: "P-256" },
     false,
-    ["sign"]
+    ["sign"],
   );
 }
 
 // ── Buat JWT untuk VAPID Auth ─────────────────────────────────────
-async function makeVapidJwt(audience: string, subject: string, privateKeyB64: string): Promise<string> {
+async function makeVapidJwt(
+  audience: string,
+  subject: string,
+  privateKeyB64: string,
+): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
-  const header  = base64UrlEncode(new TextEncoder().encode(JSON.stringify({ typ: "JWT", alg: "ES256" })));
+  const header = base64UrlEncode(
+    new TextEncoder().encode(JSON.stringify({ typ: "JWT", alg: "ES256" }))
+      .buffer as ArrayBuffer,
+  );
   const payload = base64UrlEncode(
-    new TextEncoder().encode(JSON.stringify({ aud: audience, exp: now + 3600, sub: subject }))
+    new TextEncoder().encode(
+      JSON.stringify({ aud: audience, exp: now + 3600, sub: subject }),
+    ).buffer as ArrayBuffer,
   );
   const sigInput = new TextEncoder().encode(`${header}.${payload}`);
   const key = await importPrivateKey(privateKeyB64);
-  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, sigInput);
+  const sig = await crypto.subtle.sign(
+    { name: "ECDSA", hash: "SHA-256" },
+    key,
+    sigInput,
+  );
   return `${header}.${payload}.${base64UrlEncode(sig)}`;
 }
 
@@ -39,18 +55,18 @@ async function sendOnePush(
   payload: string,
   vapidPublic: string,
   vapidPrivate: string,
-  vapidSubject: string
+  vapidSubject: string,
 ): Promise<{ ok: boolean; status?: number; error?: string }> {
-  const url    = new URL(subscription.endpoint);
+  const url = new URL(subscription.endpoint);
   const origin = `${url.protocol}//${url.host}`;
-  const jwt    = await makeVapidJwt(origin, vapidSubject, vapidPrivate);
+  const jwt = await makeVapidJwt(origin, vapidSubject, vapidPrivate);
 
   const res = await fetch(subscription.endpoint, {
     method: "POST",
     headers: {
-      "Content-Type":  "application/octet-stream",
-      "Authorization": `vapid t=${jwt},k=${vapidPublic}`,
-      "TTL":           "86400",
+      "Content-Type": "application/octet-stream",
+      Authorization: `vapid t=${jwt},k=${vapidPublic}`,
+      TTL: "86400",
     },
     body: new TextEncoder().encode(payload),
   });
@@ -65,7 +81,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       headers: {
-        "Access-Control-Allow-Origin":  "*",
+        "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "authorization, content-type",
       },
@@ -76,11 +92,11 @@ Deno.serve(async (req: Request) => {
     const body = await req.json();
     const { email, tipe, title, body: msgBody, url = "/dashboard" } = body;
 
-    const VAPID_PUBLIC  = Deno.env.get("VAPID_PUBLIC_KEY")!;
+    const VAPID_PUBLIC = Deno.env.get("VAPID_PUBLIC_KEY")!;
     const VAPID_PRIVATE = Deno.env.get("VAPID_PRIVATE_KEY")!;
     const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT")!;
-    const SUPABASE_URL  = Deno.env.get("SUPABASE_URL")!;
-    const SERVICE_KEY   = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
@@ -92,16 +108,32 @@ Deno.serve(async (req: Request) => {
     if (email) query = query.eq("email", email);
 
     // Filter berdasarkan preferensi (pengingat_sesi / komunitas / pesan_langsung)
+    // Filter berdasarkan preferensi (pengingat_sesi / komunitas / pesan_langsung)
     if (tipe) {
-      const { data: prefs } = await supabase
-        .from("preferensi_notif")
-        .select("email")
-        .eq(tipe, true);
-      const allowedEmails = (prefs ?? []).map((p: { email: string }) => p.email);
+      const prefsRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/preferensi_notif?select=email&${tipe}=eq.true`,
+        {
+          headers: {
+            apikey: SERVICE_KEY,
+            Authorization: `Bearer ${SERVICE_KEY}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const prefs: { email: string }[] = await prefsRes.json();
+      const allowedEmails = prefs.map((p) => p.email);
+
       if (allowedEmails.length === 0) {
-        return new Response(JSON.stringify({ sent: 0, note: "Tidak ada subscriber dengan preferensi ini" }), {
-          headers: { "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            sent: 0,
+            note: "Tidak ada subscriber dengan preferensi ini",
+          }),
+          {
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
       query = query.in("email", allowedEmails);
     }
@@ -111,27 +143,45 @@ Deno.serve(async (req: Request) => {
 
     const payload = JSON.stringify({ title, body: msgBody, url });
     const results = await Promise.allSettled(
-      (subs ?? []).map((s) =>
-        sendOnePush(
-          { endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
-          payload,
-          VAPID_PUBLIC,
-          VAPID_PRIVATE,
-          VAPID_SUBJECT
-        )
-      )
+      (subs ?? []).map(
+        (s: {
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          email: string;
+        }) =>
+          sendOnePush(
+            { endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
+            payload,
+            VAPID_PUBLIC,
+            VAPID_PRIVATE,
+            VAPID_SUBJECT,
+          ),
+      ),
     );
 
-    const sent   = results.filter((r) => r.status === "fulfilled" && (r.value as { ok: boolean }).ok).length;
+    const sent = results.filter(
+      (r: PromiseSettledResult<{ ok: boolean }>) =>
+        r.status === "fulfilled" && r.value.ok,
+    ).length;
     const failed = results.length - sent;
 
-    return new Response(JSON.stringify({ sent, failed, total: results.length }), {
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-    });
+    return new Response(
+      JSON.stringify({ sent, failed, total: results.length }),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      },
+    );
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
-      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
     });
   }
 });

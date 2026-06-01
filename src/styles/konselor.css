@@ -416,7 +416,6 @@
   font-weight: 800;
   color: #111;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-  backdrop-filter: blur(4px);
 }
 .kon-card-rating-star { color: #f5a623; font-size: 13px; }
 
@@ -650,4 +649,23 @@
   .kon-avail-wrap { 
     flex-direction: row; 
   }
+
+  @keyframes skel-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skel-box {
+  background: linear-gradient(
+    90deg,
+    rgba(128,128,128,0.1) 25%,
+    rgba(128,128,128,0.2) 50%,
+    rgba(128,128,128,0.1) 75%
+  );
+  background-size: 800px 100%;
+  animation: skel-shimmer 1.4s infinite linear;
+  border-radius: 4px;
+}
+
+.kon-card--skeleton { pointer-events: none; }
 }

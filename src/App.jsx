@@ -1,16 +1,19 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Home from "./pages/home";
-import Login from "./pages/login";
-import Register from "./pages/register";
-import Dashboard from "./pages/dashboard";
-import Konselor from "./pages/konselor";
-import Statistik from "./pages/statistik";
-import Kuesioner from "./pages/kuesioner";
-import KonselorDetail from "./pages/KonselorDetail";
-import KonselorDashboard from "./pages/KonselorDashboard";
-import Settings from "./pages/settings";
-import RiwayatSesi from "./pages/RiwayatSesi";
+import Home from "./pages/home.jsx";
+import Login from "./pages/login.jsx";
+import Register from "./pages/register.jsx";
+import Dashboard from "./pages/dashboard.jsx";
+import Konselor from "./pages/konselor.jsx";
+import Statistik from "./pages/statistik.jsx";
+import Kuesioner from "./pages/kuesioner.jsx";
+import KonselorDetail from "./pages/KonselorDetail.jsx";
+import KonselorDashboard from "./pages/KonselorDashboard.jsx";
+import Settings from "./pages/settings.jsx";
+import RiwayatSesi from "./pages/RiwayatSesi.jsx";
+import Notifikasi from "./pages/Notifikasi.jsx";
+import SesiKonseling from "./pages/SesiKonseling.jsx";
+import EvaluasiSesi from "./pages/EvaluasiSesi.jsx";
 
 function getUser() {
   try {
@@ -29,32 +32,68 @@ function isKonselor() {
   return user?.role === "konselor";
 }
 
+/* =========================
+   ROUTE GUARDS
+========================= */
 
 function ProtectedRoute({ children }) {
   return isLoggedIn() ? children : <Navigate to="/login" replace />;
 }
 
 function KonselorRoute({ children }) {
-  if (!isLoggedIn()) return <Navigate to="/login" replace />;
-  if (!isKonselor()) return <Navigate to="/dashboard" replace />;
+  if (!isLoggedIn()) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isKonselor()) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return children;
 }
 
 function AuthRoute({ children }) {
-  if (!isLoggedIn()) return children;
+  if (!isLoggedIn()) {
+    return children;
+  }
+
   return isKonselor()
     ? <Navigate to="/konselor-dashboard" replace />
-    : <Navigate to="/" replace />;
+    : <Navigate to="/dashboard" replace />;
 }
 
+/* =========================
+   APP
+========================= */
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* ================= HOME ================= */}
         <Route path="/" element={<Home />} />
 
-        {/* Dashboard mahasiswa */}
+        {/* ================= AUTH ================= */}
+        <Route
+          path="/login"
+          element={
+            <AuthRoute>
+              <Login />
+            </AuthRoute>
+          }
+        />
+
+        <Route
+          path="/register"
+          element={
+            <AuthRoute>
+              <Register />
+            </AuthRoute>
+          }
+        />
+
+        {/* ================= MAHASISWA ================= */}
         <Route
           path="/dashboard"
           element={
@@ -81,6 +120,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/settings"
           element={
@@ -89,6 +129,26 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/riwayat"
+          element={
+            <ProtectedRoute>
+              <RiwayatSesi />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/notifikasi"
+          element={
+            <ProtectedRoute>
+              <Notifikasi />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ================= KONSELOR ================= */}
         <Route
           path="/konselor"
           element={
@@ -116,32 +176,32 @@ export default function App() {
           }
         />
 
+        {/* ================= SESI ================= */}
         <Route
-          path="/login"
+          path="/sesi/:bookingId"
           element={
-            <AuthRoute>
-              <Login />
-            </AuthRoute>
+            <ProtectedRoute>
+              <SesiKonseling />
+            </ProtectedRoute>
           }
         />
 
+        {/* ================= EVALUASI SESI ================= */}
         <Route
-          path="/register"
-          element={
-            <AuthRoute>
-              <Register />
-            </AuthRoute>
-          }
+  path="/evaluasi/:bookingId"
+  element={
+    <ProtectedRoute>
+      <EvaluasiSesi />
+    </ProtectedRoute>
+  }
+/>
+
+        {/* ================= FALLBACK ================= */}
+        <Route
+          path="*"
+          element={<Navigate to="/" replace />}
         />
 
-        <Route 
-        path="/riwayat" 
-        element={
-        <RiwayatSesi />
-        } 
-        />
-
-        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

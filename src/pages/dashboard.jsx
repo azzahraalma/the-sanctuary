@@ -441,6 +441,9 @@ async function seedPesan(email, firstName, bookings, konselorData) {
   }
 }
 
+// ─── Status yang dianggap "aktif" untuk tombol Mulai Sesi ─────────────────────
+const STATUS_AKTIF = ["berjalan", "terjadwal", "Berjalan", "Terjadwal", "aktif", "Aktif"];
+
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -453,7 +456,6 @@ export default function Dashboard() {
   const [isLoading, setIsLoading]       = useState(true);
   const [selectedPesan, setSelectedPesan] = useState(null);
 
-  // ── Baca user dari localStorage ──────────────────────────────────────────
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
     catch { return null; }
@@ -462,7 +464,7 @@ export default function Dashboard() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
-  // ── Step 1: Fetch student_id dari profil_pengguna (sama seperti statistik) ──
+  // ── Step 1: Fetch student_id dari profil_pengguna ──
   useEffect(() => {
     if (!userEmail) { setIsLoading(false); return; }
     (async () => {
@@ -475,7 +477,7 @@ export default function Dashboard() {
     })();
   }, [userEmail]);
 
-  // ── Step 2: Fetch semua data dashboard pakai mid ──────────────────────────
+  // ── Step 2: Fetch semua data dashboard pakai mid ──
   useEffect(() => {
     if (!mid) { setIsLoading(false); return; }
 
@@ -484,14 +486,14 @@ export default function Dashboard() {
 
       const [bookingRes, progressRes] = await Promise.all([
         supabase
-          .from("booking")                          // ← pakai tabel booking
+          .from("booking")
           .select("*")
-          .eq("id_mahasiswa", mid)                  // ← pakai M-XXX
+          .eq("id_mahasiswa", mid)
           .order("tanggal_sesi", { ascending: false }),
         supabase
           .from("progress_konseling")
           .select("*")
-          .eq("id_mahasiswa", mid)                  // ← pakai M-XXX
+          .eq("id_mahasiswa", mid)
           .order("sesi_konseling", { ascending: false }),
       ]);
 
@@ -504,7 +506,6 @@ export default function Dashboard() {
       setBookings(myBookings);
       setProgress(myProgress);
 
-      // Fetch konselor berdasarkan id_konselor dari booking
       const konselorIds = [...new Set(myBookings.map(b => b.id_konselor).filter(Boolean))];
       let konselorData = [];
 
@@ -517,7 +518,6 @@ export default function Dashboard() {
         setKonselor(konselorData);
       }
 
-      // Seed & fetch pesan — tetap pakai email sebagai id_penerima (identifier unik user)
       await seedPesan(userEmail, firstName, myBookings, konselorData);
 
       const { data: pesanData } = await supabase
@@ -639,11 +639,22 @@ export default function Dashboard() {
           </div>
           <div className="db-topbar-r">
             <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
-            <button className="db-icon-btn">
+            <button
+              className="db-icon-btn"
+              onClick={() => navigate("/notifikasi")}
+              style={{ position: "relative" }}
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
+              {unreadCount > 0 && (
+                <span style={{
+                  position: "absolute", top: 2, right: 2,
+                  width: 8, height: 8, borderRadius: "50%",
+                  background: "#2f7d79", border: "2px solid #fff",
+                }} />
+              )}
             </button>
             <div className="db-avatar" onClick={() => navigate("/dashboard")}>
               {(user?.nama ?? user?.name ?? "U").charAt(0).toUpperCase()}
@@ -733,6 +744,9 @@ export default function Dashboard() {
                   const tgl = bk
                     ? new Date(bk.tanggal_sesi).toLocaleDateString("id-ID", { weekday: "long" })
                     : "-";
+                  const today = new Date().toISOString().split("T")[0];
+                  const bisaMulai = bk && STATUS_AKTIF.includes(bk.status) && bk.tanggal_sesi <= today;
+
                   return (
                     <div
                       key={k.id}
@@ -745,11 +759,23 @@ export default function Dashboard() {
                         <p className="db-konsul-name">{k.nama}</p>
                         <p className="db-konsul-cat">{bk?.kategori_masalah ?? k.kategori_masalah}</p>
                       </div>
-                      <div className="db-konsul-tgl">
+                      <div className="db-konsul-tgl" style={{ alignItems: "flex-end", gap: 6 }}>
                         <span className="db-konsul-day">{tgl}</span>
                         <span className={`db-konsul-status ${bk?.status === "Selesai" ? "s-done" : "s-run"}`}>
                           {bk?.status ?? "-"}
                         </span>
+                        {/* ── Tombol Mulai Sesi ── */}
+                        {bisaMulai && (
+                          <button
+                            className="db-btn-mulai-sesi"
+                            onClick={e => {
+                              e.stopPropagation(); // jangan trigger navigate ke /riwayat
+                              navigate(`/sesi/${bk.id}`);
+                            }}
+                          >
+                            Mulai Sesi →
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

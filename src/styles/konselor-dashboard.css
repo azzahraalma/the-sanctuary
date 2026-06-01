@@ -116,7 +116,6 @@ body::before {
   padding: 0 32px; height: 58px;
   display: flex; align-items: center; justify-content: space-between;
   position: sticky; top: 0; z-index: 10;
-  backdrop-filter: blur(8px);
 }
 .kd-topbar-l { display: flex; align-items: center; gap: 40px; }
 .kd-topbar-logo {
@@ -130,6 +129,22 @@ body::before {
   font-size: 13px; font-weight: 500; color: var(--gray); cursor: pointer;
   position: relative; padding-bottom: 2px; transition: color .15s;
 }
+
+.kd-btn-mulai-sesi {
+  padding: 5px 12px;
+  background: linear-gradient(135deg, #79d8d1, #2f7d79);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.kd-btn-mulai-sesi:hover { opacity: 0.85; }
+.kd-cell-dash { color: #ccc; font-size: 14px; }
+
 .kd-topbar-nav span::after {
   content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
   height: 2px; background: var(--grad-teal); border-radius: 2px;
@@ -336,7 +351,7 @@ body::before {
   box-shadow: 0 2px 16px rgba(0,0,0,0.04);
 }
 .kd-table-head {
-  display: grid; grid-template-columns: 2fr 1.5fr 0.7fr 2fr 1fr;
+  display: grid; grid-template-columns: 2fr 1.5fr 0.5fr 1.5fr 0.8fr 0.8fr;
   padding: 14px 20px; gap: 16px;
   background: linear-gradient(135deg, rgba(47,125,121,0.07) 0%, rgba(121,216,209,0.05) 100%);
   border-bottom: 1px solid rgba(47,125,121,0.08);
@@ -344,7 +359,7 @@ body::before {
   letter-spacing: 0.04em; text-transform: uppercase;
 }
 .kd-table-row {
-  display: grid; grid-template-columns: 2fr 1.5fr 0.7fr 2fr 1fr;
+  display: grid; grid-template-columns: 2fr 1.5fr 0.5fr 1.5fr 0.8fr 0.8fr;
   padding: 14px 20px; gap: 16px; align-items: center;
   border-bottom: 1px solid rgba(47,125,121,0.05);
   transition: background .15s;
@@ -708,7 +723,7 @@ body::before {
   .kd-card--wide { grid-column: 1; }
   .kd-hero-right { display: none; }
   .kd-stats-row  { grid-template-columns: repeat(2, 1fr); }
-  .kd-table-head, .kd-table-row { grid-template-columns: 1fr 1fr 1fr; }
+  .kd-table-head, .kd-table-row { grid-template-columns: 2fr 1fr 1fr; }
   .kd-table-head span:nth-child(4),
   .kd-table-head span:nth-child(2),
   .kd-table-row .kd-table-cell:nth-child(4),
@@ -723,7 +738,6 @@ body::before {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
   z-index: 9999;
   display: flex;
   align-items: center;

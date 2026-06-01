@@ -17,7 +17,6 @@ function mapKonselor(k) {
   };
 }
 
-// ── Mini Donut ────────────────────────────────────────────────────
 function MiniDonut({ pct, color, label }) {
   const size = 72, stroke = 8;
   const r = (size - stroke) / 2;
@@ -48,7 +47,6 @@ function MiniDonut({ pct, color, label }) {
   );
 }
 
-// ── Mood Badge ────────────────────────────────────────────────────
 function MoodBadge({ mood }) {
   const map = {
     "Sangat Baik": { cls: "mood-sangat-baik", icon: "😊" },
@@ -62,7 +60,6 @@ function MoodBadge({ mood }) {
   );
 }
 
-// ── Konselor Avatar ───────────────────────────────────────────────
 function KonselorAvatar({ konselor }) {
   const [imgErr, setImgErr] = useState(false);
   if (!konselor) return null;
@@ -103,7 +100,6 @@ export default function RiwayatSesi() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
-  // ── Step 1: Fetch student_id dari profil_pengguna (sama seperti statistik) ──
   useEffect(() => {
     if (!userEmail) { setLoading(false); return; }
     (async () => {
@@ -116,7 +112,6 @@ export default function RiwayatSesi() {
     })();
   }, [userEmail]);
 
-  // ── Step 2: Fetch semua data riwayat pakai mid ────────────────────────────
   useEffect(() => {
     if (!mid) { setLoading(false); return; }
 
@@ -127,12 +122,12 @@ export default function RiwayatSesi() {
         supabase
           .from("progress_konseling")
           .select("*")
-          .eq("id_mahasiswa", mid)                // ← pakai M-XXX
+          .eq("id_mahasiswa", mid)
           .order("sesi_konseling", { ascending: true }),
         supabase
-          .from("booking")                        // ← tabel booking
+          .from("booking")
           .select("*")
-          .eq("id_mahasiswa", mid),               // ← pakai M-XXX
+          .eq("id_mahasiswa", mid),
       ]);
 
       const progress = (progRes.data ?? []).map(p => ({
@@ -163,7 +158,6 @@ export default function RiwayatSesi() {
       setMyProgress(progress);
       setMyBookings(bookings);
 
-      // Fetch data konselor
       const ids = [...new Set([
         ...progress.map(p => p.ID_Konselor),
         ...bookings.map(b => b.ID_Konselor),
@@ -188,7 +182,6 @@ export default function RiwayatSesi() {
     navigate("/login");
   };
 
-  // ── Loading ────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="sk-shell" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
@@ -205,7 +198,6 @@ export default function RiwayatSesi() {
     );
   }
 
-  // ── Summary stats ──────────────────────────────────────────────
   const totalSesi   = myProgress.length;
   const lastP       = myProgress[totalSesi - 1] ?? null;
   const firstP      = myProgress[0] ?? null;
@@ -283,7 +275,8 @@ export default function RiwayatSesi() {
           </div>
           <div className="sk-topbar-r">
             <button className="sk-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
-            <button className="sk-icon-btn">
+            {/* ── FIXED: navigate ke /notifikasi ── */}
+            <button className="sk-icon-btn" onClick={() => navigate("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -314,7 +307,6 @@ export default function RiwayatSesi() {
 
         <div className="sk-content">
 
-          {/* ── SUMMARY CARDS ── */}
           <div className="sk-stats-row">
             {[
               { icon:"💬", val:totalSesi,   lbl:"Total Sesi",    delta:`${totalSesi} sesi` },
@@ -333,7 +325,6 @@ export default function RiwayatSesi() {
             ))}
           </div>
 
-          {/* ── HEADER ── */}
           <div className="sk-section-hd">
             <div>
               <h2 className="sk-section-h2">Semua Riwayat Sesi</h2>
@@ -341,7 +332,6 @@ export default function RiwayatSesi() {
             </div>
           </div>
 
-          {/* ── Kalau mid tidak ditemukan ── */}
           {!mid ? (
             <div style={{ textAlign:"center", padding:"60px 20px", color:"#6b8f8c" }}>
               <p style={{ fontSize:15, fontWeight:600 }}>Data riwayat belum tersedia</p>
@@ -382,7 +372,6 @@ export default function RiwayatSesi() {
                     className={`rw-item ${isOpen ? "rw-item--open" : ""}`}
                     style={{ animationDelay: `${idx * 0.04}s` }}
                   >
-                    {/* ── Header row ── */}
                     <div className="rw-header" onClick={() => setExpanded(isOpen ? null : idx)}>
                       <div className="rw-badge">S{p.Sesi_Konseling}</div>
 
@@ -424,12 +413,10 @@ export default function RiwayatSesi() {
                       </div>
                     </div>
 
-                    {/* ── Expanded body ── */}
                     {isOpen && (
                       <div className="rw-body">
                         <div className="rw-body-grid">
 
-                          {/* Kolom kiri */}
                           <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
                             {konselor && (
                               <div className="rw-panel">
@@ -457,7 +444,6 @@ export default function RiwayatSesi() {
                             </div>
                           </div>
 
-                          {/* Kolom kanan */}
                           <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
                             <div className="rw-panel">
                               <div className="rw-panel-title">Skor Sesi Ini</div>
@@ -510,7 +496,6 @@ export default function RiwayatSesi() {
 
         </div>
 
-        {/* ── FOOTER ── */}
         <footer className="sk-footer">
           <div>
             <span className="sk-footer-brand">The Sanctuary</span>

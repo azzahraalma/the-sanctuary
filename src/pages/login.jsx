@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 import "../styles/auth.css";
 
 export default function Login() {
@@ -69,12 +69,9 @@ export default function Login() {
       return;
     }
 
-    // ── 4. Upsert profil_pengguna — pastikan baris selalu ada ───
-    //       Kalau profil belum punya student_id, generate sekarang
     let studentId = profil?.student_id ?? null;
 
     if (!studentId && role === "mahasiswa") {
-      // Generate student_id dari timestamp agar unik: M-XXXXXX
       const suffix = Date.now().toString().slice(-6);
       studentId = `M-${suffix}`;
     }
@@ -94,10 +91,8 @@ export default function Login() {
       .select()
       .maybeSingle();
 
-    // Pakai hasil upsert kalau ada (paling fresh)
     if (upserted?.student_id) studentId = upserted.student_id;
 
-    // ── 5. Simpan ke localStorage (termasuk student_id) ─────────
     localStorage.setItem("sanctuary_user", JSON.stringify({
       id:         authData.user.id,
       name:       nama,
@@ -105,7 +100,7 @@ export default function Login() {
       email:      emailLower,
       role,
       konselorId,
-      student_id: studentId,  // ← disimpan agar bisa dipakai langsung
+      student_id: studentId, 
     }));
 
     setLoading(false);

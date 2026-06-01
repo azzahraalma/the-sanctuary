@@ -3,9 +3,6 @@ import { useNavigate } from "react-router-dom";
 import data_konselor from "../data/data_konselor";
 import "../styles/kuesioner.css";
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// DATA SOAL — bahasa friendly khas mahasiswa
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const soalList = [
   {
     id: 1,

@@ -1,6 +1,6 @@
 // src/hooks/useAuth.js
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 
 export function useAuth() {
   const [user, setUser] = useState(() => {

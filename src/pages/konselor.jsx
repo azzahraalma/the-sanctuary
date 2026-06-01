@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import data_konselor from "../data/data_konselor";
+import { useKonselor } from "../hooks/useKonselor.js";
 import "../styles/konselor.css";
 
 // ── StarRating ────────────────────────────────────────────────────────────────
@@ -59,19 +59,35 @@ function KatBadge({ kat }) {
   );
 }
 
-// ── Unique kategori dari data ─────────────────────────────────────────────────
-const ALL_KATEGORI = [...new Set(data_konselor.map((k) => k.Kategori_Masalah))];
+// AVAILABILITY sekarang ada di k.availability (dari Supabase lewat useKonselor)
 
-// ── Ketersediaan dummy (key pakai string ID sesuai data: "K-001", dst) ────────
-const AVAILABILITY = {
-  "K-001": ["Hari ini", "Minggu ini"],
-  "K-002": ["Minggu ini", "Sesi Malam"],
-  "K-003": ["Hari ini"],
-  "K-004": ["Hari ini", "Sesi Malam"],
-};
+// ── Skeleton card ─────────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <article className="kon-card kon-card--skeleton">
+      <div className="kon-card-photo-wrap skel-box" style={{ height: 180 }} />
+      <div className="kon-card-info" style={{ gap: 8 }}>
+        <div className="skel-box" style={{ height: 16, width: "60%", borderRadius: 4 }} />
+        <div className="skel-box" style={{ height: 12, width: "85%", borderRadius: 4 }} />
+        <div className="skel-box" style={{ height: 12, width: "40%", borderRadius: 4 }} />
+        <div className="skel-box" style={{ height: 8, borderRadius: 4 }} />
+        <div className="skel-box" style={{ height: 32, borderRadius: 6, marginTop: 8 }} />
+      </div>
+    </article>
+  );
+}
 
 export default function Konselor() {
   const navigate = useNavigate();
+
+  // ── Data dari Supabase ──────────────────────────────────────────────────────
+  const { data: data_konselor, loading, error } = useKonselor();
+
+  // ── Unique kategori dari data live ─────────────────────────────────────────
+  const ALL_KATEGORI = useMemo(
+    () => [...new Set(data_konselor.map((k) => k.Kategori_Masalah))],
+    [data_konselor]
+  );
 
   // ── Filter state ────────────────────────────────────────────────────────────
   const [filterKat, setFilterKat] = useState([]);
@@ -79,7 +95,6 @@ export default function Konselor() {
   const [filterAvail, setFilterAvail] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
-  const [activeCard, setActiveCard] = useState(null);
 
   const toggleKat = (kat) =>
     setFilterKat((prev) =>
@@ -110,7 +125,7 @@ export default function Konselor() {
       }
 
       if (filterAvail.length) {
-        const avail = AVAILABILITY[k.ID] || [];
+        const avail = k.availability || [];
         if (!filterAvail.some((a) => avail.includes(a))) return false;
       }
 
@@ -125,7 +140,7 @@ export default function Konselor() {
 
       return true;
     });
-  }, [filterKat, filterLevel, filterAvail, searchQuery]);
+  }, [data_konselor, filterKat, filterLevel, filterAvail, searchQuery]);
 
   const displayed = showAll ? filtered : filtered.slice(0, 6);
 
@@ -167,7 +182,7 @@ export default function Konselor() {
             <button className="nav-cta" onClick={() => goTo("/kuesioner")}>
               Mulai Refleksi Diri
             </button>
-            <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/dashboard")}>
+            <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -211,16 +226,10 @@ export default function Konselor() {
             Panduan pilihan untuk perjalanan ketangguhanmu. Terhubung dengan konselor
             sebaya yang memahami kehidupan kampus dari dalam.
           </p>
-          {/* Search bar */}
           <div className="kon-searchbar">
             <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              width="16"
-              height="16"
-              className="kon-search-icon"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+              width="16" height="16" className="kon-search-icon"
             >
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
@@ -253,21 +262,29 @@ export default function Konselor() {
             <span>Saring Hasil</span>
           </div>
 
-          {/* Spesialisasi */}
+          {/* Spesialisasi — muncul setelah data load */}
           <div className="kon-filter-group">
             <p className="kon-filter-label">SPESIALISASI</p>
-            {ALL_KATEGORI.map((kat) => (
-              <label key={kat} className="kon-checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={filterKat.includes(kat)}
-                  onChange={() => toggleKat(kat)}
-                  className="kon-checkbox"
-                />
-                <span className="kon-checkbox-custom" />
-                <span className="kon-checkbox-text">{kat}</span>
-              </label>
-            ))}
+            {loading ? (
+              <>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="skel-box" style={{ height: 14, borderRadius: 4, marginBottom: 8 }} />
+                ))}
+              </>
+            ) : (
+              ALL_KATEGORI.map((kat) => (
+                <label key={kat} className="kon-checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={filterKat.includes(kat)}
+                    onChange={() => toggleKat(kat)}
+                    className="kon-checkbox"
+                  />
+                  <span className="kon-checkbox-custom" />
+                  <span className="kon-checkbox-text">{kat}</span>
+                </label>
+              ))
+            )}
           </div>
 
           {/* Pengalaman */}
@@ -283,15 +300,8 @@ export default function Konselor() {
                 <option>Junior</option>
                 <option>Senior</option>
               </select>
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                width="12"
-                height="12"
-                className="kon-select-arrow"
-              >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                width="12" height="12" className="kon-select-arrow">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </div>
@@ -313,150 +323,146 @@ export default function Konselor() {
             </div>
           </div>
 
-          <button className="kon-reset-btn" onClick={resetFilters}>
-            Reset Filters
-          </button>
+          <button className="kon-reset-btn" onClick={resetFilters}>Reset Filters</button>
         </aside>
 
         {/* ── GRID KONSELOR ── */}
         <div className="kon-grid-wrap">
 
+          {/* Error state */}
+          {error && (
+            <div className="kon-empty">
+              <div className="kon-empty-icon">⚠️</div>
+              <h3 className="kon-empty-h">Gagal memuat data konselor</h3>
+              <p className="kon-empty-p">{error}</p>
+            </div>
+          )}
+
           {/* Result count */}
-          <div className="kon-result-info">
-            <span className="kon-result-count">
-              Menampilkan <strong>{displayed.length}</strong> dari{" "}
-              <strong>{filtered.length}</strong> konselor
-            </span>
-            {(filterKat.length > 0 || filterAvail.length > 0 || searchQuery) && (
-              <button className="kon-clear-all" onClick={resetFilters}>
-                Hapus semua filter ✕
-              </button>
-            )}
-          </div>
+          {!loading && !error && (
+            <div className="kon-result-info">
+              <span className="kon-result-count">
+                Menampilkan <strong>{displayed.length}</strong> dari{" "}
+                <strong>{filtered.length}</strong> konselor
+              </span>
+              {(filterKat.length > 0 || filterAvail.length > 0 || searchQuery) && (
+                <button className="kon-clear-all" onClick={resetFilters}>
+                  Hapus semua filter ✕
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Empty state */}
-          {filtered.length === 0 && (
+          {!loading && !error && filtered.length === 0 && (
             <div className="kon-empty">
               <div className="kon-empty-icon">🔍</div>
               <h3 className="kon-empty-h">Tidak ada konselor yang cocok</h3>
               <p className="kon-empty-p">Coba ubah atau hapus filter yang aktif.</p>
-              <button
-                className="kon-reset-btn"
-                style={{ margin: "0 auto" }}
-                onClick={resetFilters}
-              >
+              <button className="kon-reset-btn" style={{ margin: "0 auto" }} onClick={resetFilters}>
                 Reset Semua Filter
               </button>
             </div>
           )}
 
-          {/* Cards */}
+          {/* Cards — skeleton saat loading, real cards setelah load */}
           <div className="kon-grid">
-            {displayed.map((k, i) => {
-              const avail = AVAILABILITY[k.ID] || [];
-              return (
-                <article
-                  key={k.ID}
-                  className="kon-card"
-                  style={{ animationDelay: `${i * 0.06}s` }}
-                  onMouseEnter={() => setActiveCard(k.ID)}
-                  onMouseLeave={() => setActiveCard(null)}
-                >
-                  {/* Foto */}
-                  <div className="kon-card-photo-wrap">
-                    <img src={k.image} alt={k.Nama} className="kon-card-photo" />
-                    <div className="kon-card-photo-overlay">
-                      {/* ✅ Navigate ke halaman detail konselor */}
-                      <button
-                        className="kon-card-book-btn"
-                        onClick={() => goTo(`/konselor/${k.ID}`)}
-                      >
-                        Buat Janji
-                      </button>
-                    </div>
-                    {/* Rating badge */}
-                    <div className="kon-card-rating-badge">
-                      <span className="kon-card-rating-star">★</span>
-                      <span>{k["Rating_(Final)"].toFixed(1)}</span>
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="kon-card-info">
-                    <div className="kon-card-top">
-                      <h3 className="kon-card-name">{k.Nama}</h3>
-                      <KatBadge kat={k.Kategori_Masalah} />
-                    </div>
-                    <p className="kon-card-kat">{k.Kategori_Masalah}</p>
-
-                    <StarRating rating={k["Rating_(Final)"]} />
-
-                    <div className="kon-card-meta">
-                      <span className="kon-card-exp">⏱ {k.Pengalaman}</span>
-                      <span className="kon-card-cases">
-                        {k.Kasus_Selesai}/{k.Jumlah_Kasus} kasus
-                      </span>
-                    </div>
-
-                    {/* Success rate bar */}
-                    <div className="kon-card-bar-wrap">
-                      <div className="kon-card-bar-track">
-                        <div
-                          className="kon-card-bar-fill"
-                          style={{
-                            width: `${Math.round(k["Success_Rate"] * 100)}%`,
-                            background:
-                              k["Success_Rate"] >= 0.6
-                                ? "#2f7d79"
-                                : k["Success_Rate"] >= 0.3
-                                  ? "#79d8d1"
-                                  : "#e8c4a0",
-                          }}
-                        />
-                      </div>
-                      <span className="kon-card-sr">
-                        {Math.round(k["Success_Rate"] * 100)}% success
-                      </span>
-                    </div>
-
-                    {/* Availability tags */}
-                    {avail.length > 0 && (
-                      <div className="kon-card-avail">
-                        {avail.map((a) => (
-                          <span key={a} className="kon-avail-tag">{a}</span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* ✅ Navigate ke halaman detail konselor */}
-                    <button
-                      className="kon-card-cta"
-                      onClick={() => goTo(`/konselor/${k.ID}`)}
+            {loading
+              ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
+              : displayed.map((k, i) => {
+                  const avail = k.availability || [];
+                  return (
+                    <article
+                      key={k.ID}
+                      className="kon-card"
+                      style={{ animationDelay: `${i * 0.06}s` }}
                     >
-                      View Profile →
-                    </button>
-                  </div>
-                </article>
-              );
-            })}
+                      <div className="kon-card-photo-wrap">
+                        <img
+                          src={k.image}
+                          alt={k.Nama}
+                          className="kon-card-photo"
+                          onError={(e) => { e.target.src = "/placeholder-avatar.png"; }}
+                        />
+                        <div className="kon-card-photo-overlay">
+                          <button
+                            className="kon-card-book-btn"
+                            onClick={() => goTo(`/konselor/${k.ID}`)}
+                          >
+                            Buat Janji
+                          </button>
+                        </div>
+                        <div className="kon-card-rating-badge">
+                          <span className="kon-card-rating-star">★</span>
+                          <span>{k["Rating_(Final)"].toFixed(1)}</span>
+                        </div>
+                      </div>
+
+                      <div className="kon-card-info">
+                        <div className="kon-card-top">
+                          <h3 className="kon-card-name">{k.Nama}</h3>
+                          <KatBadge kat={k.Kategori_Masalah} />
+                        </div>
+                        <p className="kon-card-kat">{k.Kategori_Masalah}</p>
+
+                        <StarRating rating={k["Rating_(Final)"]} />
+
+                        <div className="kon-card-meta">
+                          <span className="kon-card-exp">⏱ {k.Pengalaman}</span>
+                          <span className="kon-card-cases">
+                            {k.Kasus_Selesai}/{k.Jumlah_Kasus} kasus
+                          </span>
+                        </div>
+
+                        <div className="kon-card-bar-wrap">
+                          <div className="kon-card-bar-track">
+                            <div
+                              className="kon-card-bar-fill"
+                              style={{
+                                width: `${Math.round(k.Success_Rate * 100)}%`,
+                                background:
+                                  k.Success_Rate >= 0.6
+                                    ? "#2f7d79"
+                                    : k.Success_Rate >= 0.3
+                                    ? "#79d8d1"
+                                    : "#e8c4a0",
+                              }}
+                            />
+                          </div>
+                          <span className="kon-card-sr">
+                            {Math.round(k.Success_Rate * 100)}% success
+                          </span>
+                        </div>
+
+                        {avail.length > 0 && (
+                          <div className="kon-card-avail">
+                            {avail.map((a) => (
+                              <span key={a} className="kon-avail-tag">{a}</span>
+                            ))}
+                          </div>
+                        )}
+
+                        <button
+                          className="kon-card-cta"
+                          onClick={() => goTo(`/konselor/${k.ID}`)}
+                        >
+                          View Profile →
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
           </div>
 
           {/* Load more */}
-          {!showAll && filtered.length > 6 && (
+          {!loading && !showAll && filtered.length > 6 && (
             <div className="kon-loadmore-wrap">
               <p className="kon-loadmore-info">
                 Menampilkan {displayed.length} dari {filtered.length} konselor di ruang Anda.
               </p>
               <button className="kon-loadmore-btn" onClick={() => setShowAll(true)}>
                 Tampilkan lebih banyak konselor
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  width="14"
-                  height="14"
-                >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>

@@ -5,7 +5,7 @@
 ───────────────────────────────────────────────────────────────── */
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 
 const VAPID_PUBLIC_KEY = "BN-PviJ5JII1B_2G4pr5Zgye_joel1AoNJObBxVRpxj1ZnZfEjzxAg_xSJiqlgnZP-ZedXESATvOsfPQBp06yNw";
 

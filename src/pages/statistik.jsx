@@ -106,7 +106,6 @@ export default function Statistik() {
   const [myKonselor, setMyKonselor] = useState([]);
   const [finalReko, setFinalReko]   = useState([]);
   const [loading, setLoading]       = useState(true);
-  // ✅ mid sekarang di-fetch dari profil_pengguna, bukan hardcode
   const [mid, setMid]               = useState(null);
 
   const user = useMemo(() => {
@@ -117,7 +116,6 @@ export default function Statistik() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
-  // ✅ Fetch student_id dari profil_pengguna
   useEffect(() => {
     if (!userEmail) { setLoading(false); return; }
     (async () => {
@@ -136,7 +134,6 @@ export default function Statistik() {
     async function fetchAll() {
       setLoading(true);
 
-      // ✅ Semua query pakai mid (M-XXX), konsisten
       const [progRes, bookRes, targetRes] = await Promise.all([
         supabase.from("progress_konseling").select("*").eq("id_mahasiswa", mid).order("sesi_konseling", { ascending: true }),
         supabase.from("booking").select("*").eq("id_mahasiswa", mid),
@@ -173,11 +170,11 @@ export default function Statistik() {
       }));
 
       const targets = (targetRes.data ?? []).map((t) => ({
-        ID_Mahasiswa: t.id_mahasiswa,
-        Nama_Target:  t.nama_target,
-        Target_Sesi:  t.target_sesi,
+        ID_Mahasiswa:  t.id_mahasiswa,
+        Nama_Target:   t.nama_target,
+        Target_Sesi:   t.target_sesi,
         Sesi_Terlalui: t.sesi_terlalui,
-        Status:       t.status,
+        Status:        t.status,
       }));
 
       setMyProgress(progress);
@@ -340,7 +337,8 @@ export default function Statistik() {
           </div>
           <div className="sk-topbar-r">
             <button className="sk-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
-            <button className="sk-icon-btn">
+            {/* ── FIXED: navigate ke /notifikasi ── */}
+            <button className="sk-icon-btn" onClick={() => navigate("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -369,7 +367,6 @@ export default function Statistik() {
 
         <div className="sk-content">
 
-          {/* ── Stats ── */}
           <div className="sk-stats-row">
             {[
               { icon: "💬", val: totalSesi,            lbl: "Total Sesi Cerita",  delta: `+${totalSesi}` },
@@ -480,7 +477,6 @@ export default function Statistik() {
                 </div>
               </div>
 
-              {/* ── Riwayat ── */}
               <div className="sk-section-hd">
                 <div>
                   <h2 className="sk-section-h2">Riwayat Sesi Cerita Kamu</h2>
@@ -524,7 +520,6 @@ export default function Statistik() {
                 })}
               </div>
 
-              {/* ── Rekomendasi ── */}
               <div className="sk-section-hd">
                 <div>
                   <h2 className="sk-section-h2">Teman Konselor yang Mungkin Cocok</h2>

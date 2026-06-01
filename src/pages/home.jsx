@@ -1,45 +1,31 @@
 import "../styles/home.css";
-import data_konselor from "../data/data_konselor";
-import data_booking from "../data/data_booking";
-import analisis_konselor from "../data/analisis_konselor";
+import analisis_konselor from "../data/analisis_konselor.js";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 
-// ── Hitung statistik realtime dari data dummy ────────────────────────────────
-const bookingBersih = data_booking.filter((b) => b.ID_Booking !== null);
-const totalKasus    = bookingBersih.length;
-const kasusSelesai  = bookingBersih.filter((b) => b.Status === "Selesai").length;
-const successRate   = Math.round((kasusSelesai / totalKasus) * 100);
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
-const kategoriCount = bookingBersih.reduce((acc, b) => {
-  acc[b.Kategori_Masalah] = (acc[b.Kategori_Masalah] || 0) + 1;
-  return acc;
-}, {});
-
-const rataRating = (
-  data_konselor.reduce((s, k) => s + k["Rating_(Final)"], 0) / data_konselor.length
-).toFixed(1);
-
+// ── Probabilitas Sukses Tim tetap dari dummy sampai tabel Supabase siap ──────
 const probSukses = analisis_konselor.find(
   (a) => a.Metrik_Tim === "Probabilitas Sukses Tim"
 )?.Rumus_Excel ?? 0;
 
 // ── Helper: cek session & arahkan ke tujuan atau login ───────────────────────
-// destination: path tujuan kalau sudah login (mis. "/konselor", "/dashboard")
 function useAuthNav() {
   const navigate = useNavigate();
-
   const goTo = (destination) => {
     const user = localStorage.getItem("sanctuary_user");
     if (user) {
       navigate(destination);
     } else {
-      // Simpan tujuan asal agar setelah login bisa redirect ke sana
       sessionStorage.setItem("redirect_after_login", destination);
       navigate("/login");
     }
   };
-
   return goTo;
 }
 
@@ -157,7 +143,66 @@ export default function Home() {
   const goTo     = useAuthNav();
   const statsRef = useRef(null);
 
-  // Ambil info user dari session (untuk tampilan navbar)
+  // ── State data dari Supabase ──────────────────────────────────────────────
+  const [konselor, setKonselor]       = useState([]);
+  const [totalKasus, setTotalKasus]   = useState(0);
+  const [kasusSelesai, setKasusSelesai] = useState(0);
+  const [successRate, setSuccessRate] = useState(0);
+  const [rataRating, setRataRating]   = useState(0);
+  const [kategoriCount, setKategoriCount] = useState({});
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  // ── Ambil data dari Supabase ──────────────────────────────────────────────
+  useEffect(() => {
+    async function fetchAll() {
+      // Booking & konselor fetch paralel
+      const [bookingRes, konselorRes] = await Promise.all([
+        supabase.from("booking").select("id, status, kategori_masalah"),
+        supabase.from("data_konselor").select("id, nama, kategori_masalah, rating_final, success_rate, jumlah_kasus, kasus_selesai, pengalaman, image_url, foto_url").order("rating_final", { ascending: false }),
+      ]);
+
+      // ── Booking stats ──
+      const bookings = (bookingRes.data ?? []).filter(b => b.id !== null);
+      const total    = bookings.length;
+      const selesai  = bookings.filter(b => b.status === "Selesai").length;
+      const rate     = total > 0 ? Math.round((selesai / total) * 100) : 0;
+
+      const katCount = bookings.reduce((acc, b) => {
+        if (b.kategori_masalah) acc[b.kategori_masalah] = (acc[b.kategori_masalah] || 0) + 1;
+        return acc;
+      }, {});
+
+      setTotalKasus(total);
+      setKasusSelesai(selesai);
+      setSuccessRate(rate);
+      setKategoriCount(katCount);
+
+      // ── Konselor stats ──
+      const konselorData = konselorRes.data ?? [];
+      const rataR = konselorData.length > 0
+        ? konselorData.reduce((s, k) => s + (Number(k.rating_final) || 0), 0) / konselorData.length
+        : 0;
+
+      setRataRating(rataR);
+      setKonselor(konselorData.slice(0, 4).map(k => ({
+        ID:            k.id,
+        Nama:          k.nama,
+        Kategori_Masalah: k.kategori_masalah,
+        "Rating_(Final)": Number(k.rating_final) || 0,
+        Success_Rate:  Number(k.success_rate) || 0,
+        Jumlah_Kasus:  k.jumlah_kasus,
+        Kasus_Selesai: k.kasus_selesai,
+        Pengalaman:    k.pengalaman,
+        image:         k.image_url || k.foto_url || "",
+      })));
+
+      setLoadingStats(false);
+    }
+
+    fetchAll();
+  }, []);
+
+  // ── User session ──────────────────────────────────────────────────────────
   const user = (() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
     catch { return null; }
@@ -183,9 +228,7 @@ export default function Home() {
             <span className="nav-logo">The Sanctuary</span>
             <ul className="nav-menu">
               <li className="nav-item is-active">Beranda</li>
-              {/* Konselor → butuh login → /konselor */}
               <li className="nav-item" onClick={() => goTo("/konselor")}>Konselor</li>
-              {/* Dashboard → butuh login → /dashboard */}
               <li className="nav-item" onClick={() => goTo("/dashboard")}>Dashboard</li>
             </ul>
           </div>
@@ -193,16 +236,12 @@ export default function Home() {
             <button className="nav-cta" onClick={() => goTo("/konselor")}>
               Temukan Konselor
             </button>
-
-            {/* Notif → butuh login → /dashboard */}
-            <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/dashboard")}>
+            <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
             </button>
-
-            {/* Avatar: kalau sudah login tampil nama + tombol logout, kalau belum ke /login */}
             {user ? (
               <div className="nav-user-wrap">
                 <div
@@ -213,7 +252,7 @@ export default function Home() {
                   title={user.name}
                 >
                   <span className="nav-avatar-initial">
-                    {user.name?.charAt(0).toUpperCase()}
+                    {(user.nama ?? user.name ?? "U").charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <button className="nav-logout-btn" onClick={handleLogout} title="Keluar">
@@ -253,7 +292,6 @@ export default function Home() {
             teman sebaya di kampus yang siap mendengarkan dan bantu kamu cari jalan keluar bareng-bareng.
           </p>
           <div className="hero-btns">
-            {/* Mulai Perjalanan → kalau login → /dashboard, kalau belum → /login */}
             <button className="btn-primary" onClick={() => goTo("/konselor")}>
               Mulai Perjalananmu
             </button>
@@ -282,28 +320,30 @@ export default function Home() {
       <section className="stats" ref={statsRef}>
         <h2 className="stats-h2">Ruang Aman Buat Kamu</h2>
         <p className="stats-sub">
-        Platform ini dibuat untuk jadi tempat cerita antar teman sebaya di kampus Polimedia 
-        dengan hangat, nyaman, dan tanpa rasa di-judge.
+          Platform ini dibuat untuk jadi tempat cerita antar teman sebaya di kampus Polimedia 
+          dengan hangat, nyaman, dan tanpa rasa di-judge.
         </p>
 
-        {/* Stat cards utama */}
         <div className="stats-row">
           <div className="stat-card">
             <span className="stat-big">
-              <AnimatedCounter target={kasusSelesai} />
+              {!loadingStats && <AnimatedCounter target={kasusSelesai} />}
+              {loadingStats && <span>—</span>}
             </span>
             <span className="stat-micro">dari {totalKasus} total sesi</span>
             <span className="stat-label">Kasus Diselesaikan</span>
           </div>
           <div className="stat-card">
             <span className="stat-big">
-              <AnimatedCounter target={successRate} suffix="%" />
+              {!loadingStats && <AnimatedCounter target={successRate} suffix="%" />}
+              {loadingStats && <span>—</span>}
             </span>
             <span className="stat-label">Success Rate</span>
           </div>
           <div className="stat-card">
             <span className="stat-big">
-              <AnimatedCounter target={parseFloat(rataRating)} decimals={1} suffix="/5" />
+              {!loadingStats && <AnimatedCounter target={rataRating} decimals={1} suffix="/5" />}
+              {loadingStats && <span>—</span>}
             </span>
             <span className="stat-label">Rata-rata Rating Konselor</span>
           </div>
@@ -315,27 +355,30 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Sub-stats detail */}
         <div className="stats-detail-row">
 
           {/* Distribusi kategori */}
           <div className="stats-detail-card">
             <h4 className="sdc-title">Distribusi Kasus per Kategori</h4>
             <div className="kategori-bars">
-              {Object.entries(kategoriCount)
-                .sort((a, b) => b[1] - a[1])
-                .map(([kat, jumlah]) => (
-                  <div key={kat} className="kat-row">
-                    <span className="kat-label">{kat}</span>
-                    <div className="kat-track">
-                      <div
-                        className="kat-fill"
-                        style={{ width: `${(jumlah / totalKasus) * 100}%` }}
-                      />
+              {loadingStats ? (
+                <p style={{ color: "#aaa", fontSize: 13 }}>Memuat data... 🌱</p>
+              ) : (
+                Object.entries(kategoriCount)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([kat, jumlah]) => (
+                    <div key={kat} className="kat-row">
+                      <span className="kat-label">{kat}</span>
+                      <div className="kat-track">
+                        <div
+                          className="kat-fill"
+                          style={{ width: `${(jumlah / totalKasus) * 100}%` }}
+                        />
+                      </div>
+                      <span className="kat-count">{jumlah}</span>
                     </div>
-                    <span className="kat-count">{jumlah}</span>
-                  </div>
-                ))}
+                  ))
+              )}
             </div>
           </div>
 
@@ -348,12 +391,12 @@ export default function Home() {
                 <circle
                   cx="100" cy="100" r="80" fill="none"
                   stroke="#2f7d79" strokeWidth="22"
-                  strokeDasharray={`${(kasusSelesai / totalKasus) * 502} 502`}
+                  strokeDasharray={`${totalKasus > 0 ? (kasusSelesai / totalKasus) * 502 : 0} 502`}
                   strokeDashoffset="125"
                   strokeLinecap="round"
                 />
                 <text x="100" y="95" textAnchor="middle" fontSize="26" fontWeight="bold" fill="#2f7d79">
-                  {successRate}%
+                  {loadingStats ? "—" : `${successRate}%`}
                 </text>
                 <text x="100" y="120" textAnchor="middle" fontSize="12" fill="#888">
                   selesai
@@ -422,10 +465,10 @@ export default function Home() {
             konselor sebaya untuk saling berbagi pengalaman dan dukungan dalam lingkungan yang positif.
           </p>
           <div className="feat-avatars">
-            {[1, 2, 3, 4].map((i) => (
-              <img key={i} src={`/mentor${i}.jpg`} alt="" className="feat-av" />
+            {konselor.slice(0, 4).map((k, i) => (
+              <img key={k.ID ?? i} src={k.image} alt={k.Nama} className="feat-av" />
             ))}
-            <span className="feat-av-extra">+{totalKasus - 4}</span>
+            <span className="feat-av-extra">+{Math.max(0, totalKasus - 4)}</span>
           </div>
         </div>
       </section>
@@ -454,9 +497,9 @@ export default function Home() {
             Setiap Langkah Dirancang untuk Membantu Anda
           </h2>
           <p className="journey-p">
-           Kami menyederhanakan proses agar mahasiswa dapat dengan mudah mengakses dukungan 
-           tanpa proses yang rumit, sehingga percakapan dapat dimulai dengan lebih nyaman 
-           dan langsung.
+            Kami menyederhanakan proses agar mahasiswa dapat dengan mudah mengakses dukungan 
+            tanpa proses yang rumit, sehingga percakapan dapat dimulai dengan lebih nyaman 
+            dan langsung.
           </p>
           <div className="journey-img-box">
             <img src="/journey.jpg" alt="" className="journey-img" />
@@ -478,43 +521,46 @@ export default function Home() {
         </div>
 
         <div className="mentors-grid">
-          {data_konselor.slice(0, 4).map((m) => (
-            <article className="mcard" key={m.ID}>
-              <div className="mcard-photo-wrap">
-                <img src={m.image} alt={m.Nama} className="mcard-photo" />
-                <div className="mcard-hover-layer">
-                  {/* Buat Janji → butuh login → /konselor */}
-                  <button className="mcard-book" onClick={() => goTo("/konselor")}>
-                    Buat Janji
-                  </button>
+          {loadingStats ? (
+            <p style={{ color: "#aaa", fontSize: 14, gridColumn: "1/-1" }}>Memuat konselor... 🌱</p>
+          ) : (
+            konselor.map((m) => (
+              <article className="mcard" key={m.ID}>
+                <div className="mcard-photo-wrap">
+                  <img src={m.image} alt={m.Nama} className="mcard-photo" />
+                  <div className="mcard-hover-layer">
+                    <button className="mcard-book" onClick={() => goTo("/konselor")}>
+                      Buat Janji
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div className="mcard-info">
-                <h3 className="mcard-name">{m.Nama}</h3>
-                <span className="mcard-cat">{m.Kategori_Masalah}</span>
-                <StarRating rating={m["Rating_(Final)"]} />
-                <div className="mcard-meta">
-                  <span className="mcard-exp">• {m.Pengalaman} pengalaman</span>
-                  <span className="mcard-cases">{m.Kasus_Selesai}/{m.Jumlah_Kasus} kasus</span>
+                <div className="mcard-info">
+                  <h3 className="mcard-name">{m.Nama}</h3>
+                  <span className="mcard-cat">{m.Kategori_Masalah}</span>
+                  <StarRating rating={m["Rating_(Final)"]} />
+                  <div className="mcard-meta">
+                    <span className="mcard-exp">• {m.Pengalaman} pengalaman</span>
+                    <span className="mcard-cases">{m.Kasus_Selesai}/{m.Jumlah_Kasus} kasus</span>
+                  </div>
+                  <div className="mcard-rate-bar">
+                    <div
+                      className="mcard-rate-fill"
+                      style={{
+                        width: `${Math.round(m.Success_Rate * 100)}%`,
+                        background:
+                          m.Success_Rate >= 0.6 ? "#2f7d79"
+                          : m.Success_Rate >= 0.3 ? "#79d8d1"
+                          : "#e8c4a0",
+                      }}
+                    />
+                  </div>
+                  <span className="mcard-sr">
+                    Success rate: {Math.round(m.Success_Rate * 100)}%
+                  </span>
                 </div>
-                <div className="mcard-rate-bar">
-                  <div
-                    className="mcard-rate-fill"
-                    style={{
-                      width: `${Math.round(m["Success_Rate"] * 100)}%`,
-                      background:
-                        m["Success_Rate"] >= 0.6 ? "#2f7d79"
-                        : m["Success_Rate"] >= 0.3 ? "#79d8d1"
-                        : "#e8c4a0",
-                    }}
-                  />
-                </div>
-                <span className="mcard-sr">
-                  Success rate: {Math.round(m["Success_Rate"] * 100)}%
-                </span>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))
+          )}
         </div>
       </section>
 
@@ -527,11 +573,9 @@ export default function Home() {
             yang siap mendengarkan dan membantu Anda.
           </p>
           <div className="cta-btns">
-            {/* Buat Akun → kalau belum login ke /register, kalau udah ke /dashboard */}
             <button className="cta-btn-solid" onClick={() => user ? navigate("/dashboard") : navigate("/register")}>
               {user ? "Buka Dashboard" : "Buat Akun Gratis"}
             </button>
-            {/* Hubungi Konselor → butuh login → /konselor */}
             <button className="cta-btn-ghost" onClick={() => goTo("/konselor")}>
               Hubungi Konselor
             </button>

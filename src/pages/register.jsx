@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 import "../styles/auth.css";
 
 export default function Register() {
@@ -28,11 +28,10 @@ export default function Register() {
 
     const emailLower = email.toLowerCase();
 
-    // ── 1. Generate student_id unik: M-XXXXXX ──────────────────
     const suffix    = Date.now().toString().slice(-6);
     const studentId = `M-${suffix}`;
 
-    // ── 2. Daftar via Supabase Auth ─────────────────────────────
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -56,7 +55,6 @@ export default function Register() {
       return;
     }
 
-    // ── 3. Upsert ke profil_pengguna dengan student_id ──────────
     await supabase
       .from("profil_pengguna")
       .upsert(
@@ -64,13 +62,12 @@ export default function Register() {
           email:      emailLower,
           nama:       name,
           role:       "mahasiswa",
-          student_id: studentId,   // ← kunci utama untuk semua query data
+          student_id: studentId,  
           updated_at: new Date().toISOString(),
         },
         { onConflict: "email" }
       );
 
-    // ── 4. Simpan ke localStorage (termasuk student_id) ─────────
     localStorage.setItem("sanctuary_user", JSON.stringify({
       id:         authData.user.id,
       name,
@@ -78,7 +75,7 @@ export default function Register() {
       email:      emailLower,
       role:       "mahasiswa",
       konselorId: null,
-      student_id: studentId,  // ← disimpan agar dashboard langsung bisa pakai
+      student_id: studentId,
     }));
 
     setLoading(false);

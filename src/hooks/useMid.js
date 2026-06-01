@@ -3,7 +3,7 @@
 // Dipakai di Dashboard, Statistik, dan Riwayat agar konsisten.
 
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 
 export function useMid(userEmail) {
   const [mid, setMid]       = useState(null);

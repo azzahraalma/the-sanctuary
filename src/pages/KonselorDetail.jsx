@@ -1,10 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import data_konselor from "../data/data_konselor";
+import { useState, useEffect } from "react";
+import { supabase } from "../supabaseClient.js";
 import "../styles/konselor-detail.css";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
 function StarRating({ rating, size = 14 }) {
   return (
     <div className="kd-stars">
@@ -12,13 +11,8 @@ function StarRating({ rating, size = 14 }) {
         const full = n <= Math.floor(rating);
         const half = !full && n === Math.ceil(rating) && rating % 1 >= 0.25;
         return (
-          <svg
-            key={n}
-            className={`kd-star ${full ? "s-full" : half ? "s-half" : "s-empty"}`}
-            viewBox="0 0 24 24"
-            width={size}
-            height={size}
-          >
+          <svg key={n} className={`kd-star ${full ? "s-full" : half ? "s-half" : "s-empty"}`}
+            viewBox="0 0 24 24" width={size} height={size}>
             <defs>
               {half && (
                 <linearGradient id={`dh-${n}`} x1="0" x2="1" y1="0" y2="0">
@@ -30,8 +24,7 @@ function StarRating({ rating, size = 14 }) {
             <polygon
               points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
               fill={full ? "currentColor" : half ? `url(#dh-${n})` : "none"}
-              stroke="currentColor"
-              strokeWidth="1.5"
+              stroke="currentColor" strokeWidth="1.5"
             />
           </svg>
         );
@@ -40,8 +33,7 @@ function StarRating({ rating, size = 14 }) {
   );
 }
 
-// ── Data pendukung per konselor (generated dari data dummy) ───────────────────
-
+// ── Static maps (tidak perlu dari DB) ────────────────────────────────────────
 const SPESIALISASI_MAP = {
   "Tekanan Akademik & Kesejahteraan Mahasiswa": [
     { icon: "📚", judul: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan." },
@@ -67,7 +59,7 @@ const SPESIALISASI_MAP = {
 
 const TESTIMONI_MAP = {
   "K-001": [
-    { nama: "Rizki Pratama", peran: "Mahasiswa Semester 6", rating: 5, teks: "Almalia sangat sabar dan penuh empati. Beliau membantu saya menemukan cara belajar yang lebih efektif saat menghadapi tekanan skripsi. Sangat recommended!" },
+    { nama: "Rizki Pratama", peran: "Mahasiswa Semester 6", rating: 5, teks: "Almalia sangat sabar dan penuh empati. Beliau membantu saya menemukan cara belajar yang lebih efektif saat menghadapi tekanan skripsi." },
     { nama: "Sari Dewi", peran: "Mahasiswa Semester 4", rating: 5, teks: "Sesi bersama Almalia benar-benar mengubah cara pandang saya terhadap stres akademik. Sekarang saya lebih tenang menghadapi ujian." },
   ],
   "K-002": [
@@ -84,19 +76,11 @@ const TESTIMONI_MAP = {
   ],
 };
 
-const BIO_MAP = {
-  "K-001": "Almalia adalah konselor sebaya yang berfokus pada pendampingan mahasiswa dalam menghadapi tekanan akademik dan menjaga kesejahteraan mental selama perkuliahan. Dengan pengalaman 2 tahun, ia telah mendampingi puluhan mahasiswa menemukan strategi belajar yang lebih sehat dan efektif.\n\nMelalui pendekatan yang hangat dan empatik, Almalia percaya bahwa setiap mahasiswa memiliki potensi untuk bangkit dari tekanan akademik dan meraih keseimbangan antara prestasi dan kebahagiaan.",
-  "K-002": "Felicia adalah konselor sebaya yang bersemangat dalam membantu mahasiswa merencanakan masa depan karier mereka. Dengan latar belakang yang kuat di bidang pengembangan diri dan kehidupan kampus, ia membantu mahasiswa menemukan arah yang jelas setelah lulus.\n\nFelicia percaya bahwa setiap mahasiswa berhak mendapatkan bimbingan karier yang personal dan relevan dengan kondisi dunia kerja saat ini.",
-  "K-003": "Muhammad Haris adalah konselor sebaya dengan dedikasi tinggi dalam membantu mahasiswa mengelola emosi dan membangun kebiasaan positif. Dengan rating sempurna dari semua dimensi penilaian, Haris dikenal sebagai pendengar yang luar biasa dan memberikan solusi yang tepat sasaran.\n\nHaris percaya bahwa kemampuan mengelola emosi adalah fondasi dari semua pencapaian dalam hidup, dan ia berkomitmen membantu setiap mahasiswa membangunnya.",
-  "K-004": "Haikal adalah konselor sebaya yang fokus pada isu kelelahan akademik yang semakin banyak dialami mahasiswa masa kini. Meski masih relatif baru, semangat dan dedikasinya dalam membantu teman sebaya mengatasi burnout sangat tinggi.\n\nHaikal percaya bahwa istirahat dan pemulihan adalah bagian penting dari perjalanan akademik, bukan tanda kelemahan.",
-};
-
-const JADWAL_SLOTS = ["08:30 AM", "09:15 AM", "11:00 AM", "11:30 AM", "01:00 PM", "02:30 PM", "04:00 PM"];
-
-const HARI = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+const HARI  = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 function getCalendarDays(year, month) {
-  const firstDay = new Date(year, month, 1).getDay();
+  const firstDay    = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = [];
   for (let i = 0; i < firstDay; i++) days.push(null);
@@ -104,46 +88,214 @@ function getCalendarDays(year, month) {
   return days;
 }
 
-const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+// Format "HH:MM:SS" → "09:00 AM/PM"
+function formatJam(timeStr) {
+  const [h, m] = timeStr.split(":").map(Number);
+  const suffix = h >= 12 ? "PM" : "AM";
+  const hour   = h % 12 || 12;
+  return `${String(hour).padStart(2, "0")}:${String(m).padStart(2, "0")} ${suffix}`;
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+function SkeletonDetail() {
+  return (
+    <div className="kd-layout" style={{ padding: "2rem" }}>
+      <div className="kd-left">
+        <div className="skel-box" style={{ height: 220, borderRadius: 16, marginBottom: 24 }} />
+        <div className="skel-box" style={{ height: 160, borderRadius: 16, marginBottom: 24 }} />
+        <div className="skel-box" style={{ height: 200, borderRadius: 16 }} />
+      </div>
+      <aside className="kd-right">
+        <div className="skel-box" style={{ height: 480, borderRadius: 16 }} />
+      </aside>
+    </div>
+  );
+}
 
 // ── Main Component ────────────────────────────────────────────────────────────
-// ── Baca profil dari localStorage (hasil edit konselor) ───────────────────────
-function getProfilOverride(konselorId) {
-    try {
-        const saved = localStorage.getItem(`sanctuary_profil_${konselorId}`);
-        return saved ? JSON.parse(saved) : {};
-    } catch {
-        return {};
-    }
-}
 export default function KonselorDetail() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const { id }    = useParams();
+  const navigate  = useNavigate();
 
-  const konselor = data_konselor.find((k) => k.ID === id);
+  // ── State data ──────────────────────────────────────────────────────────────
+  const [konselor,  setKonselor]  = useState(null);
+  const [slots,     setSlots]     = useState([]);   // dari konselor_availability
+  const [loading,   setLoading]   = useState(true);
+  const [error,     setError]     = useState(null);
 
-  const [calMonth, setCalMonth] = useState(new Date().getMonth());
-  const [calYear, setCalYear]   = useState(new Date().getFullYear());
-  const [selectedDay, setSelectedDay] = useState(new Date().getDate());
-  const [selectedSlot, setSelectedSlot] = useState("11:30 AM");
-  const [bookingDone, setBookingDone] = useState(false);
+  // ── State kalender & booking ────────────────────────────────────────────────
+  const [calMonth,     setCalMonth]     = useState(new Date().getMonth());
+  const [calYear,      setCalYear]      = useState(new Date().getFullYear());
+  const [selectedDay,  setSelectedDay]  = useState(new Date().getDate());
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [bookingDone,  setBookingDone]  = useState(false);
+  const [bookingLoad,  setBookingLoad]  = useState(false);
 
-  if (!konselor) {
-    return (
-      <div className="kd-notfound">
-        <h2>Konselor tidak ditemukan</h2>
-        <button onClick={() => navigate("/konselor")}>← Kembali</button>
-      </div>
-    );
+  // ── Fetch konselor + availability ───────────────────────────────────────────
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+
+      // 1. Data konselor
+      const { data: kData, error: kErr } = await supabase
+        .from("data_konselor")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (kErr || !kData) {
+        setError("Konselor tidak ditemukan.");
+        setLoading(false);
+        return;
+      }
+
+      // Normalize
+      setKonselor({
+        ID:               kData.id,
+        Nama:             kData.nama,
+        Kategori_Masalah: kData.kategori_masalah,
+        Pengalaman:       kData.pengalaman,
+        "Rating_(Final)": kData.rating_final     ?? 0,
+        "Keramahan_(30%)":kData.keramahan        ?? 0,
+        "Solusi_(50%)":   kData.solusi           ?? 0,
+        "Respon_(20%)":   kData.respon           ?? 0,
+        Jumlah_Kasus:     kData.jumlah_kasus     ?? 0,
+        Kasus_Selesai:    kData.kasus_selesai    ?? 0,
+        Success_Rate:     kData.success_rate     ?? 0,
+        image:            kData.image_url || kData.foto_url || "/placeholder-avatar.png",
+        bio:              kData.bio              ?? "",
+      });
+
+      // 2. Slot availability — hanya yang tersedia & belum lewat
+      const todayStr = new Date().toISOString().split("T")[0];
+      const { data: avData } = await supabase
+        .from("konselor_availability")
+        .select("id, tanggal, jam_mulai, jam_selesai, status")
+        .eq("konselor_id", id)
+        .eq("status", "tersedia")
+        .gte("tanggal", todayStr)
+        .order("tanggal", { ascending: true })
+        .order("jam_mulai", { ascending: true });
+
+      const slotList = avData || [];
+      setSlots(slotList);
+
+      // Auto-jump kalender ke slot terdekat
+      if (slotList.length > 0) {
+        const [y, m, d] = slotList[0].tanggal.split("-").map(Number);
+        setCalYear(y);
+        setCalMonth(m - 1);
+        setSelectedDay(d);
+      }
+
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [id]);
+
+  // ── Slot yang tersedia di hari & bulan yang dipilih ─────────────────────────
+  // Parse tanggal dari string "YYYY-MM-DD" tanpa konversi timezone
+  const parseDate = (tanggalStr) => {
+    const [y, m, d] = tanggalStr.split("-").map(Number);
+    return { year: y, month: m - 1, day: d }; // month 0-indexed
+  };
+
+  const slotsHariIni = slots.filter((s) => {
+    const { year, month, day } = parseDate(s.tanggal);
+    return day === selectedDay && month === calMonth && year === calYear;
+  });
+
+  // ── Hari yang punya slot (untuk highlight kalender) ─────────────────────────
+  const hariAdaSlot = new Set(
+    slots
+      .filter((s) => {
+        const { year, month } = parseDate(s.tanggal);
+        return month === calMonth && year === calYear;
+      })
+      .map((s) => parseDate(s.tanggal).day)
+  );
+
+  // ── Confirm booking → simpan ke tabel booking ───────────────────────────────
+  async function handleConfirmBooking() {
+    const userRaw = localStorage.getItem("sanctuary_user");
+    if (!userRaw) {
+      sessionStorage.setItem("redirect_after_login", `/konselor/${id}`);
+      navigate("/login");
+      return;
+    }
+    if (!selectedSlot) return;
+
+    const user = JSON.parse(userRaw);
+    setBookingLoad(true);
+
+    const slotObj  = slots.find((s) => s.id === selectedSlot);
+    const tanggal  = slotObj.tanggal;
+    const jamMulai = slotObj.jam_mulai;
+
+    // Insert ke tabel booking
+    const bookingId = `BK-${Date.now()}`;
+    const { error: bErr } = await supabase.from("booking").insert({
+      id:               bookingId,
+      id_konselor:      id,
+      id_mahasiswa:     user.student_id || user.id,
+      nama_mahasiswa:   user.name || user.nama,
+      kategori_masalah: konselor.Kategori_Masalah,
+      tanggal_sesi:     tanggal,
+      sesi_konseling:   1,
+      status:           "terjadwal",
+      kondisi_awal:     0,
+      kondisi_saat_ini: 0,
+    });
+
+    if (bErr) {
+      alert("Gagal booking: " + bErr.message);
+      setBookingLoad(false);
+      return;
+    }
+
+    // Update status slot jadi 'booked'
+    await supabase
+      .from("konselor_availability")
+      .update({ status: "booked" })
+      .eq("id", selectedSlot);
+
+    setBookingDone(true);
+    setBookingLoad(false);
   }
 
-  const calDays = getCalendarDays(calYear, calMonth);
-  const today = new Date();
-  const isToday = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+  // ── Auth helpers ─────────────────────────────────────────────────────────────
+  const goTo = (dest) => {
+    const user = localStorage.getItem("sanctuary_user");
+    if (user) navigate(dest);
+    else { sessionStorage.setItem("redirect_after_login", dest); navigate("/login"); }
+  };
+  const user = (() => { try { return JSON.parse(localStorage.getItem("sanctuary_user")); } catch { return null; } })();
+  const handleLogout = () => { localStorage.removeItem("sanctuary_user"); navigate("/login"); };
 
+  // ── Render ───────────────────────────────────────────────────────────────────
+  if (loading) return (
+    <div className="sanctuary kd-page">
+      <header className="nav-shell"><nav className="nav"><div className="nav-l">
+        <span className="nav-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+      </div></nav></header>
+      <SkeletonDetail />
+    </div>
+  );
+
+  if (error || !konselor) return (
+    <div className="kd-notfound">
+      <h2>{error || "Konselor tidak ditemukan"}</h2>
+      <button onClick={() => navigate("/konselor")}>← Kembali</button>
+    </div>
+  );
+
+  const calDays    = getCalendarDays(calYear, calMonth);
+  const today      = new Date();
+  const isToday    = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
   const spesialisasi = SPESIALISASI_MAP[konselor.Kategori_Masalah] || [];
   const testimoni    = TESTIMONI_MAP[konselor.ID] || [];
-  const bio          = BIO_MAP[konselor.ID] || "Konselor sebaya yang berdedikasi dalam membantu mahasiswa.";
+  const bio          = konselor.bio || "Konselor sebaya yang berdedikasi dalam membantu mahasiswa.";
 
   const ratingBar = (label, val) => (
     <div key={label} className="kd-rating-bar-row">
@@ -158,16 +310,6 @@ export default function KonselorDetail() {
   const avgTestimoniRating = testimoni.length
     ? (testimoni.reduce((s, t) => s + t.rating, 0) / testimoni.length).toFixed(1)
     : konselor["Rating_(Final)"].toFixed(1);
-
-  // Auth guard
-  const goTo = (dest) => {
-    const user = localStorage.getItem("sanctuary_user");
-    if (user) navigate(dest);
-    else { sessionStorage.setItem("redirect_after_login", dest); navigate("/login"); }
-  };
-
-  const user = (() => { try { return JSON.parse(localStorage.getItem("sanctuary_user")); } catch { return null; } })();
-  const handleLogout = () => { localStorage.removeItem("sanctuary_user"); navigate("/login"); };
 
   return (
     <div className="sanctuary kd-page">
@@ -185,7 +327,7 @@ export default function KonselorDetail() {
           </div>
           <div className="nav-r">
             <button className="nav-cta" onClick={() => goTo("/kuesioner")}>Mulai Refleksi Diri</button>
-            <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/dashboard")}>
+            <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
@@ -233,23 +375,20 @@ export default function KonselorDetail() {
           <section className="kd-hero-card">
             <div className="kd-hero-photo-col">
               <div className="kd-hero-photo-wrap">
-                <img src={konselor.image} alt={konselor.Nama} className="kd-hero-photo" />
+                <img src={konselor.image} alt={konselor.Nama} className="kd-hero-photo"
+                  onError={(e) => { e.target.src = "/placeholder-avatar.png"; }} />
               </div>
-              {/* Availability dot */}
               <div className="kd-avail-status">
                 <span className="kd-avail-dot" />
-                <span>Tersedia untuk sesi</span>
+                <span>{slots.length > 0 ? "Tersedia untuk sesi" : "Tidak ada slot tersedia"}</span>
               </div>
             </div>
 
             <div className="kd-hero-info">
               <span className="kd-hero-kat-pill">{konselor.Kategori_Masalah}</span>
               <h1 className="kd-hero-name">{konselor.Nama}</h1>
-              <p className="kd-hero-tagline">
-                {bio.split("\n\n")[0].split(". ")[0]}.
-              </p>
+              <p className="kd-hero-tagline">{bio.split("\n\n")[0].split(". ")[0]}.</p>
 
-              {/* Quick stats */}
               <div className="kd-quick-stats">
                 <div className="kd-qs-item">
                   <span className="kd-qs-val">{konselor["Rating_(Final)"].toFixed(1)}</span>
@@ -268,7 +407,7 @@ export default function KonselorDetail() {
                 </div>
                 <div className="kd-qs-divider" />
                 <div className="kd-qs-item">
-                  <span className="kd-qs-val">{Math.round(konselor["Success_Rate"] * 100)}%</span>
+                  <span className="kd-qs-val">{Math.round(konselor.Success_Rate * 100)}%</span>
                   <span className="kd-qs-label">Success Rate</span>
                 </div>
               </div>
@@ -281,12 +420,10 @@ export default function KonselorDetail() {
             {bio.split("\n\n").map((p, i) => (
               <p key={i} className="kd-bio-p">{p}</p>
             ))}
-
-            {/* Rating breakdown */}
             <div className="kd-rating-breakdown">
-              {ratingBar("Keramahan", konselor["Keramahan_(30%)"])}
-              {ratingBar("Kualitas Solusi", konselor["Solusi_(50%)"])}
-              {ratingBar("Kecepatan Respon", konselor["Respon_(20%)"])}
+              {ratingBar("Keramahan",          konselor["Keramahan_(30%)"])}
+              {ratingBar("Kualitas Solusi",    konselor["Solusi_(50%)"])}
+              {ratingBar("Kecepatan Respon",   konselor["Respon_(20%)"])}
             </div>
           </section>
 
@@ -307,7 +444,6 @@ export default function KonselorDetail() {
           {/* ── TESTIMONI ── */}
           <section className="kd-section">
             <h2 className="kd-section-h">Testimoni Klien</h2>
-
             <div className="kd-testi-header">
               <div className="kd-testi-score">
                 <span className="kd-testi-big">{avgTestimoniRating}</span>
@@ -316,7 +452,6 @@ export default function KonselorDetail() {
                   <span className="kd-testi-count">{testimoni.length} ulasan</span>
                 </div>
               </div>
-
               <div className="kd-testi-bars">
                 {[5,4,3,2,1].map((star) => {
                   const count = testimoni.filter((t) => t.rating === star).length;
@@ -324,15 +459,13 @@ export default function KonselorDetail() {
                     <div key={star} className="kd-testi-bar-row">
                       <span className="kd-testi-bar-label">{star} ★</span>
                       <div className="kd-testi-bar-track">
-                        <div className="kd-testi-bar-fill" style={{ width: testimoni.length ? `${(count / testimoni.length) * 100}%` : "0%" }} />
+                        <div className="kd-testi-bar-fill" style={{ width: testimoni.length ? `${(count/testimoni.length)*100}%` : "0%" }} />
                       </div>
                       <span className="kd-testi-bar-count">{count}</span>
                     </div>
                   );
                 })}
               </div>
-
-              {/* Kategori masalah tags */}
               <div className="kd-testi-tags">
                 <p className="kd-testi-tags-label">KATEGORI MASALAH DITANGANI</p>
                 <span className="kd-testi-tag primary">{konselor.Kategori_Masalah.split(" ").slice(0,2).join(" ")}</span>
@@ -340,16 +473,13 @@ export default function KonselorDetail() {
                 <span className="kd-testi-tag">Motivasi</span>
               </div>
             </div>
-
             <div className="kd-testi-grid">
               {testimoni.map((t, i) => (
                 <div key={i} className="kd-testi-card">
                   <StarRating rating={t.rating} size={13} />
                   <p className="kd-testi-text">"{t.teks}"</p>
                   <div className="kd-testi-author">
-                    <div className="kd-testi-avatar">
-                      {t.nama.charAt(0)}
-                    </div>
+                    <div className="kd-testi-avatar">{t.nama.charAt(0)}</div>
                     <div>
                       <p className="kd-testi-name">{t.nama}</p>
                       <p className="kd-testi-peran">{t.peran}</p>
@@ -370,24 +500,18 @@ export default function KonselorDetail() {
               <p className="kd-booking-sub">Mulai perjalananmu bersama {konselor.Nama.split(" ")[0]} hari ini</p>
             </div>
 
-            {/* Calendar */}
+            {/* Kalender */}
             <div className="kd-cal">
               <div className="kd-cal-nav">
-                <button
-                  className="kd-cal-arrow"
-                  onClick={() => {
-                    if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
-                    else setCalMonth(m => m - 1);
-                  }}
-                >‹</button>
+                <button className="kd-cal-arrow" onClick={() => {
+                  if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); }
+                  else setCalMonth(m => m - 1);
+                }}>‹</button>
                 <span className="kd-cal-title">{BULAN[calMonth]} {calYear}</span>
-                <button
-                  className="kd-cal-arrow"
-                  onClick={() => {
-                    if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
-                    else setCalMonth(m => m + 1);
-                  }}
-                >›</button>
+                <button className="kd-cal-arrow" onClick={() => {
+                  if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); }
+                  else setCalMonth(m => m + 1);
+                }}>›</button>
               </div>
 
               <div className="kd-cal-grid">
@@ -397,9 +521,15 @@ export default function KonselorDetail() {
                 {calDays.map((d, i) => (
                   <button
                     key={i}
-                    className={`kd-cal-day ${!d ? "kd-cal-empty" : ""} ${d === selectedDay && calMonth === new Date().getMonth() ? "kd-cal-selected" : ""} ${isToday(d) ? "kd-cal-today" : ""}`}
+                    className={[
+                      "kd-cal-day",
+                      !d                              ? "kd-cal-empty"    : "",
+                      d === selectedDay               ? "kd-cal-selected" : "",
+                      isToday(d)                      ? "kd-cal-today"    : "",
+                      d && hariAdaSlot.has(d)         ? "kd-cal-has-slot" : "",
+                    ].join(" ")}
                     disabled={!d}
-                    onClick={() => d && setSelectedDay(d)}
+                    onClick={() => { if (d) { setSelectedDay(d); setSelectedSlot(null); } }}
                   >
                     {d || ""}
                   </button>
@@ -407,39 +537,48 @@ export default function KonselorDetail() {
               </div>
             </div>
 
-            {/* Time slots */}
+            {/* Slot waktu dari Supabase */}
             <div className="kd-slots">
-              <p className="kd-slots-label">Pilihan Waktu yang Tersedia</p>
-              <div className="kd-slots-grid">
-                {JADWAL_SLOTS.map((slot) => (
-                  <button
-                    key={slot}
-                    className={`kd-slot-btn ${selectedSlot === slot ? "kd-slot-selected" : ""}`}
-                    onClick={() => setSelectedSlot(slot)}
-                  >
-                    {slot}
-                  </button>
-                ))}
-              </div>
+              <p className="kd-slots-label">
+                Slot Tersedia — {selectedDay} {BULAN[calMonth]} {calYear}
+              </p>
+              {slotsHariIni.length === 0 ? (
+                <p className="kd-slots-empty">Tidak ada slot tersedia di hari ini.</p>
+              ) : (
+                <div className="kd-slots-grid">
+                  {slotsHariIni.map((s) => (
+                    <button
+                      key={s.id}
+                      className={`kd-slot-btn ${selectedSlot === s.id ? "kd-slot-selected" : ""}`}
+                      onClick={() => setSelectedSlot(s.id)}
+                    >
+                      {formatJam(s.jam_mulai)}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Confirm */}
+            {/* Confirm booking */}
             {bookingDone ? (
               <div className="kd-booking-success">
                 <span className="kd-booking-success-icon">✅</span>
                 <p>Sesi berhasil dijadwalkan!</p>
-                <span>{selectedDay} {BULAN[calMonth]} {calYear}, {selectedSlot}</span>
+                <span>
+                  {selectedDay} {BULAN[calMonth]} {calYear},{" "}
+                  {slots.find(s => s.id === selectedSlot) ? formatJam(slots.find(s => s.id === selectedSlot).jam_mulai) : ""}
+                </span>
+                <button className="kd-confirm-btn" style={{ marginTop: 12 }} onClick={() => goTo("/dashboard")}>
+                  Lihat di Dashboard →
+                </button>
               </div>
             ) : (
               <button
                 className="kd-confirm-btn"
-                onClick={() => {
-                  const user = localStorage.getItem("sanctuary_user");
-                  if (!user) { sessionStorage.setItem("redirect_after_login", `/konselor/${konselor.ID}`); navigate("/login"); return; }
-                  setBookingDone(true);
-                }}
+                disabled={!selectedSlot || bookingLoad}
+                onClick={handleConfirmBooking}
               >
-                Confirm Booking →
+                {bookingLoad ? "Memproses..." : "Confirm Booking →"}
               </button>
             )}
 
@@ -451,32 +590,15 @@ export default function KonselorDetail() {
             </p>
           </div>
 
-          {/* Konselor lain */}
+          {/* Konselor lain — fetch dari Supabase juga, tapi pakai data static sementara */}
           <div className="kd-other-card">
             <p className="kd-other-label">KONSELOR LAINNYA</p>
-            {data_konselor
-              .filter((k) => k.ID !== konselor.ID)
-              .slice(0, 3)
-              .map((k) => (
-                <div
-                  key={k.ID}
-                  className="kd-other-item"
-                  onClick={() => navigate(`/konselor/${k.ID}`)}
-                >
-                  <img src={k.image} alt={k.Nama} className="kd-other-photo" />
-                  <div className="kd-other-info">
-                    <p className="kd-other-name">{k.Nama}</p>
-                    <p className="kd-other-kat">{k.Kategori_Masalah.split(" ").slice(0,3).join(" ")}</p>
-                    <div className="kd-other-rating">
-                      <span className="kd-other-star">★</span>
-                      <span>{k["Rating_(Final)"].toFixed(1)}</span>
-                    </div>
-                  </div>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14" className="kd-other-arrow">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
-              ))}
+            <p className="kd-other-hint" style={{ fontSize: 12, color: "#888", padding: "8px 0" }}>
+              Lihat semua konselor di halaman{" "}
+              <span style={{ color: "#2f7d79", cursor: "pointer" }} onClick={() => navigate("/konselor")}>
+                Daftar Konselor →
+              </span>
+            </p>
           </div>
         </aside>
 

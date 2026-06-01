@@ -1,16 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect, useCallback } from "react";
-import analisis_konselor from "../data/analisis_konselor";
+import analisis_konselor from "../data/analisis_konselor.js";
 import "../styles/konselor-dashboard.css";
-import EditProfilModal from "./EditProfilModal";
-import { supabase } from "../lib/supabase";
-
-
-// ── Email → ID Konselor mapping ──────────────────────────────────
-function getKID(user) {
-    if (!user) return null;
-    return user.konselorId ?? null;
-}
+import EditProfilModal from "./EditProfilModal.jsx";
+import { supabase } from "../lib/supabase.js";
 
 // ── Kondisi label ────────────────────────────────────────────────
 function kondisiLabel(val) {
@@ -74,51 +67,24 @@ function ProgressBar({ value, max, color = "var(--grad-teal)" }) {
     );
 }
 
-// ── Spesialisasi data (statis, sesuai referensi gambar) ──────────
-const SPESIALISASI = [
-    {
-        icon: "📊",
-        title: "Manajemen Stres Akademik",
-        desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan.",
-    },
-    {
-        icon: "🧠",
-        title: "Kesejahteraan Mental",
-        desc: "Pendampingan untuk menjaga keseimbangan mental di tengah tuntutan perkuliahan yang tinggi.",
-    },
-    {
-        icon: "🎯",
-        title: "Fokus & Produktivitas",
-        desc: "Teknik dan strategi untuk meningkatkan konsentrasi belajar dan produktivitas akademik sehari-hari.",
-    },
-];
-
-// ── Testimoni data (statis dummy) ────────────────────────────────
-const TESTIMONI = [
-    {
-        nama: "Rizki Pratama",
-        sub: "Mahasiswa Semester 6",
-        rating: 5,
-        teks: "Konselor sangat sabar dan penuh empati. Beliau membantu saya menemukan cara belajar yang lebih efektif saat menghadapi tekanan skripsi. Sangat recommended!",
-    },
-    {
-        nama: "Sari Dewi",
-        sub: "Mahasiswa Semester 4",
-        rating: 5,
-        teks: "Sesi bersama konselor benar-benar mengubah cara pandang saya terhadap stres akademik. Sekarang saya lebih tenang menghadapi ujian.",
-    },
-];
+// ── Status aktif yang boleh Mulai Sesi ───────────────────────────
+const STATUS_AKTIF = ["berjalan", "terjadwal", "Berjalan", "Terjadwal", "aktif", "Aktif"];
 
 // ── Main Component ───────────────────────────────────────────────
 export default function KonselorDashboard() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("overview");
+    const [filterKlien, setFilterKlien] = useState("Semua");
 
     // ── State data dari Supabase ──────────────────────────────
     const [konselor, setKonselor] = useState(null);
     const [myBookings, setMyBookings] = useState([]);
     const [loadingData, setLoadingData] = useState(true);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [slots, setSlots] = useState([]);
+    const [newSlot, setNewSlot] = useState({ tanggal: "", jam_mulai: "", jam_selesai: "" });
+    const [addingSlot, setAddingSlot] = useState(false);
+    
 
     const user = useMemo(() => {
         try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
@@ -133,25 +99,25 @@ export default function KonselorDashboard() {
         async function fetchData() {
             setLoadingData(true);
 
+            // FIX: fetch dari "data_konselor" bukan "konselor"
             const [{ data: kData }, { data: bData }] = await Promise.all([
-                supabase.from("konselor").select("*").eq("id", kid).single(),
+                supabase.from("data_konselor").select("*").eq("id", kid).single(),
                 supabase.from("booking").select("*").eq("id_konselor", kid),
             ]);
 
             if (kData) {
-                // Normalize field names agar JSX tidak perlu diubah banyak
                 setKonselor({
                     ID: kData.id,
                     Nama: kData.nama,
                     Kategori_Masalah: kData.kategori_masalah,
                     Pengalaman: kData.pengalaman,
-                    "Rating_(Final)": kData.rating_final,
-                    "Keramahan_(30%)": kData.keramahan,
-                    "Solusi_(50%)": kData.solusi,
-                    "Respon_(20%)": kData.respon,
-                    Jumlah_Kasus: kData.jumlah_kasus,
-                    Kasus_Selesai: kData.kasus_selesai,
-                    Success_Rate: kData.success_rate,
+                    "Rating_(Final)": kData.rating_final ?? 0,
+                    "Keramahan_(30%)": kData.keramahan ?? 0,
+                    "Solusi_(50%)": kData.solusi ?? 0,
+                    "Respon_(20%)": kData.respon ?? 0,
+                    Jumlah_Kasus: kData.jumlah_kasus ?? 0,
+                    Kasus_Selesai: kData.kasus_selesai ?? 0,
+                    Success_Rate: kData.success_rate ?? 0,
                     image: kData.image_url,
                     foto: kData.foto_url,
                     bio: kData.bio,
@@ -179,64 +145,64 @@ export default function KonselorDashboard() {
         fetchData();
     }, [kid]);
 
+    useEffect(() => {
+    if (!kid) return;
+    async function fetchSlots() {
+        const { data } = await supabase
+            .from("konselor_availability")
+            .select("*")
+            .eq("konselor_id", kid)
+            .order("tanggal", { ascending: true })
+            .order("jam_mulai", { ascending: true });
+        setSlots(data || []);
+    }
+    fetchSlots();
+}, [kid]);
+
     // ── Hook update profil ke Supabase ────────────────────────
     const updateProfil = useCallback(async (fields) => {
-    if (!kid) return;
+        if (!kid) return;
 
-    let fotoUrl = konselor?.foto || konselor?.image || null;
+        let fotoUrl = konselor?.foto || konselor?.image || null;
 
-    // Kalau foto adalah base64 (file baru dipilih), upload ke Storage dulu
-    if (fields.foto && fields.foto.startsWith("data:")) {
-        // Convert base64 ke File object
-        const res = await fetch(fields.foto);
-        const blob = await res.blob();
-        const ext = blob.type.split("/")[1] || "jpg";
-        const fileName = `${kid}_${Date.now()}.${ext}`;
+        if (fields.foto && fields.foto.startsWith("data:")) {
+            const res = await fetch(fields.foto);
+            const blob = await res.blob();
+            const ext = blob.type.split("/")[1] || "jpg";
+            const fileName = `${kid}_${Date.now()}.${ext}`;
 
-        const { error: uploadError } = await supabase.storage
-            .from("konselor-foto")
-            .upload(fileName, blob, {
-                contentType: blob.type,
-                upsert: true,
-            });
-
-        if (!uploadError) {
-            const { data: urlData } = supabase.storage
+            const { error: uploadError } = await supabase.storage
                 .from("konselor-foto")
-                .getPublicUrl(fileName);
-            fotoUrl = urlData.publicUrl;
-        } else {
-            console.error("Upload foto gagal:", uploadError.message);
+                .upload(fileName, blob, { contentType: blob.type, upsert: true });
+
+            if (!uploadError) {
+                const { data: urlData } = supabase.storage
+                    .from("konselor-foto")
+                    .getPublicUrl(fileName);
+                fotoUrl = urlData.publicUrl;
+            } else {
+                console.error("Upload foto gagal:", uploadError.message);
+            }
+        } else if (fields.foto === null) {
+            fotoUrl = null;
         }
-    } else if (fields.foto === null) {
-        // User hapus foto
-        fotoUrl = null;
-    }
 
-    const { error } = await supabase
-        .from("konselor")
-        .update({
-            foto_url: fotoUrl,
-            bio: fields.bio,
-            spesialisasi: fields.spesialisasi,
-        })
-        .eq("id", kid);
+        // FIX: update ke "data_konselor" bukan "konselor"
+        const { error } = await supabase
+            .from("data_konselor")
+            .update({ foto_url: fotoUrl, bio: fields.bio, spesialisasi: fields.spesialisasi })
+            .eq("id", kid);
 
-    if (!error) {
-        setKonselor((prev) => ({
-            ...prev,
-            foto: fotoUrl,
-            bio: fields.bio,
-            spesialisasi: fields.spesialisasi,
-        }));
-    } else {
-        console.error("Update profil gagal:", error.message);
-    }
-}, [kid, konselor]);
+        if (!error) {
+            setKonselor((prev) => ({ ...prev, foto: fotoUrl, bio: fields.bio, spesialisasi: fields.spesialisasi }));
+        } else {
+            console.error("Update profil gagal:", error.message);
+        }
+    }, [kid, konselor]);
 
     // ── Kalkulasi dari booking ────────────────────────────────
     const selesai = myBookings.filter((b) => b.Status === "Selesai").length;
-    const berjalan = myBookings.filter((b) => b.Status === "Berjalan").length;
+    const berjalan = myBookings.filter((b) => STATUS_AKTIF.includes(b.Status)).length;
     const total = myBookings.length;
     const successRate = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
@@ -253,19 +219,56 @@ export default function KonselorDashboard() {
         return Object.entries(map).sort((a, b) => b[1] - a[1]);
     }, [myBookings]);
 
+    // ── Filtered bookings untuk tab Klien ────────────────────
+    const filteredBookings = useMemo(() => {
+        if (filterKlien === "Semua") return myBookings;
+        if (filterKlien === "Berjalan") return myBookings.filter((b) => STATUS_AKTIF.includes(b.Status));
+        if (filterKlien === "Selesai") return myBookings.filter((b) => b.Status === "Selesai");
+        return myBookings;
+    }, [myBookings, filterKlien]);
+
     function handleLogout() {
         localStorage.removeItem("sanctuary_user");
         navigate("/login");
     }
+
+    async function handleTambahSlot() {
+    if (!newSlot.tanggal || !newSlot.jam_mulai || !newSlot.jam_selesai) return;
+    setAddingSlot(true);
+    const { data, error } = await supabase
+        .from("konselor_availability")
+        .insert({
+            konselor_id: kid,
+            tanggal: newSlot.tanggal,
+            jam_mulai: newSlot.jam_mulai,
+            jam_selesai: newSlot.jam_selesai,
+            status: "tersedia",
+        })
+        .select()
+        .single();
+    if (!error && data) {
+        setSlots((prev) => [...prev, data].sort((a, b) =>
+            a.tanggal.localeCompare(b.tanggal) || a.jam_mulai.localeCompare(b.jam_mulai)
+        ));
+        setNewSlot({ tanggal: "", jam_mulai: "", jam_selesai: "" });
+    }
+    setAddingSlot(false);
+}
+
+async function handleHapusSlot(slotId) {
+    await supabase.from("konselor_availability").delete().eq("id", slotId);
+    setSlots((prev) => prev.filter((s) => s.id !== slotId));
+}
 
     const initials = (konselor?.Nama ?? "K")
         .split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
     const navItems = [
     { key: "overview", label: "Overview", icon: "📊" },
-    { key: "klien", label: "Klien Saya", icon: "👥" },
+    { key: "klien",    label: "Klien Saya", icon: "👥" },
+    { key: "jadwal",   label: "Jadwal", icon: "📅" },   // ← tambah ini
     { key: "performa", label: "Performa", icon: "📈" },
-    { key: "profil", label: "Profil Saya", icon: "👤" },
+    { key: "profil",   label: "Profil Saya", icon: "👤" },
 ];
 
     const keramahan = konselor?.["Keramahan_(30%)"] ?? 0;
@@ -497,11 +500,20 @@ export default function KonselorDashboard() {
                                 <h2 className="kd-greeting-h2">Klien Saya</h2>
                                 <p className="kd-greeting-sub">{total} klien terdaftar · {berjalan} sedang berjalan</p>
                             </div>
+
+                            {/* Filter pill — sekarang functional */}
                             <div className="kd-filter-row">
                                 {["Semua", "Berjalan", "Selesai"].map((f) => (
-                                    <button key={f} className="kd-filter-pill kd-filter-pill--active">{f}</button>
+                                    <button
+                                        key={f}
+                                        className={`kd-filter-pill ${filterKlien === f ? "kd-filter-pill--active" : ""}`}
+                                        onClick={() => setFilterKlien(f)}
+                                    >
+                                        {f}
+                                    </button>
                                 ))}
                             </div>
+
                             <div className="kd-klien-table">
                                 <div className="kd-table-head">
                                     <span>Klien</span>
@@ -509,11 +521,14 @@ export default function KonselorDashboard() {
                                     <span>Sesi</span>
                                     <span>Progress</span>
                                     <span>Status</span>
+                                    <span>Aksi</span>
                                 </div>
-                                {myBookings.map((b) => {
+                                {filteredBookings.map((b) => {
                                     const progPct = Math.round((b.Kondisi_Saat_Ini ?? 0) * 100);
                                     const awalPct = Math.round((b.Kondisi_Awal ?? 0) * 100);
                                     const gain = progPct - awalPct;
+                                    const today = new Date().toISOString().split("T")[0];
+                                    const bisaMulai = STATUS_AKTIF.includes(b.Status) && b.Tanggal_Sesi <= today;
                                     return (
                                         <div key={b.ID_Booking} className="kd-table-row">
                                             <div className="kd-table-cell kd-cell-name">
@@ -543,13 +558,158 @@ export default function KonselorDashboard() {
                                             <div className="kd-table-cell">
                                                 <span className={`kd-badge ${b.Status === "Selesai" ? "kd-badge--done" : "kd-badge--run"}`}>{b.Status}</span>
                                             </div>
+                                            {/* Kolom Aksi — tombol Mulai Sesi */}
+                                            <div className="kd-table-cell">
+                                                {bisaMulai ? (
+                                                    <button
+                                                        className="kd-btn-mulai-sesi"
+                                                        onClick={() => navigate(`/sesi/${b.ID_Booking}`)}
+                                                    >
+                                                        Mulai Sesi →
+                                                    </button>
+                                                ) : (
+                                                    <span className="kd-cell-dash">—</span>
+                                                )}
+                                            </div>
                                         </div>
                                     );
                                 })}
-                                {myBookings.length === 0 && <p className="kd-empty" style={{ padding: "32px 0" }}>Belum ada klien yang ditangani.</p>}
+                                {filteredBookings.length === 0 && (
+                                    <p className="kd-empty" style={{ padding: "32px 0" }}>
+                                        {filterKlien === "Semua" ? "Belum ada klien yang ditangani." : `Tidak ada klien dengan status "${filterKlien}".`}
+                                    </p>
+                                )}
                             </div>
                         </>
                     )}
+
+                    {/* ══ TAB: JADWAL ══════════════════════════════════════════ */}
+{activeTab === "jadwal" && (
+    <>
+        <div className="kd-greeting">
+            <h2 className="kd-greeting-h2">Jadwal Saya</h2>
+            <p className="kd-greeting-sub">Atur slot waktu yang tersedia untuk mahasiswa booking.</p>
+        </div>
+
+        {/* Form tambah slot */}
+        <div className="kd-card" style={{ marginBottom: 20 }}>
+            <div className="kd-card-h3" style={{ marginBottom: 16 }}>Tambah Slot Baru</div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: "var(--gray)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Tanggal</label>
+                    <input
+                        type="date"
+                        value={newSlot.tanggal}
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={(e) => setNewSlot((p) => ({ ...p, tanggal: e.target.value }))}
+                        style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid var(--gray-lt)", fontSize: 13, fontFamily: "inherit", background: "#fafafa" }}
+                    />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: "var(--gray)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Jam Mulai</label>
+                    <input
+                        type="time"
+                        value={newSlot.jam_mulai}
+                        onChange={(e) => setNewSlot((p) => ({ ...p, jam_mulai: e.target.value }))}
+                        style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid var(--gray-lt)", fontSize: 13, fontFamily: "inherit", background: "#fafafa" }}
+                    />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label style={{ fontSize: 11, fontWeight: 700, color: "var(--gray)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Jam Selesai</label>
+                    <input
+                        type="time"
+                        value={newSlot.jam_selesai}
+                        onChange={(e) => setNewSlot((p) => ({ ...p, jam_selesai: e.target.value }))}
+                        style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid var(--gray-lt)", fontSize: 13, fontFamily: "inherit", background: "#fafafa" }}
+                    />
+                </div>
+                <button
+                    onClick={handleTambahSlot}
+                    disabled={addingSlot || !newSlot.tanggal || !newSlot.jam_mulai || !newSlot.jam_selesai}
+                    style={{
+                        padding: "9px 20px",
+                        background: "linear-gradient(135deg, #2f7d79, #79d8d1)",
+                        color: "white", border: "none", borderRadius: 10,
+                        fontSize: 13, fontWeight: 700, cursor: "pointer",
+                        fontFamily: "inherit", opacity: addingSlot ? 0.7 : 1,
+                        transition: "opacity 0.2s",
+                    }}
+                >
+                    {addingSlot ? "Menyimpan..." : "+ Tambah Slot"}
+                </button>
+            </div>
+        </div>
+
+        {/* Daftar slot */}
+        <div className="kd-card">
+            <div className="kd-card-hd">
+                <div>
+                    <div className="kd-card-h3">Slot Tersedia</div>
+                    <div className="kd-card-sub">{slots.filter(s => s.status === "tersedia").length} slot aktif · {slots.filter(s => s.status === "booked").length} sudah dibooking</div>
+                </div>
+            </div>
+
+            {slots.length === 0 ? (
+                <p className="kd-empty">Belum ada slot. Tambah slot di atas agar mahasiswa bisa booking.</p>
+            ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {/* Group by tanggal */}
+                    {Object.entries(
+                        slots.reduce((acc, s) => {
+                            if (!acc[s.tanggal]) acc[s.tanggal] = [];
+                            acc[s.tanggal].push(s);
+                            return acc;
+                        }, {})
+                    ).map(([tanggal, slotList]) => (
+                        <div key={tanggal}>
+                            <div style={{ fontSize: 12, fontWeight: 800, color: "var(--teal)", marginBottom: 8, marginTop: 4,
+                                textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                                {new Date(tanggal + "T00:00:00").toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                                {slotList.map((s) => (
+                                    <div key={s.id} style={{
+                                        display: "flex", alignItems: "center", gap: 10,
+                                        padding: "8px 14px",
+                                        background: s.status === "booked"
+                                            ? "rgba(232,168,56,0.10)"
+                                            : "rgba(47,125,121,0.07)",
+                                        border: `1.5px solid ${s.status === "booked" ? "rgba(232,168,56,0.3)" : "rgba(47,125,121,0.18)"}`,
+                                        borderRadius: 999, fontSize: 13, fontWeight: 600,
+                                    }}>
+                                        <span>🕐</span>
+                                        <span style={{ color: s.status === "booked" ? "#a06030" : "var(--teal)" }}>
+                                            {s.jam_mulai.slice(0,5)} – {s.jam_selesai.slice(0,5)}
+                                        </span>
+                                        <span style={{
+                                            fontSize: 10, fontWeight: 700, padding: "2px 8px",
+                                            borderRadius: 999,
+                                            background: s.status === "booked" ? "rgba(232,168,56,0.2)" : "rgba(47,125,121,0.12)",
+                                            color: s.status === "booked" ? "#a06030" : "var(--teal)",
+                                        }}>
+                                            {s.status === "booked" ? "Dipesan" : "Tersedia"}
+                                        </span>
+                                        {s.status === "tersedia" && (
+                                            <button
+                                                onClick={() => handleHapusSlot(s.id)}
+                                                style={{
+                                                    background: "none", border: "none", cursor: "pointer",
+                                                    color: "#e05c5c", fontSize: 14, padding: "0 2px",
+                                                    lineHeight: 1, fontWeight: 700,
+                                                }}
+                                                title="Hapus slot"
+                                            >✕</button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    </>
+)}
 
                     {/* ══ TAB: PERFORMA ════════════════════════════════════════ */}
                     {activeTab === "performa" && (
@@ -592,7 +752,7 @@ export default function KonselorDashboard() {
                                         </div>
                                     </div>
                                     <div className="kd-progress-list">
-                                        {myBookings.filter((b) => b.Status === "Berjalan").map((b) => {
+                                        {myBookings.filter((b) => STATUS_AKTIF.includes(b.Status)).map((b) => {
                                             const now = Math.round((b.Kondisi_Saat_Ini ?? 0) * 100);
                                             const awal = Math.round((b.Kondisi_Awal ?? 0) * 100);
                                             return (
@@ -612,7 +772,7 @@ export default function KonselorDashboard() {
                                                 </div>
                                             );
                                         })}
-                                        {myBookings.filter((b) => b.Status === "Berjalan").length === 0 && <p className="kd-empty">Tidak ada klien aktif.</p>}
+                                        {myBookings.filter((b) => STATUS_AKTIF.includes(b.Status)).length === 0 && <p className="kd-empty">Tidak ada klien aktif.</p>}
                                     </div>
                                 </div>
                                 <div className="kd-card">

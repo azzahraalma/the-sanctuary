@@ -1,4 +1,4 @@
-import { KATEGORI } from "./kategori";
+import { KATEGORI } from "./kategori.js";
 
 const data_booking = [
   {

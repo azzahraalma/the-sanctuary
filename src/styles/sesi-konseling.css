@@ -1,12 +1,29 @@
+/* ============================================================
+   sesi-konseling.css — SCOPED VERSION
+   Semua style dibatasi ke dalam .sesi-konseling-page
+   Tidak ada selector global yang bocor ke halaman lain.
+   ============================================================ */
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,400;0,600;1,400&display=swap');
 
-*, *::before, *::after {
+
+/* ─────────────────────────────────────────────────────────────
+   ROOT — Semua selector wajib di dalam .sesi-konseling-page
+   Pastikan komponen SesiKonseling.jsx punya wrapper:
+   <div className="sesi-konseling-page"> ... </div>
+───────────────────────────────────────────────────────────── */
+
+/* Reset hanya berlaku di dalam halaman ini */
+.sesi-konseling-page *,
+.sesi-konseling-page *::before,
+.sesi-konseling-page *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-.sk-shell {
+/* SHELL */
+.sesi-konseling-page .sk-shell {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -15,8 +32,10 @@
   overflow: hidden;
 }
 
-/* TOPBAR */
-.sk-topbar {
+
+/* ─── TOPBAR ──────────────────────────────────────────────── */
+
+.sesi-konseling-page .sk-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -28,7 +47,7 @@
   z-index: 10;
 }
 
-.sk-topbar-brand {
+.sesi-konseling-page .sk-topbar-brand {
   font-family: 'Fraunces', serif;
   font-size: 17px;
   font-weight: 600;
@@ -36,11 +55,12 @@
   cursor: pointer;
 }
 
-.sk-topbar-brand span {
+/* <span> dibatasi hanya di dalam .sk-topbar-brand yang ada di halaman ini */
+.sesi-konseling-page .sk-topbar-brand span {
   color: #2f7d79;
 }
 
-.sk-session-info {
+.sesi-konseling-page .sk-session-info {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -49,27 +69,28 @@
   font-weight: 500;
 }
 
-.sk-dot {
+.sesi-konseling-page .sk-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: #4caf7d;
-  animation: pulse-dot 2s infinite;
+  /* Nama keyframes diubah agar tidak bentrok dengan animasi global */
+  animation: sesiKons-pulse-dot 2s infinite;
 }
 
-@keyframes pulse-dot {
-  0%,100% {
-    opacity:1;
-    transform:scale(1);
+/* Keyframes diberi nama unik dengan prefix halaman */
+@keyframes sesiKons-pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
   }
-
   50% {
-    opacity:0.5;
-    transform:scale(0.85);
+    opacity: 0.5;
+    transform: scale(0.85);
   }
 }
 
-.sk-timer {
+.sesi-konseling-page .sk-timer {
   background: #e8f5f3;
   color: #2f7d79;
   font-size: 11px;
@@ -79,7 +100,7 @@
   letter-spacing: 0.5px;
 }
 
-.sk-end-btn {
+.sesi-konseling-page .sk-end-btn {
   background: #fee2e2;
   color: #dc2626;
   border: none;
@@ -90,19 +111,23 @@
   cursor: pointer;
 }
 
-.sk-end-btn:hover {
+.sesi-konseling-page .sk-end-btn:hover {
   background: #fecaca;
 }
 
-/* BODY */
-.sk-body {
+
+/* ─── BODY ────────────────────────────────────────────────── */
+
+.sesi-konseling-page .sk-body {
   display: flex;
   flex: 1;
   overflow: hidden;
 }
 
-/* LEFT */
-.sk-left {
+
+/* ─── LEFT PANEL ──────────────────────────────────────────── */
+
+.sesi-konseling-page .sk-left {
   width: 210px;
   background: #fff;
   border-right: 1px solid #e0f2f1;
@@ -114,11 +139,11 @@
   flex-shrink: 0;
 }
 
-.sk-avatar-wrap {
+.sesi-konseling-page .sk-avatar-wrap {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: linear-gradient(135deg,#79d8d1,#2f7d79);
+  background: linear-gradient(135deg, #79d8d1, #2f7d79);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,344 +151,364 @@
   font-weight: 700;
   color: #fff;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(47,125,121,0.25);
+  box-shadow: 0 4px 20px rgba(47, 125, 121, 0.25);
 }
 
-.sk-avatar-wrap img {
-  width:100%;
-  height:100%;
-  object-fit:cover;
+.sesi-konseling-page .sk-avatar-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.sk-kons-name {
-  font-size:13px;
-  font-weight:700;
-  color:#1a1a2e;
-  text-align:center;
-  line-height:1.3;
+.sesi-konseling-page .sk-kons-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-align: center;
+  line-height: 1.3;
 }
 
-.sk-kons-cat {
-  font-size:11px;
-  color:#2f7d79;
-  background:#e8f5f3;
-  border-radius:20px;
-  padding:3px 10px;
-  font-weight:600;
-  text-align:center;
+.sesi-konseling-page .sk-kons-cat {
+  font-size: 11px;
+  color: #2f7d79;
+  background: #e8f5f3;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-weight: 600;
+  text-align: center;
 }
 
-.sk-kons-rating {
-  font-size:11.5px;
-  color:#888;
-  display:flex;
-  align-items:center;
-  gap:4px;
+.sesi-konseling-page .sk-kons-rating {
+  font-size: 11.5px;
+  color: #888;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.sk-divider {
-  width:100%;
-  height:1px;
-  background:#e8f5f3;
-  margin:4px 0;
+.sesi-konseling-page .sk-divider {
+  width: 100%;
+  height: 1px;
+  background: #e8f5f3;
+  margin: 4px 0;
 }
 
-.sk-sesi-info {
-  width:100%;
-  background:#f8fffe;
-  border-radius:10px;
-  padding:12px;
-  font-size:11.5px;
-  color:#555;
-  line-height:1.7;
+.sesi-konseling-page .sk-sesi-info {
+  width: 100%;
+  background: #f8fffe;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 11.5px;
+  color: #555;
+  line-height: 1.7;
 }
 
-.sk-sesi-info strong {
-  color:#1a1a2e;
-  font-weight:600;
+/* <strong> dibatasi hanya di dalam .sk-sesi-info halaman ini */
+.sesi-konseling-page .sk-sesi-info strong {
+  color: #1a1a2e;
+  font-weight: 600;
 }
 
-/* CENTER */
-.sk-center {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
+
+/* ─── CENTER ──────────────────────────────────────────────── */
+
+.sesi-konseling-page .sk-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-/* MESSAGES */
-.sk-messages {
-  flex:1;
-  overflow-y:auto;
-  padding:20px 24px;
-  display:flex;
-  flex-direction:column;
-  gap:4px;
+
+/* ─── MESSAGES ────────────────────────────────────────────── */
+
+.sesi-konseling-page .sk-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.sk-messages::-webkit-scrollbar {
-  width:4px;
+.sesi-konseling-page .sk-messages::-webkit-scrollbar {
+  width: 4px;
 }
 
-.sk-messages::-webkit-scrollbar-thumb {
-  background:#c5e8e6;
-  border-radius:4px;
+.sesi-konseling-page .sk-messages::-webkit-scrollbar-thumb {
+  background: #c5e8e6;
+  border-radius: 4px;
 }
 
-.sk-date-sep {
-  text-align:center;
-  font-size:10.5px;
-  font-weight:600;
-  color:#aaa;
-  margin:12px 0 8px;
-  letter-spacing:0.5px;
+.sesi-konseling-page .sk-date-sep {
+  text-align: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #aaa;
+  margin: 12px 0 8px;
+  letter-spacing: 0.5px;
 }
 
-.sk-bubble-wrap {
-  display:flex;
-  flex-direction:column;
-  margin-bottom:2px;
+.sesi-konseling-page .sk-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2px;
 }
 
-.sk-bubble-wrap.me {
-  align-items:flex-end;
+.sesi-konseling-page .sk-bubble-wrap.me {
+  align-items: flex-end;
 }
 
-.sk-bubble-wrap.them {
-  align-items:flex-start;
+.sesi-konseling-page .sk-bubble-wrap.them {
+  align-items: flex-start;
 }
 
-.sk-sender-label {
-  font-size:10px;
-  color:#aaa;
-  font-weight:600;
-  margin-bottom:3px;
-  padding:0 4px;
+.sesi-konseling-page .sk-sender-label {
+  font-size: 10px;
+  color: #aaa;
+  font-weight: 600;
+  margin-bottom: 3px;
+  padding: 0 4px;
 }
 
-.sk-bubble {
-  max-width:68%;
-  padding:10px 14px;
-  border-radius:16px;
-  font-size:13.5px;
-  line-height:1.55;
-  word-break:break-word;
+.sesi-konseling-page .sk-bubble {
+  max-width: 68%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  word-break: break-word;
 }
 
-.sk-bubble.me {
-  background:linear-gradient(135deg,#2f7d79,#3a9e98);
-  color:#fff;
-  border-bottom-right-radius:4px;
+.sesi-konseling-page .sk-bubble.me {
+  background: linear-gradient(135deg, #2f7d79, #3a9e98);
+  color: #fff;
+  border-bottom-right-radius: 4px;
 }
 
-.sk-bubble.them {
-  background:#fff;
-  color:#1a1a2e;
-  border-bottom-left-radius:4px;
-  box-shadow:0 1px 4px rgba(0,0,0,0.07);
+.sesi-konseling-page .sk-bubble.them {
+  background: #fff;
+  color: #1a1a2e;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
 }
 
-.sk-bubble-time {
-  font-size:9.5px;
-  color:#bbb;
-  margin-top:3px;
-  padding:0 4px;
+.sesi-konseling-page .sk-bubble-time {
+  font-size: 9.5px;
+  color: #bbb;
+  margin-top: 3px;
+  padding: 0 4px;
 }
 
-.sk-bubble-wrap.me .sk-bubble-time {
-  text-align:right;
+.sesi-konseling-page .sk-bubble-wrap.me .sk-bubble-time {
+  text-align: right;
 }
 
-.sk-empty-chat {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  color:#aaa;
-  font-size:13px;
-  gap:8px;
-  padding-bottom:40px;
+.sesi-konseling-page .sk-empty-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #aaa;
+  font-size: 13px;
+  gap: 8px;
+  padding-bottom: 40px;
 }
 
-.sk-empty-chat .emoji {
-  font-size:36px;
+/* Diubah dari .emoji (generik) menjadi .sk-empty-emoji (spesifik) */
+.sesi-konseling-page .sk-empty-chat .sk-empty-emoji {
+  font-size: 36px;
 }
 
-/* QUICK REFLECTION */
-.sk-quick-ref {
+
+/* ─── QUICK REFLECTION ────────────────────────────────────── */
+
+.sesi-konseling-page .sk-quick-ref {
   padding: 10px 20px 12px;
-  background:#fff;
+  background: #fff;
   border-top: 1px solid #e0f2f1;
-  flex-shrink:0;
+  flex-shrink: 0;
 }
 
-.sk-quick-ref-label {
-  font-size:10px;
-  font-weight:700;
-  color:#aaa;
-  letter-spacing:0.8px;
-  text-transform:uppercase;
-  margin-bottom:7px;
+.sesi-konseling-page .sk-quick-ref-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #aaa;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 7px;
 }
 
-.sk-chips {
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px;
+.sesi-konseling-page .sk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.sk-chip {
-  font-size:11.5px;
-  font-weight:500;
-  color:#2f7d79;
-  background:#e8f5f3;
-  border:none;
-  border-radius:20px;
-  padding:5px 12px;
-  cursor:pointer;
-  transition:background 0.15s;
+.sesi-konseling-page .sk-chip {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #2f7d79;
+  background: #e8f5f3;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.sk-chip:hover {
-  background:#c8ece8;
+.sesi-konseling-page .sk-chip:hover {
+  background: #c8ece8;
 }
 
-/* INPUT */
-.sk-input-area {
-  background:#fff;
-  border-top:1px solid #e0f2f1;
-  padding:14px 20px;
-  display:flex;
-  gap:10px;
-  align-items:flex-end;
-  flex-shrink:0;
+
+/* ─── INPUT AREA ──────────────────────────────────────────── */
+
+.sesi-konseling-page .sk-input-area {
+  background: #fff;
+  border-top: 1px solid #e0f2f1;
+  padding: 14px 20px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  flex-shrink: 0;
 }
 
-.sk-input-area textarea {
-  flex:1;
-  border:1.5px solid #d0ece9;
-  border-radius:12px;
-  padding:10px 14px;
-  font-size:13.5px;
-  font-family:'DM Sans',sans-serif;
-  resize:none;
-  outline:none;
-  transition:border-color 0.2s;
-  max-height:100px;
-  line-height:1.5;
-  color:#1a1a2e;
-  background:#f8fffe;
+/* <textarea> dibatasi hanya di dalam .sk-input-area halaman ini */
+.sesi-konseling-page .sk-input-area textarea {
+  flex: 1;
+  border: 1.5px solid #d0ece9;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-family: 'DM Sans', sans-serif;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+  max-height: 100px;
+  line-height: 1.5;
+  color: #1a1a2e;
+  background: #f8fffe;
 }
 
-.sk-input-area textarea:focus {
-  border-color:#2f7d79;
-  background:#fff;
+.sesi-konseling-page .sk-input-area textarea:focus {
+  border-color: #2f7d79;
+  background: #fff;
 }
 
-.sk-input-area textarea::placeholder {
-  color:#bbb;
+.sesi-konseling-page .sk-input-area textarea::placeholder {
+  color: #bbb;
 }
 
-.sk-send-btn {
-  width:40px;
-  height:40px;
-  border-radius:12px;
-  background:linear-gradient(135deg,#79d8d1,#2f7d79);
-  border:none;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:opacity 0.2s, transform 0.15s;
-  flex-shrink:0;
+.sesi-konseling-page .sk-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #79d8d1, #2f7d79);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, transform 0.15s;
+  flex-shrink: 0;
 }
 
-.sk-send-btn:hover {
-  opacity:0.88;
-  transform:scale(1.05);
+.sesi-konseling-page .sk-send-btn:hover {
+  opacity: 0.88;
+  transform: scale(1.05);
 }
 
-.sk-send-btn:disabled {
-  opacity:0.4;
-  cursor:not-allowed;
-  transform:none;
+.sesi-konseling-page .sk-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
 }
 
-/* MODAL */
+
+/* ─── MODAL ───────────────────────────────────────────────────
+   Modal menggunakan React Portal dan di-render langsung ke
+   <body>, sehingga TIDAK bisa di-scope ke .sesi-konseling-page.
+   Solusi: gunakan .sk-overlay sebagai root scope modal,
+   dan pastikan class ini HANYA dipakai di SesiKonseling.jsx.
+   Jika khawatir konflik, ganti jadi .sesiKons-overlay.
+──────────────────────────────────────────────────────────── */
+
 .sk-overlay {
-  position:fixed;
-  inset:0;
-  z-index:999;
-  background:rgba(0,0,0,0.4);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
-.sk-modal {
-  background:#fff;
-  border-radius:20px;
-  padding:32px 28px;
-  max-width:380px;
-  width:100%;
-  box-shadow:0 24px 64px rgba(0,0,0,0.15);
-  text-align:center;
+.sk-overlay .sk-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 28px;
+  max-width: 380px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15);
+  text-align: center;
 }
 
-.sk-modal-emoji {
-  font-size:44px;
-  margin-bottom:12px;
+.sk-overlay .sk-modal-emoji {
+  font-size: 44px;
+  margin-bottom: 12px;
 }
 
-.sk-modal h3 {
-  font-family:'Fraunces',serif;
-  font-size:20px;
-  color:#1a1a2e;
-  margin-bottom:8px;
+/* <h3> dan <p> dibatasi hanya di dalam .sk-overlay .sk-modal */
+.sk-overlay .sk-modal h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  color: #1a1a2e;
+  margin-bottom: 8px;
 }
 
-.sk-modal p {
-  font-size:13px;
-  color:#666;
-  line-height:1.6;
-  margin-bottom:24px;
+.sk-overlay .sk-modal p {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 24px;
 }
 
-.sk-modal-btns {
-  display:flex;
-  gap:10px;
+.sk-overlay .sk-modal-btns {
+  display: flex;
+  gap: 10px;
 }
 
-.sk-modal-cancel {
-  flex:1;
-  padding:11px;
-  border:1.5px solid #e0ece9;
-  border-radius:10px;
-  background:none;
-  font-size:13px;
-  font-weight:600;
-  color:#666;
-  cursor:pointer;
+.sk-overlay .sk-modal-cancel {
+  flex: 1;
+  padding: 11px;
+  border: 1.5px solid #e0ece9;
+  border-radius: 10px;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
 }
 
-.sk-modal-cancel:hover {
-  background:#f5f5f5;
+.sk-overlay .sk-modal-cancel:hover {
+  background: #f5f5f5;
 }
 
-.sk-modal-confirm {
-  flex:1;
-  padding:11px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(135deg,#2f7d79,#1a5e5a);
-  color:#fff;
-  font-size:13px;
-  font-weight:600;
-  cursor:pointer;
+.sk-overlay .sk-modal-confirm {
+  flex: 1;
+  padding: 11px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2f7d79, #1a5e5a);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.sk-modal-confirm:hover {
-  opacity:0.88;
+.sk-overlay .sk-modal-confirm:hover {
+  opacity: 0.88;
 }

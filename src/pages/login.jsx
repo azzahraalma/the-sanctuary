@@ -62,8 +62,14 @@ export default function Login() {
       setLoading(false);
       return;
     }
-    if (mode === "mahasiswa" && role === "konselor") {
-      setError("Akun ini adalah akun konselor. Silakan login sebagai Konselor.");
+    if (mode === "mahasiswa" && role !== "mahasiswa") {
+      setError("Akun ini bukan akun mahasiswa. Silakan pilih mode yang sesuai.");
+      await supabase.auth.signOut();
+      setLoading(false);
+      return;
+    }
+    if (mode === "admin" && role !== "admin") {
+      setError("Akun ini bukan akun admin.");
       await supabase.auth.signOut();
       setLoading(false);
       return;
@@ -100,12 +106,14 @@ export default function Login() {
       email:      emailLower,
       role,
       konselorId,
-      student_id: studentId, 
+      student_id: studentId,
     }));
 
     setLoading(false);
 
-    if (role === "konselor") {
+    if (role === "admin") {
+      navigate("/admin-dashboard", { replace: true });
+    } else if (role === "konselor") {
       navigate("/konselor-dashboard", { replace: true });
     } else {
       const redirect = sessionStorage.getItem("redirect_after_login") || "/";
@@ -115,10 +123,11 @@ export default function Login() {
   };
 
   const isKonselor = mode === "konselor";
+  const isAdmin    = mode === "admin";
 
   return (
     <div className="auth-shell">
-      <div className={`auth-panel-left ${isKonselor ? "auth-panel-left--konselor" : ""}`}>
+      <div className={`auth-panel-left ${isKonselor ? "auth-panel-left--konselor" : ""} ${isAdmin ? "auth-panel-left--admin" : ""}`}>
         <div className="auth-overlay" />
         <div className="auth-left-brand">
           <span className="auth-logo auth-logo--light">The Sanctuary</span>
@@ -128,6 +137,11 @@ export default function Login() {
             <>
               <h2 className="auth-left-h2">Halo, Konselor!<br />Siap menemani<br />hari ini?</h2>
               <p className="auth-left-p">Terima kasih sudah hadir dan siap mendengarkan. Masuk dulu untuk melihat jadwal dan mahasiswa yang menunggumu.</p>
+            </>
+          ) : isAdmin ? (
+            <>
+              <h2 className="auth-left-h2">Halo, Admin!<br />Siap memantau<br />data hari ini?</h2>
+              <p className="auth-left-p">Akses dashboard analitik UX dan pantau performa seluruh ekosistem The Sanctuary dari sini.</p>
             </>
           ) : (
             <>
@@ -143,26 +157,38 @@ export default function Login() {
         <div className="auth-form-wrap">
           <div className="auth-mode-toggle">
             <button
-              className={`auth-mode-btn ${!isKonselor ? "auth-mode-btn--active" : ""}`}
+              className={`auth-mode-btn ${mode === "mahasiswa" ? "auth-mode-btn--active" : ""}`}
               onClick={() => handleModeSwitch("mahasiswa")}
             >
               🎓 Mahasiswa
             </button>
             <button
-              className={`auth-mode-btn ${isKonselor ? "auth-mode-btn--active" : ""}`}
+              className={`auth-mode-btn ${mode === "konselor" ? "auth-mode-btn--active" : ""}`}
               onClick={() => handleModeSwitch("konselor")}
             >
               🤝 Konselor
+            </button>
+            <button
+              className={`auth-mode-btn ${mode === "admin" ? "auth-mode-btn--active" : ""}`}
+              onClick={() => handleModeSwitch("admin")}
+            >
+              ⚙️ Admin
             </button>
           </div>
 
           <div className="auth-form-header">
             <h1 className="auth-form-h1">
-              {isKonselor ? <>Masuk sebagai<br />Konselor ✨</> : <>Halo,<br />selamat datang<br />kembali ✨</>}
+              {isKonselor
+                ? <>Masuk sebagai<br />Konselor ✨</>
+                : isAdmin
+                ? <>Masuk sebagai<br />Admin ✨</>
+                : <>Halo,<br />selamat datang<br />kembali ✨</>}
             </h1>
             <p className="auth-form-sub">
               {isKonselor
                 ? "Masukkan akun konselor kamu untuk mengakses dashboard dan jadwal sesimu."
+                : isAdmin
+                ? "Masukkan akun admin kamu untuk mengakses dashboard analitik UX."
                 : "Masukkan akun kamu untuk lanjut ngobrol, melihat dashboard, dan mengakses ruang yang sudah dipersonalisasi buat kamu."}
             </p>
           </div>
@@ -173,7 +199,11 @@ export default function Login() {
               <input
                 type="email"
                 className="auth-input"
-                placeholder={isKonselor ? "email.konselor@sanctuary.com" : "contoh@email.com"}
+                placeholder={
+                  isKonselor ? "email.konselor@sanctuary.com"
+                  : isAdmin  ? "admin@sanctuary.com"
+                  : "contoh@email.com"
+                }
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -213,14 +243,18 @@ export default function Login() {
 
             <button
               type="submit"
-              className={`auth-submit ${loading ? "auth-submit--loading" : ""} ${isKonselor ? "auth-submit--konselor" : ""}`}
+              className={`auth-submit ${loading ? "auth-submit--loading" : ""} ${isKonselor ? "auth-submit--konselor" : ""} ${isAdmin ? "auth-submit--admin" : ""}`}
               disabled={loading}
             >
-              {loading ? <span className="auth-spinner" /> : isKonselor ? "Masuk sebagai Konselor" : "Masuk ke Ruang Saya"}
+              {loading
+                ? <span className="auth-spinner" />
+                : isKonselor ? "Masuk sebagai Konselor"
+                : isAdmin    ? "Masuk sebagai Admin"
+                : "Masuk ke Ruang Saya"}
             </button>
           </form>
 
-          {!isKonselor && (
+          {!isKonselor && !isAdmin && (
             <p className="auth-switch" style={{ textAlign: "center" }}>
               Belum punya akun?{" "}
               <span className="auth-switch-link" onClick={() => navigate("/register")}>Yuk daftar dulu</span>

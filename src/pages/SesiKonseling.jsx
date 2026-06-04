@@ -28,15 +28,15 @@ export default function SesiKonseling() {
   const { bookingId } = useParams();
   const navigate = useNavigate();
 
-  const [booking, setBooking]       = useState(null);
-  const [konselor, setKonselor]     = useState(null);
-  const [messages, setMessages]     = useState([]);
-  const [input, setInput]           = useState("");
-  const [isSending, setIsSending]   = useState(false);
-  const [isLoading, setIsLoading]   = useState(true);
+  const [booking, setBooking]           = useState(null);
+  const [konselor, setKonselor]         = useState(null);
+  const [messages, setMessages]         = useState([]);
+  const [input, setInput]               = useState("");
+  const [isSending, setIsSending]       = useState(false);
+  const [isLoading, setIsLoading]       = useState(true);
   const [showEndModal, setShowEndModal] = useState(false);
-  const [elapsed, setElapsed]       = useState(0);
-  const bottomRef = useRef(null);
+  const [elapsed, setElapsed]           = useState(0);
+  const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
 
   // ── ambil user dari localStorage — dijamin ada sebelum render
@@ -118,15 +118,14 @@ export default function SesiKonseling() {
     const h = Math.floor(elapsed / 3600);
     const m = Math.floor((elapsed % 3600) / 60);
     const s = elapsed % 60;
-    if (h > 0) return `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   })();
 
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || isSending) return;
 
-    // pastikan semua field ada
     if (!bookingId || !userEmail || !firstName) {
       console.error("Missing fields:", { bookingId, userEmail, firstName });
       return;
@@ -146,12 +145,12 @@ export default function SesiKonseling() {
       tipe: "mahasiswa",
     };
 
-    console.log("Inserting pesan:", payload); // debug
+    console.log("Inserting pesan:", payload);
 
     const { error } = await supabase.from("pesan_sesi").insert(payload);
     if (error) {
       console.error("Insert pesan error:", error);
-      setInput(text); // kembalikan teks kalau gagal
+      setInput(text);
     }
     setIsSending(false);
   };
@@ -161,18 +160,18 @@ export default function SesiKonseling() {
   };
 
   const endSession = async () => {
-  const { error } = await supabase
-    .from("booking")
-    .update({ status: "Selesai" })
-    .eq("id", bookingId);
+    const { error } = await supabase
+      .from("booking")
+      .update({ status: "Selesai" })
+      .eq("id", bookingId);
 
-  if (error) {
-    console.error("Gagal mengakhiri sesi:", error);
-    return;
-  }
+    if (error) {
+      console.error("Gagal mengakhiri sesi:", error);
+      return;
+    }
 
-  navigate(`/evaluasi/${bookingId}`);
-};
+    navigate(`/evaluasi/${bookingId}`);
+  };
 
   const grouped = groupByDate(messages);
 
@@ -187,8 +186,10 @@ export default function SesiKonseling() {
   );
 
   return (
-    <>
+    // ── wrapper root agar semua CSS hanya berlaku di halaman ini
+    <div className="sesi-konseling-page">
 
+      {/* MODAL — di-render di dalam wrapper, bukan via Portal */}
       {showEndModal && (
         <div className="sk-overlay">
           <div className="sk-modal">
@@ -200,8 +201,12 @@ export default function SesiKonseling() {
               Semua pesan akan tersimpan di riwayat sesimu.
             </p>
             <div className="sk-modal-btns">
-              <button className="sk-modal-cancel" onClick={() => setShowEndModal(false)}>Lanjutkan</button>
-              <button className="sk-modal-confirm" onClick={endSession}>Ya, Akhiri Sesi</button>
+              <button className="sk-modal-cancel" onClick={() => setShowEndModal(false)}>
+                Lanjutkan
+              </button>
+              <button className="sk-modal-confirm" onClick={endSession}>
+                Ya, Akhiri Sesi
+              </button>
             </div>
           </div>
         </div>
@@ -237,7 +242,9 @@ export default function SesiKonseling() {
               <span className="sk-kons-cat">{konselor.kategori_masalah}</span>
             )}
             {konselor?.["Rating_(Final)"] && (
-              <span className="sk-kons-rating">⭐ {Number(konselor["Rating_(Final)"]).toFixed(1)}</span>
+              <span className="sk-kons-rating">
+                ⭐ {Number(konselor["Rating_(Final)"]).toFixed(1)}
+              </span>
             )}
             <div className="sk-divider" />
             <div className="sk-sesi-info">
@@ -257,7 +264,8 @@ export default function SesiKonseling() {
             <div className="sk-messages">
               {messages.length === 0 ? (
                 <div className="sk-empty-chat">
-                  <span className="emoji">🌱</span>
+                  {/* Diubah dari className="emoji" → className="sk-empty-emoji" */}
+                  <span className="sk-empty-emoji">🌱</span>
                   <span>Sesi dimulai! Apa yang ingin kamu ceritakan hari ini?</span>
                 </div>
               ) : (
@@ -290,7 +298,9 @@ export default function SesiKonseling() {
                   "Aku butuh waktu untuk merenung 💭",
                   "Terima kasih sudah mendengarkan 🙏",
                 ].map(chip => (
-                  <button key={chip} className="sk-chip" onClick={() => setInput(chip)}>{chip}</button>
+                  <button key={chip} className="sk-chip" onClick={() => setInput(chip)}>
+                    {chip}
+                  </button>
                 ))}
               </div>
             </div>
@@ -314,7 +324,8 @@ export default function SesiKonseling() {
                 onClick={sendMessage}
                 disabled={!input.trim() || isSending}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13" />
                   <polygon points="22 2 15 22 11 13 2 9 22 2" />
                 </svg>
@@ -323,6 +334,7 @@ export default function SesiKonseling() {
           </div>
         </div>
       </div>
-    </>
+
+    </div>
   );
 }

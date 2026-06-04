@@ -14,6 +14,7 @@ import RiwayatSesi from "./pages/RiwayatSesi.jsx";
 import Notifikasi from "./pages/Notifikasi.jsx";
 import SesiKonseling from "./pages/SesiKonseling.jsx";
 import EvaluasiSesi from "./pages/EvaluasiSesi.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 function getUser() {
   try {
@@ -32,6 +33,11 @@ function isKonselor() {
   return user?.role === "konselor";
 }
 
+function isAdmin() {
+  const user = getUser();
+  return user?.role === "admin";
+}
+
 /* =========================
    ROUTE GUARDS
 ========================= */
@@ -41,25 +47,22 @@ function ProtectedRoute({ children }) {
 }
 
 function KonselorRoute({ children }) {
-  if (!isLoggedIn()) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  if (!isKonselor()) return <Navigate to="/dashboard" replace />;
+  return children;
+}
 
-  if (!isKonselor()) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
+function AdminRoute({ children }) {
+  if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  if (!isAdmin()) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
 function AuthRoute({ children }) {
-  if (!isLoggedIn()) {
-    return children;
-  }
-
-  return isKonselor()
-    ? <Navigate to="/konselor-dashboard" replace />
-    : <Navigate to="/dashboard" replace />;
+  if (!isLoggedIn()) return children;
+  if (isAdmin())    return <Navigate to="/admin-dashboard" replace />;
+  if (isKonselor()) return <Navigate to="/konselor-dashboard" replace />;
+  return <Navigate to="/dashboard" replace />;
 }
 
 /* =========================
@@ -75,132 +78,33 @@ export default function App() {
         <Route path="/" element={<Home />} />
 
         {/* ================= AUTH ================= */}
-        <Route
-          path="/login"
-          element={
-            <AuthRoute>
-              <Login />
-            </AuthRoute>
-          }
-        />
-
-        <Route
-          path="/register"
-          element={
-            <AuthRoute>
-              <Register />
-            </AuthRoute>
-          }
-        />
+        <Route path="/login" element={<AuthRoute><Login /></AuthRoute>} />
+        <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
 
         {/* ================= MAHASISWA ================= */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/kuesioner"
-          element={
-            <ProtectedRoute>
-              <Kuesioner />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/statistik"
-          element={
-            <ProtectedRoute>
-              <Statistik />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/riwayat"
-          element={
-            <ProtectedRoute>
-              <RiwayatSesi />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/notifikasi"
-          element={
-            <ProtectedRoute>
-              <Notifikasi />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/kuesioner" element={<ProtectedRoute><Kuesioner /></ProtectedRoute>} />
+        <Route path="/statistik" element={<ProtectedRoute><Statistik /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/riwayat" element={<ProtectedRoute><RiwayatSesi /></ProtectedRoute>} />
+        <Route path="/notifikasi" element={<ProtectedRoute><Notifikasi /></ProtectedRoute>} />
 
         {/* ================= KONSELOR ================= */}
-        <Route
-          path="/konselor"
-          element={
-            <ProtectedRoute>
-              <Konselor />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/konselor/:id"
-          element={
-            <ProtectedRoute>
-              <KonselorDetail />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/konselor-dashboard"
-          element={
-            <KonselorRoute>
-              <KonselorDashboard />
-            </KonselorRoute>
-          }
-        />
+        <Route path="/konselor" element={<ProtectedRoute><Konselor /></ProtectedRoute>} />
+        <Route path="/konselor/:id" element={<ProtectedRoute><KonselorDetail /></ProtectedRoute>} />
+        <Route path="/konselor-dashboard" element={<KonselorRoute><KonselorDashboard /></KonselorRoute>} />
 
         {/* ================= SESI ================= */}
-        <Route
-          path="/sesi/:bookingId"
-          element={
-            <ProtectedRoute>
-              <SesiKonseling />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/sesi/:bookingId" element={<ProtectedRoute><SesiKonseling /></ProtectedRoute>} />
 
         {/* ================= EVALUASI SESI ================= */}
-        <Route
-  path="/evaluasi/:bookingId"
-  element={
-    <ProtectedRoute>
-      <EvaluasiSesi />
-    </ProtectedRoute>
-  }
-/>
+        <Route path="/evaluasi/:bookingId" element={<ProtectedRoute><EvaluasiSesi /></ProtectedRoute>} />
+
+        {/* ================= ADMIN ================= */}
+        <Route path="/admin-dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
         {/* ================= FALLBACK ================= */}
-        <Route
-          path="*"
-          element={<Navigate to="/" replace />}
-        />
+        <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
     </BrowserRouter>

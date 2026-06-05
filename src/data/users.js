@@ -68,7 +68,8 @@ export function findUser(email, password) {
   if (!user) return null;
 
   // Jangan pernah simpan password ke localStorage
-  const { password: _pw, ...safeUser } = user;
+  const safeUser = { ...user };
+  delete safeUser.password;
   return safeUser;
 }
 
@@ -100,6 +101,7 @@ export function registerUser(name, email, password) {
   };
   DUMMY_USERS.push(newUser);
 
-  const { password: _pw, ...safeUser } = newUser;
+  const safeUser = { ...newUser };
+  delete safeUser.password;
   return safeUser;
 }

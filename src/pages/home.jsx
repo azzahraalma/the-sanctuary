@@ -98,21 +98,7 @@ function AnimatedCounter({ target, suffix = "", decimals = 0 }) {
   return <span ref={ref}>0{suffix}</span>;
 }
 
-// ── MiniBar ──────────────────────────────────────────────────────────────────
-function MiniBar({ label, value, max = 5 }) {
-  const pct = Math.round((value / max) * 100);
-  return (
-    <div className="mini-bar">
-      <div className="mini-bar-label">
-        <span>{label}</span>
-        <span className="mini-bar-val">{value.toFixed(1)}</span>
-      </div>
-      <div className="mini-bar-track">
-        <div className="mini-bar-fill" style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
-}
+
 
 // ── Journey steps ────────────────────────────────────────────────────────────
 const steps = [

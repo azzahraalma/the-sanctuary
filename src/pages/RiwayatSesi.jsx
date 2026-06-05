@@ -85,13 +85,6 @@ function KonselorAvatar({ konselor }) {
 export default function RiwayatSesi() {
   const navigate = useNavigate();
 
-  const [mid, setMid]               = useState(null);
-  const [myProgress, setMyProgress] = useState([]);
-  const [myBookings, setMyBookings] = useState([]);
-  const [myKonselor, setMyKonselor] = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [expanded, setExpanded]     = useState(null);
-
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
     catch { return null; }
@@ -100,24 +93,52 @@ export default function RiwayatSesi() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
+  const [mid, setMid]               = useState(() => {
+    if (!userEmail) return null;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+      if (saved?.student_id) return saved.student_id;
+    } catch { /* ignore */ }
+    return null;
+  });
+  const [myProgress, setMyProgress] = useState([]);
+  const [myBookings, setMyBookings] = useState([]);
+  const [myKonselor, setMyKonselor] = useState([]);
+  const [loading, setLoading]       = useState(() => {
+    if (!userEmail) return false;
+    return true;
+  });
+  const [expanded, setExpanded]     = useState(null);
+
   useEffect(() => {
-    if (!userEmail) { setLoading(false); return; }
+    if (!userEmail) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+      if (saved?.student_id) return;
+    } catch { /* ignore */ }
+
+    let active = true;
     (async () => {
       const { data } = await supabase
         .from("profil_pengguna")
         .select("student_id")
         .eq("email", userEmail)
         .maybeSingle();
-      setMid(data?.student_id ?? null);
+      if (active) {
+        setMid(data?.student_id ?? null);
+        if (!data?.student_id) {
+          setLoading(false);
+        }
+      }
     })();
+    return () => { active = false; };
   }, [userEmail]);
 
   useEffect(() => {
-    if (!mid) { setLoading(false); return; }
+    if (!mid) return;
 
+    let active = true;
     async function fetchAll() {
-      setLoading(true);
-
       const [progRes, bookRes] = await Promise.all([
         supabase
           .from("progress_konseling")
@@ -129,6 +150,8 @@ export default function RiwayatSesi() {
           .select("*")
           .eq("id_mahasiswa", mid),
       ]);
+
+      if (!active) return;
 
       const progress = (progRes.data ?? []).map(p => ({
         Sesi_Konseling:     p.sesi_konseling,
@@ -168,13 +191,18 @@ export default function RiwayatSesi() {
           .from("data_konselor")
           .select("*")
           .in("id", ids);
-        setMyKonselor((kData ?? []).map(mapKonselor));
+        if (active) {
+          setMyKonselor((kData ?? []).map(mapKonselor));
+        }
       }
 
-      setLoading(false);
+      if (active) {
+        setLoading(false);
+      }
     }
 
     fetchAll();
+    return () => { active = false; };
   }, [mid]);
 
   const handleLogout = () => {

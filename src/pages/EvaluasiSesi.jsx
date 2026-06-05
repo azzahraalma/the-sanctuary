@@ -72,10 +72,7 @@ export default function EvaluasiSesi() {
     keseimbangan_hidup: 0.5,
   });
 
-  const user = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("sanctuary_user")) ?? {}; }
-    catch { return {}; }
-  }, []);
+
 
   useEffect(() => {
     if (!bookingId) { navigate("/konselor-dashboard"); return; }
@@ -127,9 +124,18 @@ export default function EvaluasiSesi() {
 
     const sesiKe = (count ?? 0) + 1;
 
+    // Ambil target sesi dari data_target
+    const { data: targets } = await supabase
+      .from("data_target")
+      .select("*")
+      .eq("id_mahasiswa", booking?.id_mahasiswa);
+
+    const targetSesi = targets?.[0]?.target_sesi ?? 4;
+
     // Insert progress
     const { error: progErr } = await supabase.from("progress_konseling").insert({
       id_mahasiswa:      booking?.id_mahasiswa,
+      id_konselor:       booking?.id_konselor,
       sesi_konseling:    sesiKe,
       tanggal:           new Date().toISOString(),
       kondisi_terkini:   avgScore,
@@ -145,10 +151,28 @@ export default function EvaluasiSesi() {
       skor_keterbukaan,
       skor_kemajuan,
       skor_konsistensi,
-      sesi_tercapai:     `${sesiKe}/4`,
+      sesi_tercapai:     `${sesiKe}/${targetSesi}`,
     });
 
     if (progErr) console.error("Insert progress error:", progErr);
+
+    // Update target di data_target (increment sesi_terlalui dan ubah status jika selesai)
+    if (targets && targets.length > 0) {
+      for (const t of targets) {
+        if (t.status === "Berjalan") {
+          const nextTerlalui = (t.sesi_terlalui ?? 0) + 1;
+          const nextStatus = nextTerlalui >= t.target_sesi ? "Selesai" : "Berjalan";
+          await supabase
+            .from("data_target")
+            .update({
+              sesi_terlalui: nextTerlalui,
+              status: nextStatus
+            })
+            .eq("id_mahasiswa", booking?.id_mahasiswa)
+            .eq("nama_target", t.nama_target);
+        }
+      }
+    }
 
     // Update booking jadi Selesai + kondisi_saat_ini
     await supabase.from("booking").update({

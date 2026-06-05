@@ -206,9 +206,9 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
   const tabIdx = TAB_KEYS.indexOf(tab);
 
   const uxLabel =
-    uxIdx >= 75 ? "Website terasa sangat nyaman! 😊"
-    : uxIdx >= 50 ? "Website sudah cukup nyaman 😐"
-    : "Ada yang perlu kita tingkatkan bareng 😟";
+    uxIdx >= 75 ? "Website terasa sangat nyaman!"
+    : uxIdx >= 50 ? "Website sudah cukup nyaman"
+    : "Ada yang perlu kita tingkatkan bareng";
 
   const handleSubmit = async () => {
     if (!allDone || submitted) return;
@@ -217,7 +217,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
       .insert([{ email: userKey, nama: userName, ux_score: uxIdx, jawaban: answers }]);
     if (error) {
       console.error(error);
-      if (error.code === "23505") alert("Kamu sudah pernah isi kuesioner 😭");
+      if (error.code === "23505") alert("Kamu sudah pernah isi kuesioner");
       return;
     }
     setSubmitted(true);
@@ -225,7 +225,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
 
   if (isLoading) return (
     <div className="db-kuesioner-card" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 200 }}>
-      <p style={{ color: "var(--gray)", fontSize: 14 }}>Memuat kuesioner... 🌱</p>
+      <p style={{ color: "var(--gray)", fontSize: 14 }}>Memuat kuesioner...</p>
     </div>
   );
 
@@ -233,7 +233,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
     <div className="db-kuesioner-card">
       <div className="db-kues-header">
         <div>
-          <h3 className="db-kues-h3">Gimana Pengalaman Kamu? ✨</h3>
+          <h3 className="db-kues-h3">Gimana Pengalaman Kamu?</h3>
           <p className="db-kues-sub">Hasil penilaian dari {userName}</p>
         </div>
         <span className="db-kues-badge db-kues-badge--done">Selesai ✓</span>
@@ -287,7 +287,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
     <div className="db-kuesioner-card">
       <div className="db-kues-header">
         <div>
-          <h3 className="db-kues-h3">Gimana Pengalaman Kamu? ✨</h3>
+          <h3 className="db-kues-h3">Gimana Pengalaman Kamu?</h3>
           <p className="db-kues-sub">Bantu kami jadi lebih baik dengan cerita pengalamanmu</p>
         </div>
         <span className="db-kues-badge">Skala 1 – 5</span>
@@ -382,7 +382,7 @@ async function seedPesan(email, firstName, bookings, konselorData) {
       id_pengirim: "sanctuary-team",
       nama_pengirim: "The Sanctuary Team",
       foto_pengirim: null,
-      teks: `Halo ${firstName}! 👋 Senang kamu bergabung di Sanctuary. Gimana kabarmu hari ini? Kami selalu ada buat mendengarkan 🌱`,
+      teks: `Halo ${firstName}! Senang kamu bergabung di Sanctuary. Gimana kabarmu hari ini? Kami selalu ada buat mendengarkan`,
       dibaca: false,
       tipe: "welcome",
     });
@@ -400,7 +400,7 @@ async function seedPesan(email, firstName, bookings, konselorData) {
           id_pengirim: k.id,
           nama_pengirim: k.nama,
           foto_pengirim: k.foto_url ?? null,
-          teks: `Sesi ${bk.sesi_konseling} kita udah selesai ya ${firstName}! Gimana perasaanmu sekarang? Semangat terus, kamu udah berani cerita 🌻`,
+          teks: `Sesi ${bk.sesi_konseling} kita udah selesai ya ${firstName}! Gimana perasaanmu sekarang? Semangat terus, kamu udah berani cerita`,
           dibaca: false,
           tipe,
         });
@@ -409,14 +409,14 @@ async function seedPesan(email, firstName, bookings, konselorData) {
       const tipe = `pengingat_sesi_${k.id}`;
       if (!tipeYangAda.has(tipe)) {
         const tglSesi = new Date(bk.tanggal_sesi).toLocaleDateString("id-ID", {
-          weekday: "long", day: "numeric", month: "long",
+          timeZone: "Asia/Jakarta", weekday: "long", day: "numeric", month: "long",
         });
         toInsert.push({
           id_penerima: email,
           id_pengirim: k.id,
           nama_pengirim: k.nama,
           foto_pengirim: k.foto_url ?? null,
-          teks: `Hai ${firstName}! Jangan lupa sesi kita ${tglSesi} ya 📅 Siapkan dirimu, aku siap mendengarkan 🤝`,
+          teks: `Hai ${firstName}! Jangan lupa sesi kita ${tglSesi} ya Siapkan dirimu, aku siap mendengarkan`,
           dibaca: false,
           tipe,
         });
@@ -430,7 +430,7 @@ async function seedPesan(email, firstName, bookings, konselorData) {
       id_pengirim: "sanctuary-team",
       nama_pengirim: "The Sanctuary Team",
       foto_pengirim: null,
-      teks: "Makasih udah jadi bagian dari Sanctuary 💛 Semoga hari-harimu terasa lebih ringan.",
+      teks: "Makasih udah jadi bagian dari Sanctuary, Semoga hari-harimu terasa lebih ringan.",
       dibaca: false,
       tipe: "motivasi",
     });
@@ -447,15 +447,6 @@ const STATUS_AKTIF = ["berjalan", "terjadwal", "Berjalan", "Terjadwal", "aktif",
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const [mid, setMid]                   = useState(null);
-  const [bookings, setBookings]         = useState([]);
-  const [konselor, setKonselor]         = useState([]);
-  const [progress, setProgress]         = useState([]);
-  const [pesan, setPesan]               = useState([]);
-  const [uxScore, setUxScore]           = useState(0);
-  const [isLoading, setIsLoading]       = useState(true);
-  const [selectedPesan, setSelectedPesan] = useState(null);
-
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
     catch { return null; }
@@ -464,26 +455,64 @@ export default function Dashboard() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
+  const [mid, setMid]                   = useState(() => {
+    if (!userEmail) return null;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+      if (saved?.student_id) return saved.student_id;
+    } catch { /* ignore */ }
+    return null;
+  });
+  const [bookings, setBookings]         = useState([]);
+  const [konselor, setKonselor]         = useState([]);
+  const [progress, setProgress]         = useState([]);
+  const [pesan, setPesan]               = useState([]);
+  const [isLoading, setIsLoading]       = useState(() => {
+    if (!userEmail) return false;
+    return true;
+  });
+  const [selectedPesan, setSelectedPesan] = useState(null);
+  const [slots, setSlots]                 = useState([]);
+  const [now, setNow]                     = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
   // ── Step 1: Fetch student_id dari profil_pengguna ──
   useEffect(() => {
-    if (!userEmail) { setIsLoading(false); return; }
+    if (!userEmail) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+      if (saved?.student_id) return;
+    } catch { /* ignore */ }
+
+    let active = true;
     (async () => {
       const { data } = await supabase
         .from("profil_pengguna")
         .select("student_id")
         .eq("email", userEmail)
         .maybeSingle();
-      setMid(data?.student_id ?? null);
+      if (active) {
+        setMid(data?.student_id ?? null);
+        if (!data?.student_id) {
+          setIsLoading(false);
+        }
+      }
     })();
+    return () => { active = false; };
   }, [userEmail]);
 
   // ── Step 2: Fetch semua data dashboard pakai mid ──
   useEffect(() => {
-    if (!mid) { setIsLoading(false); return; }
+    if (!mid) return;
 
+    let active = true;
     async function fetchDashboardData() {
-      setIsLoading(true);
-
       const [bookingRes, progressRes] = await Promise.all([
         supabase
           .from("booking")
@@ -497,6 +526,8 @@ export default function Dashboard() {
           .order("sesi_konseling", { ascending: false }),
       ]);
 
+      if (!active) return;
+
       const myBookings = bookingRes.data ?? [];
       const myProgress = (progressRes.data ?? []).map(p => ({
         ...p,
@@ -508,14 +539,26 @@ export default function Dashboard() {
 
       const konselorIds = [...new Set(myBookings.map(b => b.id_konselor).filter(Boolean))];
       let konselorData = [];
+      let slotsData = [];
 
       if (konselorIds.length > 0) {
-        const { data } = await supabase
-          .from("data_konselor")
-          .select("*")
-          .in("id", konselorIds);
-        konselorData = data ?? [];
-        setKonselor(konselorData);
+        const [kRes, sRes] = await Promise.all([
+          supabase
+            .from("data_konselor")
+            .select("*")
+            .in("id", konselorIds),
+          supabase
+            .from("konselor_availability")
+            .select("*")
+            .in("konselor_id", konselorIds)
+            .eq("status", "booked")
+        ]);
+        konselorData = kRes.data ?? [];
+        slotsData = sRes.data ?? [];
+        if (active) {
+          setKonselor(konselorData);
+          setSlots(slotsData);
+        }
       }
 
       await seedPesan(userEmail, firstName, myBookings, konselorData);
@@ -526,20 +569,41 @@ export default function Dashboard() {
         .eq("id_penerima", userEmail)
         .order("created_at", { ascending: false });
 
-      setPesan((pesanData ?? []).map(p => ({
-        id: p.id,
-        nama: p.nama_pengirim,
-        avatar: p.nama_pengirim?.charAt(0) ?? "S",
-        foto: p.foto_pengirim ?? null,
-        waktu: timeAgo(p.created_at),
-        teks: p.teks,
-        unread: !p.dibaca,
-      })));
-
-      setIsLoading(false);
+      if (active) {
+        setPesan((pesanData ?? []).map(p => ({
+          id: p.id,
+          nama: p.nama_pengirim,
+          avatar: p.nama_pengirim?.charAt(0) ?? "S",
+          foto: p.foto_pengirim ?? null,
+          waktu: timeAgo(p.created_at),
+          teks: p.teks,
+          unread: !p.dibaca,
+        })));
+        setIsLoading(false);
+      }
     }
 
     fetchDashboardData();
+
+    // Subscribe ke perubahan booking secara realtime agar status terupdate
+    const bookingChannel = supabase
+      .channel(`student-bookings-${mid}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "booking",
+        filter: `id_mahasiswa=eq.${mid}`,
+      }, () => {
+        if (active) {
+          fetchDashboardData();
+        }
+      })
+      .subscribe();
+
+    return () => {
+      active = false;
+      supabase.removeChannel(bookingChannel);
+    };
   }, [mid]); // eslint-disable-line
 
   const handlePesanClick = async (p) => {
@@ -721,7 +785,6 @@ export default function Dashboard() {
           <div className="db-grid">
             <KuesionerUX
               userName={firstName}
-              onScoreChange={setUxScore}
               userKey={userKey}
             />
 
@@ -742,10 +805,73 @@ export default function Dashboard() {
                 {!isLoading && konselor.map(k => {
                   const bk = bookings.find(b => b.id_konselor === k.id);
                   const tgl = bk
-                    ? new Date(bk.tanggal_sesi).toLocaleDateString("id-ID", { weekday: "long" })
+                    ? new Date(bk.tanggal_sesi).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", weekday: "long" })
                     : "-";
-                  const today = new Date().toISOString().split("T")[0];
-                  const bisaMulai = bk && STATUS_AKTIF.includes(bk.status) && bk.tanggal_sesi <= today;
+
+                  const isBerjalan = bk && ["Berjalan", "berjalan", "aktif", "Aktif"].includes(bk.status);
+
+                  const normalizeTime = (t) => {
+                    if (!t) return "00:00:00";
+                    const parts = t.split(":");
+                    if (parts.length === 2) return `${t}:00`;
+                    return t;
+                  };
+
+                  const getWIBDateStr = (dateStr) => {
+                    if (!dateStr) return "";
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+                  };
+
+                  const getWIBTimeStr = (dateStr) => {
+                    if (!dateStr) return "00:00:00";
+                    const date = new Date(dateStr);
+                    return date.toLocaleTimeString("id-ID", {
+                      timeZone: "Asia/Jakarta",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: false
+                    }).replace(/\./g, ":");
+                  };
+
+                  const isDateOnly = bk && bk.tanggal_sesi && (bk.tanggal_sesi.includes("T00:00:00") || !bk.tanggal_sesi.includes("T"));
+
+                  const bkDateStr = bk && bk.tanggal_sesi ? getWIBDateStr(bk.tanggal_sesi) : "";
+                  const bkTimeStr = bk && bk.tanggal_sesi ? getWIBTimeStr(bk.tanggal_sesi) : "00:00:00";
+
+                  const matchedSlot = slots.find(s => 
+                    s.konselor_id === bk?.id_konselor &&
+                    s.tanggal === bkDateStr &&
+                    (isDateOnly || normalizeTime(s.jam_mulai) === bkTimeStr)
+                  );
+
+                  let start = null;
+                  let end = null;
+
+                  if (matchedSlot) {
+                    start = new Date(`${matchedSlot.tanggal}T${normalizeTime(matchedSlot.jam_mulai)}+07:00`);
+                    end = new Date(`${matchedSlot.tanggal}T${normalizeTime(matchedSlot.jam_selesai)}+07:00`);
+                  } else if (bk && bk.tanggal_sesi) {
+                    start = new Date(bk.tanggal_sesi);
+                    end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour fallback
+                  }
+
+                  const startBuffer = start;
+                  const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
+
+                  const showMulaiSesiButton = bk && ["Terjadwal", "terjadwal"].includes(bk.status) && isTimeRange;
+                  const showMasukSesiButton = isBerjalan;
+
+                  let statusHelperText = null;
+                  if (bk && ["Terjadwal", "terjadwal"].includes(bk.status)) {
+                    if (startBuffer && now < startBuffer) {
+                      const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
+                      statusHelperText = `Mulai pukul ${jamStr} ⏱`;
+                    } else if (end && now > end) {
+                      statusHelperText = "Jadwal Terlewat ⌛";
+                    }
+                  }
 
                   return (
                     <div
@@ -764,12 +890,33 @@ export default function Dashboard() {
                         <span className={`db-konsul-status ${bk?.status === "Selesai" ? "s-done" : "s-run"}`}>
                           {bk?.status ?? "-"}
                         </span>
+                        {statusHelperText && (
+                          <span className="db-status-helper" style={{ fontSize: "0.75rem", color: "#666", marginTop: 4, fontWeight: "500" }}>
+                            {statusHelperText}
+                          </span>
+                        )}
                         {/* ── Tombol Mulai Sesi ── */}
-                        {bisaMulai && (
+                        {showMasukSesiButton && (
                           <button
                             className="db-btn-mulai-sesi"
                             onClick={e => {
                               e.stopPropagation(); // jangan trigger navigate ke /riwayat
+                              navigate(`/sesi/${bk.id}`);
+                            }}
+                          >
+                            Masuk Sesi →
+                          </button>
+                        )}
+                        {showMulaiSesiButton && (
+                          <button
+                            className="db-btn-mulai-sesi"
+                            onClick={async e => {
+                              e.stopPropagation(); // jangan trigger navigate ke /riwayat
+                              // Update status ke "Berjalan" agar aktif bagi kedua pihak
+                              await supabase
+                                .from("booking")
+                                .update({ status: "Berjalan" })
+                                .eq("id", bk.id);
                               navigate(`/sesi/${bk.id}`);
                             }}
                           >

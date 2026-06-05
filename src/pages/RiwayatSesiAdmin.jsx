@@ -8,7 +8,6 @@ const STATUS_OPTIONS = ["Semua", "Terjadwal", "Selesai", "Dibatalkan"];
 export default function RiwayatSesiAdmin() {
   const navigate = useNavigate();
   const [sesi, setSesi] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -62,7 +61,6 @@ export default function RiwayatSesiAdmin() {
       }));
 
       setSesi(merged);
-      setFiltered(merged);
 
       // Ambil daftar konselor unik
       const uniqueKonselor = [
@@ -78,7 +76,7 @@ export default function RiwayatSesiAdmin() {
   }
 
   // Apply filter + sort setiap kali state filter berubah
-  useEffect(() => {
+  const filtered = useMemo(() => {
     let result = [...sesi];
 
     if (searchQuery) {
@@ -121,7 +119,7 @@ export default function RiwayatSesiAdmin() {
         break;
     }
 
-    setFiltered(result);
+    return result;
   }, [searchQuery, filterStatus, filterKonselor, sortBy, sesi]);
 
   function openModal(item) {

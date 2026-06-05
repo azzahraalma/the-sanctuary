@@ -3,16 +3,15 @@
    The Sanctuary — letakkan file ini di folder /public/
 ───────────────────────────────────────────────────────────────── */
 
-const CACHE_NAME = "sanctuary-v1";
 
 // ── Install ──────────────────────────────────────────────────────
-self.addEventListener("install", (event) => {
+self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
 // ── Activate ─────────────────────────────────────────────────────
 self.addEventListener("activate", (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(self.clients.claim());
 });
 
 // ── Push Event — muncul saat Supabase Edge Function kirim notif ──
@@ -54,7 +53,7 @@ self.addEventListener("notificationclick", (event) => {
   const targetUrl = event.notification.data?.url ?? "/dashboard";
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
       // Kalau tab Sanctuary sudah terbuka, fokus ke sana
       for (const client of windowClients) {
         if (client.url.includes(self.location.origin) && "focus" in client) {
@@ -63,7 +62,7 @@ self.addEventListener("notificationclick", (event) => {
         }
       }
       // Kalau belum ada tab, buka baru
-      if (clients.openWindow) return clients.openWindow(targetUrl);
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
     })
   );
 });

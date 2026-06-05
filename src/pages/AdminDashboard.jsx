@@ -4,25 +4,21 @@ import { supabase } from "../lib/supabase.js";
 import "../styles/admin-dashboard.css";
 import "../styles/riwayat-sesi-admin.css";
 
-/* ─── HELPERS ────────────────────────────────────── */
 function getMetrik(rows, nama) {
   return rows.find(d => d.metrik_statistik === nama) || {};
 }
 
 const STATUS_OPTIONS = ["Semua", "Terjadwal", "Selesai", "Dibatalkan"];
 
-/* ─── DONUT ─────────────────────────────────────── */
 function DonutChart({ parts, total }) {
   const r = 70, cx = 90, cy = 90;
   const circ = 2 * Math.PI * r;
-  let offset = 0;
-  const segs = parts.map((p) => {
+  const segs = parts.map((p, idx) => {
     const pct = p.val / total;
     const dash = pct * circ;
     const gap = circ - dash;
-    const seg = { ...p, dash, gap, offset };
-    offset += dash;
-    return seg;
+    const offset = parts.slice(0, idx).reduce((sum, prev) => sum + (prev.val / total) * circ, 0);
+    return { ...p, dash, gap, offset };
   });
   const maxPart = parts.reduce((a, b) => (a.val > b.val ? a : b));
   return (
@@ -53,7 +49,6 @@ function DonutChart({ parts, total }) {
   );
 }
 
-/* ─── BAR CHART ─────────────────────────────────── */
 function BarGroup({ label, values }) {
   const colors = ["#79d8d1", "#2f7d79", "#b0d8c8"];
   const max = 5;
@@ -74,7 +69,6 @@ function BarGroup({ label, values }) {
   );
 }
 
-/* ─── GAUGE ─────────────────────────────────────── */
 function GaugeChart({ value, max = 10 }) {
   const pct = value / max;
   const r = 54, cx = 70, cy = 70;
@@ -103,7 +97,6 @@ function GaugeChart({ value, max = 10 }) {
   );
 }
 
-/* ─── LIKERT CHART ───────────────────────────────── */
 function LikertChart({ rows }) {
   const colors = { Kemudahan: "#79d8d1", Kejelasan: "#2f7d79", "Daya Tarik": "#b0d8c8" };
   const maxFreq = Math.max(...rows.map(r => Math.max(r.kemudahan || 0, r.kejelasan || 0, r.daya_tarik || 0)));
@@ -170,7 +163,6 @@ function MinMaxBar({ label, min, max }) {
 /* ─── RIWAYAT SESI TAB ───────────────────────────── */
 function RiwayatSesiTab() {
   const [sesi, setSesi] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -201,13 +193,13 @@ function RiwayatSesiTab() {
         ...b, nama_konselor: konselorMap[b.id_konselor] || b.id_konselor || "—",
       }));
 
-      setSesi(merged); setFiltered(merged);
+      setSesi(merged);
       setKonselorList(["Semua", ...new Set(merged.map((s) => s.nama_konselor))]);
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   }
 
-  useEffect(() => {
+  const filtered = useMemo(() => {
     let result = [...sesi];
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -226,7 +218,7 @@ function RiwayatSesiTab() {
       case "sesi_asc": result.sort((a, b) => (a.sesi_konseling || 0) - (b.sesi_konseling || 0)); break;
       case "nama_az": result.sort((a, b) => (a.nama_mahasiswa || "").localeCompare(b.nama_mahasiswa || "")); break;
     }
-    setFiltered(result);
+    return result;
   }, [searchQuery, filterStatus, filterKonselor, sortBy, sesi]);
 
   function openModal(item) { setSelectedSesi(item); setModalOpen(true); }

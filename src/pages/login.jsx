@@ -24,7 +24,7 @@ export default function Login() {
     setError("");
 
     if (!email || !password) {
-      setError("Yuk lengkapi email dan password dulu 😊");
+      setError("Yuk lengkapi email dan password dulu");
       return;
     }
 
@@ -160,29 +160,29 @@ export default function Login() {
               className={`auth-mode-btn ${mode === "mahasiswa" ? "auth-mode-btn--active" : ""}`}
               onClick={() => handleModeSwitch("mahasiswa")}
             >
-              🎓 Mahasiswa
+              Mahasiswa
             </button>
             <button
               className={`auth-mode-btn ${mode === "konselor" ? "auth-mode-btn--active" : ""}`}
               onClick={() => handleModeSwitch("konselor")}
             >
-              🤝 Konselor
+              Konselor
             </button>
             <button
               className={`auth-mode-btn ${mode === "admin" ? "auth-mode-btn--active" : ""}`}
               onClick={() => handleModeSwitch("admin")}
             >
-              ⚙️ Admin
+              Admin
             </button>
           </div>
 
           <div className="auth-form-header">
             <h1 className="auth-form-h1">
               {isKonselor
-                ? <>Masuk sebagai<br />Konselor ✨</>
+                ? <>Masuk sebagai<br />Konselor</>
                 : isAdmin
-                ? <>Masuk sebagai<br />Admin ✨</>
-                : <>Halo,<br />selamat datang<br />kembali ✨</>}
+                ? <>Masuk sebagai<br />Admin</>
+                : <>Halo,<br />selamat datang<br />kembali</>}
             </h1>
             <p className="auth-form-sub">
               {isKonselor

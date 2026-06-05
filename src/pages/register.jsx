@@ -16,7 +16,7 @@ export default function Register() {
     setError("");
 
     if (!name || !email || !password) {
-      setError("Yuk lengkapi dulu semua datanya 😊");
+      setError("Yuk lengkapi dulu semua datanya");
       return;
     }
     if (password.length < 6) {
@@ -47,7 +47,7 @@ export default function Register() {
 
     if (authError) {
       if (authError.message.includes("already registered")) {
-        setError("Email ini sudah terdaftar. Coba masuk aja ya ✨");
+        setError("Email ini sudah terdaftar. Coba masuk aja ya");
       } else {
         setError("Gagal membuat akun. Coba lagi ya.");
       }
@@ -99,7 +99,7 @@ export default function Register() {
       <div className="auth-panel-right">
         <div className="auth-form-wrap">
           <div className="auth-form-header">
-            <h1 className="auth-form-h1">Hai,<br />senang kamu<br />ada di sini ✨</h1>
+            <h1 className="auth-form-h1">Hai,<br />senang kamu<br />ada di sini</h1>
             <p className="auth-form-sub">Buat akun dulu yuk supaya kamu bisa mengakses ruang konseling sebaya dan fitur personal lainnya.</p>
           </div>
 

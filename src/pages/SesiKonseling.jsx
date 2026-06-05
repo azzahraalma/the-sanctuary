@@ -40,10 +40,10 @@ export default function SesiKonseling() {
   const textareaRef = useRef(null);
 
   // ── ambil user dari localStorage — dijamin ada sebelum render
-  const user = useMemo(() => {
+  const [user] = useState(() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")) ?? {}; }
     catch { return {}; }
-  }, []);
+  });
 
   const userEmail = (user?.email ?? "").toLowerCase().trim();
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
@@ -60,6 +60,99 @@ export default function SesiKonseling() {
 
       if (bkErr) console.error("booking fetch error:", bkErr);
       if (!bk) { navigate("/dashboard"); return; }
+
+      // ── Fetch the availability slot for this booking ──
+      let slot = null;
+      if (bk.tanggal_sesi) {
+        const normalizeTime = (t) => {
+          if (!t) return "00:00:00";
+          const parts = t.split(":");
+          if (parts.length === 2) return `${t}:00`;
+          return t;
+        };
+
+        const getWIBDateStr = (dateStr) => {
+          if (!dateStr) return "";
+          const date = new Date(dateStr);
+          return date.toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+        };
+
+        const getWIBTimeStr = (dateStr) => {
+          if (!dateStr) return "00:00:00";
+          const date = new Date(dateStr);
+          return date.toLocaleTimeString("id-ID", {
+            timeZone: "Asia/Jakarta",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+          }).replace(/\./g, ":");
+        };
+
+        const isDateOnly = bk.tanggal_sesi.includes("T00:00:00") || !bk.tanggal_sesi.includes("T");
+        const bkDateStr = getWIBDateStr(bk.tanggal_sesi);
+        const bkTimeStr = getWIBTimeStr(bk.tanggal_sesi);
+
+        const { data: slots } = await supabase
+          .from("konselor_availability")
+          .select("*")
+          .eq("konselor_id", bk.id_konselor)
+          .eq("tanggal", bkDateStr)
+          .eq("status", "booked");
+
+        if (slots && slots.length > 0) {
+          slot = slots.find(s => isDateOnly || normalizeTime(s.jam_mulai) === bkTimeStr) || slots[0];
+        }
+      }
+
+      const normalizeTime = (t) => {
+        if (!t) return "00:00:00";
+        const parts = t.split(":");
+        if (parts.length === 2) return `${t}:00`;
+        return t;
+      };
+
+      let start = null;
+      let end = null;
+
+      if (slot) {
+        start = new Date(`${slot.tanggal}T${normalizeTime(slot.jam_mulai)}+07:00`);
+        end = new Date(`${slot.tanggal}T${normalizeTime(slot.jam_selesai)}+07:00`);
+      } else if (bk.tanggal_sesi) {
+        start = new Date(bk.tanggal_sesi);
+        end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour fallback
+      }
+
+      const now = new Date();
+      const startBuffer = start;
+      const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
+
+      if (bk.status === "Selesai") {
+        alert("Sesi konseling ini sudah selesai. Terima kasih!");
+        navigate("/dashboard");
+        return;
+      }
+
+      if (bk.status === "terjadwal" || bk.status === "Terjadwal") {
+        if (isTimeRange) {
+          // Auto-start the session
+          await supabase
+            .from("booking")
+            .update({ status: "Berjalan" })
+            .eq("id", bookingId);
+          bk.status = "Berjalan";
+        } else {
+          // If not in time range
+          if (startBuffer && now < startBuffer) {
+            alert("Sesi ini belum dimulai. Silakan tunggu jadwal sesimu ya! ⏱");
+          } else {
+            alert("Jadwal sesi ini sudah berakhir. Sesi tidak dapat dimulai.");
+          }
+          navigate("/dashboard");
+          return;
+        }
+      }
+
       setBooking(bk);
 
       const { data: kons } = await supabase
@@ -70,7 +163,7 @@ export default function SesiKonseling() {
       setKonselor(kons);
       setIsLoading(false);
     })();
-  }, [bookingId]); // eslint-disable-line
+  }, [bookingId, user]); // eslint-disable-line
 
   // ── Fetch pesan & realtime
   useEffect(() => {
@@ -102,6 +195,31 @@ export default function SesiKonseling() {
 
     return () => supabase.removeChannel(channel);
   }, [bookingId]);
+
+  // ── Realtime subscription to detect when counselor ends the session
+  useEffect(() => {
+    if (!bookingId) return;
+
+    const bookingChannel = supabase
+      .channel(`booking-status-${bookingId}`)
+      .on("postgres_changes", {
+        event: "UPDATE",
+        schema: "public",
+        table: "booking",
+        filter: `id=eq.${bookingId}`,
+      }, payload => {
+        if (payload.new.status === "Selesai") {
+          setBooking(payload.new);
+          if (user?.role === "mahasiswa") {
+            alert("Sesi konseling telah selesai. Terima kasih telah bercerita! 🌿");
+            navigate("/dashboard");
+          }
+        }
+      })
+      .subscribe();
+
+    return () => supabase.removeChannel(bookingChannel);
+  }, [bookingId, user, navigate]);
 
   // ── Timer
   useEffect(() => {
@@ -142,7 +260,7 @@ export default function SesiKonseling() {
       pengirim_email: userEmail,
       pengirim_nama: firstName,
       teks: text,
-      tipe: "mahasiswa",
+      tipe: user?.role === "konselor" ? "konselor" : "mahasiswa",
     };
 
     console.log("Inserting pesan:", payload);
@@ -223,9 +341,15 @@ export default function SesiKonseling() {
             <span>Sesi dengan {konselor?.nama ?? "Konselor"}</span>
             <span className="sk-timer">⏱ {elapsedStr}</span>
           </div>
-          <button className="sk-end-btn" onClick={() => setShowEndModal(true)}>
-            Akhiri Sesi
-          </button>
+          {user?.role === "konselor" ? (
+            <button className="sk-end-btn" onClick={() => setShowEndModal(true)}>
+              Akhiri Sesi
+            </button>
+          ) : (
+            <button className="sk-end-btn" style={{ background: "#79d8d1" }} onClick={() => navigate("/dashboard")}>
+              Kembali ke Dashboard
+            </button>
+          )}
         </header>
 
         <div className="sk-body">
@@ -273,7 +397,7 @@ export default function SesiKonseling() {
                   <div key={date}>
                     <div className="sk-date-sep">{date}</div>
                     {msgs.map(m => {
-                      const isMe = m.pengirim_email === userEmail || m.tipe === "mahasiswa";
+                      const isMe = m.pengirim_email.toLowerCase().trim() === userEmail.toLowerCase().trim();
                       return (
                         <div key={m.id} className={`sk-bubble-wrap ${isMe ? "me" : "them"}`}>
                           {!isMe && <span className="sk-sender-label">{m.pengirim_nama}</span>}

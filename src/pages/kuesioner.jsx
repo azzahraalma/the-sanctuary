@@ -12,25 +12,21 @@ const soalList = [
     pilihan: [
       {
         id: "a",
-        icon: "⚡",
         label: "Oke dan stabil",
         sub: "Cukup fokus, aktivitas berjalan kayak biasanya",
       },
       {
         id: "b",
-        icon: "🌊",
         label: "Naik-turun",
         sub: "Kadang semangat, tapi tiba-tiba ngerasa beda aja",
       },
       {
         id: "c",
-        icon: "🌫️",
         label: "Lebih pengen menyendiri",
         sub: "Kurang mood ketemu orang, nyaman di ruang sendiri dulu",
       },
       {
         id: "d",
-        icon: "📦",
         label: "Berat dan susah gerak",
         sub: "Ngerasa nggak kuat, susah banget buat mulai sesuatu",
       },
@@ -52,25 +48,21 @@ const soalList = [
     pilihan: [
       {
         id: "a",
-        icon: "🧘",
         label: "Adem dan jernih",
         sub: "Pikiran lumayan tenang, bisa mikir dengan baik",
       },
       {
         id: "b",
-        icon: "🌀",
         label: "Rame banget di kepala",
         sub: "Banyak hal muter-muter, susah fokus ke satu hal",
       },
       {
         id: "c",
-        icon: "😶",
         label: "Hampa dan kosong",
         sub: "Nggak banyak semangat, kayak jalan di tempat aja",
       },
       {
         id: "d",
-        icon: "😟",
         label: "Cemas dan gelisah",
         sub: "Ada kekhawatiran yang terus-terusan muncul dan ganggu",
       },
@@ -92,25 +84,21 @@ const soalList = [
     pilihan: [
       {
         id: "a",
-        icon: "😴",
         label: "Nyenyak dan segar",
         sub: "Bangun dengan energi cukup, kualitas tidur oke",
       },
       {
         id: "b",
-        icon: "🌙",
         label: "Lumayan baik",
         sub: "Normal aja sih, nggak ada yang terlalu ganggu",
       },
       {
         id: "c",
-        icon: "😵",
         label: "Sering kebangun",
         sub: "Tidur terganggu beberapa kali, kurang nyenyak",
       },
       {
         id: "d",
-        icon: "💤",
         label: "Berantakan banget",
         sub: "Susah tidur atau malah ketiduran terus tapi tetap capek",
       },
@@ -239,7 +227,7 @@ function generateInsight(jawaban, namaUser) {
 // STORE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export const prasetyo_store = {
+const prasetyo_store = {
   sudahIsi: false,
   data: null,
 };
@@ -258,7 +246,7 @@ function simpanJawabanPrasetyo(jawaban, skor) {
   prasetyo_store.sudahIsi = true;
   prasetyo_store.data = entry;
 
-  console.log("✅ Jawaban Prasetyo tersimpan:", entry);
+  console.log("Jawaban Prasetyo tersimpan:", entry);
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -325,13 +313,13 @@ function SkorLabel({ skor }) {
   let warna;
 
   if (skor < 30) {
-    label = "Kondisi Baik 💚";
+    label = "Kondisi Baik";
     warna = "#2d6b68";
   } else if (skor < 55) {
-    label = "Perlu Diperhatiin 🟡";
+    label = "Perlu Diperhatiin";
     warna = "#d97706";
   } else {
-    label = "Butuh Dukungan Lebih 🧡";
+    label = "Butuh Dukungan Lebih";
     warna = "#b45309";
   }
 
@@ -384,7 +372,7 @@ function HalamanHasil({
     {
       icon: "📔",
       judul: "Jurnal Digital",
-      desc: "Nulis perasaan dan pikiranmu — kadang nulis aja udah bikin lega lebih dari yang kamu kira.",
+      desc: "Nulis perasaan dan pikiranmu kadang nulis aja udah bikin lega lebih dari yang kamu kira.",
     },
   ];
 
@@ -401,7 +389,7 @@ function HalamanHasil({
 
         <div className="hasil-header">
           <div className="hasil-greeting-badge">
-            ✨ Selesai, {firstName}! Makasih udah mau jujur sama diri sendiri.
+            Selesai, {firstName}! Makasih udah mau jujur sama diri sendiri.
           </div>
 
           <h1 className="hasil-h1">Ini langkah pertama yang berani.</h1>

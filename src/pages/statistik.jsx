@@ -100,14 +100,6 @@ function DonutLight({ pct, size = 110, stroke = 11, color = "#2f7d79", sub }) {
 export default function Statistik() {
   const navigate = useNavigate();
 
-  const [myProgress, setMyProgress] = useState([]);
-  const [myBookings, setMyBookings] = useState([]);
-  const [myTargets, setMyTargets]   = useState([]);
-  const [myKonselor, setMyKonselor] = useState([]);
-  const [finalReko, setFinalReko]   = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [mid, setMid]               = useState(null);
-
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
     catch { return null; }
@@ -116,29 +108,60 @@ export default function Statistik() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
+  const [mid, setMid]               = useState(() => {
+    if (!userEmail) return null;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+      if (saved?.student_id) return saved.student_id;
+    } catch { /* ignore */ }
+    return null;
+  });
+  const [myProgress, setMyProgress] = useState([]);
+  const [myBookings, setMyBookings] = useState([]);
+  const [myTargets, setMyTargets]   = useState([]);
+  const [myKonselor, setMyKonselor] = useState([]);
+  const [finalReko, setFinalReko]   = useState([]);
+  const [loading, setLoading]       = useState(() => {
+    if (!userEmail) return false;
+    return true;
+  });
+
   useEffect(() => {
-    if (!userEmail) { setLoading(false); return; }
+    if (!userEmail) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+      if (saved?.student_id) return;
+    } catch { /* ignore */ }
+
+    let active = true;
     (async () => {
       const { data } = await supabase
         .from("profil_pengguna")
         .select("student_id")
         .eq("email", userEmail)
         .maybeSingle();
-      setMid(data?.student_id ?? null);
+      if (active) {
+        setMid(data?.student_id ?? null);
+        if (!data?.student_id) {
+          setLoading(false);
+        }
+      }
     })();
+    return () => { active = false; };
   }, [userEmail]);
 
   useEffect(() => {
-    if (!mid) { setLoading(false); return; }
+    if (!mid) return;
 
+    let active = true;
     async function fetchAll() {
-      setLoading(true);
-
       const [progRes, bookRes, targetRes] = await Promise.all([
         supabase.from("progress_konseling").select("*").eq("id_mahasiswa", mid).order("sesi_konseling", { ascending: true }),
         supabase.from("booking").select("*").eq("id_mahasiswa", mid),
         supabase.from("data_target").select("*").eq("id_mahasiswa", mid),
       ]);
+
+      if (!active) return;
 
       const progress = (progRes.data ?? []).map((p) => ({
         ID_Mahasiswa:       p.id_mahasiswa,
@@ -183,11 +206,12 @@ export default function Statistik() {
 
       const konselorIDs = [...new Set(bookings.map((b) => b.ID_Konselor))].filter(Boolean);
 
-      let visitedKonselor = [];
       if (konselorIDs.length > 0) {
         const { data: kData } = await supabase.from("data_konselor").select("*").in("id", konselorIDs);
-        visitedKonselor = (kData ?? []).map(mapKonselor);
-        setMyKonselor(visitedKonselor);
+        const visitedKonselor = (kData ?? []).map(mapKonselor);
+        if (active) {
+          setMyKonselor(visitedKonselor);
+        }
       }
 
       let rekoQuery = supabase.from("data_konselor").select("*").order("rating_final", { ascending: false }).limit(6);
@@ -198,17 +222,22 @@ export default function Statistik() {
       const { data: rekoData } = await rekoQuery;
       const reko = (rekoData ?? []).map(mapKonselor).slice(0, 3);
 
-      if (reko.length === 0) {
-        const { data: fallbackData } = await supabase.from("data_konselor").select("*").order("rating_final", { ascending: false }).limit(3);
-        setFinalReko((fallbackData ?? []).map(mapKonselor));
-      } else {
-        setFinalReko(reko);
+      if (active) {
+        if (reko.length === 0) {
+          const { data: fallbackData } = await supabase.from("data_konselor").select("*").order("rating_final", { ascending: false }).limit(3);
+          setFinalReko((fallbackData ?? []).map(mapKonselor));
+        } else {
+          setFinalReko(reko);
+        }
       }
 
-      setLoading(false);
+      if (active) {
+        setLoading(false);
+      }
     }
 
     fetchAll();
+    return () => { active = false; };
   }, [mid]);
 
   const latest = myProgress[myProgress.length - 1] ?? null;

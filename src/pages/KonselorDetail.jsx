@@ -167,7 +167,7 @@ export default function KonselorDetail() {
       });
 
       // 2. Slot availability — hanya yang tersedia & belum lewat
-      const todayStr = new Date().toISOString().split("T")[0];
+      const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
       const { data: avData } = await supabase
         .from("konselor_availability")
         .select("id, tanggal, jam_mulai, jam_selesai, status")
@@ -231,18 +231,38 @@ export default function KonselorDetail() {
 
     const slotObj  = slots.find((s) => s.id === selectedSlot);
     const tanggal  = slotObj.tanggal;
-    const jamMulai = slotObj.jam_mulai;
+
+    // Helper to normalize time to HH:MM:00
+    const normalizeTime = (t) => {
+      if (!t) return "00:00:00";
+      const parts = t.split(":");
+      if (parts.length === 2) return `${t}:00`;
+      return t;
+    };
+
+    const cleanTime = normalizeTime(slotObj.jam_mulai);
+    const startTimestamp = `${tanggal}T${cleanTime}+07:00`;
+
+    const mhsId = user.student_id || user.id;
+    // Query jumlah booking sebelumnya untuk menghitung sesi ke-berapa
+    const { count } = await supabase
+      .from("booking")
+      .select("*", { count: "exact", head: true })
+      .eq("id_mahasiswa", mhsId)
+      .eq("id_konselor", id);
+
+    const sesiKe = (count ?? 0) + 1;
 
     // Insert ke tabel booking
     const bookingId = `BK-${Date.now()}`;
     const { error: bErr } = await supabase.from("booking").insert({
       id:               bookingId,
       id_konselor:      id,
-      id_mahasiswa:     user.student_id || user.id,
+      id_mahasiswa:     mhsId,
       nama_mahasiswa:   user.name || user.nama,
       kategori_masalah: konselor.Kategori_Masalah,
-      tanggal_sesi:     tanggal,
-      sesi_konseling:   1,
+      tanggal_sesi:     startTimestamp,
+      sesi_konseling:   sesiKe,
       status:           "terjadwal",
       kondisi_awal:     0,
       kondisi_saat_ini: 0,

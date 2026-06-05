@@ -25,21 +25,6 @@ function getTipeConfig(tipe = "") {
   return { type: "pesan", label: "Pesan", color: "#2f7d79", bg: "#f0fffe", border: "#b0e8e2" };
 }
 
-const ICON_PESAN = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-);
-
-const ICON_TEAM = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-    <circle cx="9" cy="7" r="4"/>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-  </svg>
-);
-
 const FILTER_TABS = ["Semua", "Pesan", "Info"];
 
 export default function Notifikasi() {
@@ -56,43 +41,45 @@ export default function Notifikasi() {
   const [notifikasi, setNotifikasi] = useState([]);
   const [dibacaSet, setDibacaSet]   = useState(new Set());
   const [filter, setFilter]         = useState("Semua");
-  const [isLoading, setIsLoading]   = useState(true);
+  const [isLoading, setIsLoading]   = useState(!!userEmail);
 
   useEffect(() => {
-    if (!userEmail) { setIsLoading(false); return; }
+    if (!userEmail) return;
 
+    let active = true;
     async function fetchData() {
-      setIsLoading(true);
-
       const { data: pesanData } = await supabase
         .from("pesan")
         .select("*")
         .eq("id_penerima", userEmail)
         .order("created_at", { ascending: false });
 
-      const list = (pesanData ?? []).map(p => {
-        const cfg = getTipeConfig(p.tipe ?? "");
-        return {
-          id:      p.id,
-          type:    cfg.type,
-          label:   cfg.label,
-          color:   cfg.color,
-          bg:      cfg.bg,
-          border:  cfg.border,
-          judul:   p.nama_pengirim ?? "The Sanctuary",
-          teks:    p.teks,
-          waktu:   p.created_at,
-          foto:    p.foto_pengirim ?? null,
-          inisial: (p.nama_pengirim ?? "S").charAt(0),
-          dibaca:  p.dibaca ?? false,
-        };
-      });
+      if (active) {
+        const list = (pesanData ?? []).map(p => {
+          const cfg = getTipeConfig(p.tipe ?? "");
+          return {
+            id:      p.id,
+            type:    cfg.type,
+            label:   cfg.label,
+            color:   cfg.color,
+            bg:      cfg.bg,
+            border:  cfg.border,
+            judul:   p.nama_pengirim ?? "The Sanctuary",
+            teks:    p.teks,
+            waktu:   p.created_at,
+            foto:    p.foto_pengirim ?? null,
+            inisial: (p.nama_pengirim ?? "S").charAt(0),
+            dibaca:  p.dibaca ?? false,
+          };
+        });
 
-      setNotifikasi(list);
-      setIsLoading(false);
+        setNotifikasi(list);
+        setIsLoading(false);
+      }
     }
 
     fetchData();
+    return () => { active = false; };
   }, [userEmail]);
 
   const tandaiBaca = async (item) => {

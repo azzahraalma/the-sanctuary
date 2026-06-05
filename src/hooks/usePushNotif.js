@@ -17,33 +17,43 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 export function usePushNotif(userEmail) {
-  const [status, setStatus]   = useState("idle");
+  const [status, setStatus]   = useState(() => {
+    if (typeof window === "undefined" || typeof navigator === "undefined") return "idle";
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return "unsupported";
+    }
+    if (Notification.permission === "denied") {
+      return "denied";
+    }
+    return "idle";
+  });
   const [loading, setLoading] = useState(false);
 
   // Cek status awal saat mount
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setStatus("unsupported");
-      return;
-    }
-    if (Notification.permission === "denied") {
-      setStatus("denied");
-      return;
-    }
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+    if (Notification.permission === "denied") return;
 
-    // ✅ FIX: register SW dulu, baru cek subscription
-    // navigator.serviceWorker.ready bisa hang kalau SW belum pernah didaftarkan
+    let active = true;
     (async () => {
       try {
         await navigator.serviceWorker.register("/sw.js");
         const reg = await navigator.serviceWorker.ready;
         const existing = await reg.pushManager.getSubscription();
-        setStatus(existing ? "subscribed" : "unsubscribed");
+        if (active) {
+          setStatus(existing ? "subscribed" : "unsubscribed");
+        }
       } catch (err) {
         console.error("SW check error:", err);
-        setStatus("unsubscribed");
+        if (active) {
+          setStatus("unsubscribed");
+        }
       }
     })();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Subscribe

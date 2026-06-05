@@ -6,32 +6,53 @@ import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase.js";
 
 export function useMid(userEmail) {
-  const [mid, setMid]       = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!userEmail) { setLoading(false); return; }
-
-    // Coba ambil dari localStorage dulu (sudah diset saat login/register)
+  const [mid, setMid] = useState(() => {
+    if (!userEmail) return null;
     try {
       const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
       if (saved?.student_id) {
-        setMid(saved.student_id);
-        setLoading(false);
-        return;                   // ← tidak perlu hit Supabase
+        return saved.student_id;
       }
     } catch { /* ignore */ }
+    return null;
+  });
 
-    // Fallback: fetch dari profil_pengguna (user lama yang belum re-login)
+  const [loading, setLoading] = useState(() => {
+    if (!userEmail) return false;
+    try {
+      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+      if (saved?.student_id) {
+        return false;
+      }
+    } catch { /* ignore */ }
+    return true;
+  });
+
+  useEffect(() => {
+    if (!userEmail) return;
+
+    // Jika mid sudah terisi dari localStorage, tidak perlu memanggil Supabase
+    try {
+      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+      if (saved?.student_id) return;
+    } catch { /* ignore */ }
+
+    let active = true;
     (async () => {
       const { data } = await supabase
         .from("profil_pengguna")
         .select("student_id")
         .eq("email", userEmail)
         .maybeSingle();
-      setMid(data?.student_id ?? null);
-      setLoading(false);
+      if (active) {
+        setMid(data?.student_id ?? null);
+        setLoading(false);
+      }
     })();
+
+    return () => {
+      active = false;
+    };
   }, [userEmail]);
 
   return { mid, loading };

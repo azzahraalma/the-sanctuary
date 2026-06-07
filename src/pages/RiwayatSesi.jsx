@@ -212,15 +212,10 @@ export default function RiwayatSesi() {
 
   if (loading) {
     return (
-      <div className="sk-shell" style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <div style={{ textAlign:"center", color:"#2f7d79" }}>
-          <div style={{
-            width:48, height:48, border:"4px solid rgba(47,125,121,0.2)",
-            borderTop:"4px solid #2f7d79", borderRadius:"50%",
-            animation:"spin 1s linear infinite", margin:"0 auto 12px",
-          }}/>
-          <p style={{ fontSize:14, color:"#666" }}>Memuat riwayat sesi...</p>
-          <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div className="sk-shell rw-loading">
+        <div className="rw-loading-container">
+          <div className="rw-loading-spinner" />
+          <p className="rw-loading-text">Memuat riwayat sesi...</p>
         </div>
       </div>
     );

@@ -478,7 +478,7 @@ export default function Dashboard() {
   useEffect(() => {
     const timer = setInterval(() => {
       setNow(new Date());
-    }, 10000);
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -861,11 +861,11 @@ export default function Dashboard() {
                   const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
 
                   const showMulaiSesiButton = bk && ["Terjadwal", "terjadwal"].includes(bk.status) && isTimeRange;
-                  const showMasukSesiButton = isBerjalan;
+                  const showMasukSesiButton = isBerjalan && (end ? now <= end : true);
 
                   let statusHelperText = null;
-                  if (bk && ["Terjadwal", "terjadwal"].includes(bk.status)) {
-                    if (startBuffer && now < startBuffer) {
+                  if (bk && bk.status !== "Selesai") {
+                    if (["Terjadwal", "terjadwal"].includes(bk.status) && startBuffer && now < startBuffer) {
                       const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
                       statusHelperText = `Mulai pukul ${jamStr} ⏱`;
                     } else if (end && now > end) {

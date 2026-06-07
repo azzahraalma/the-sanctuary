@@ -133,6 +133,14 @@ export default function SesiKonseling() {
         return;
       }
 
+      if (bk.status === "Berjalan" || bk.status === "berjalan") {
+        if (end && now > end) {
+          alert("Jadwal sesi ini sudah berakhir.");
+          navigate("/dashboard");
+          return;
+        }
+      }
+
       if (bk.status === "terjadwal" || bk.status === "Terjadwal") {
         if (isTimeRange) {
           // Auto-start the session

@@ -435,3 +435,36 @@ body::before {
   .sk-banner-right { display: none; }
   .sk-stats-row { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Loading State */
+.st-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.st-loading-container {
+  text-align: center;
+  color: #2f7d79;
+}
+
+.st-loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(47, 125, 121, 0.2);
+  border-top: 4px solid #2f7d79;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 12px;
+}
+
+.st-loading-text {
+  font-size: 14px;
+  color: #666;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

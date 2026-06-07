@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
+import "../styles/evaluasi-sesi.css";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -185,15 +186,9 @@ export default function EvaluasiSesi() {
   };
 
   if (isLoading) return (
-    <div style={{
-      display:"flex", alignItems:"center", justifyContent:"center",
-      height:"100vh", background:"#f0faf9",
-      fontFamily:"'DM Sans',sans-serif", color:"#2f7d79", fontSize:15,
-      flexDirection:"column", gap:12,
-    }}>
-      <div style={{ width:36, height:36, border:"3px solid #e0f2f1", borderTop:"3px solid #2f7d79", borderRadius:"50%", animation:"spin 1s linear infinite" }} />
+    <div className="ev-loading">
+      <div className="ev-loading-spinner" />
       <p>Memuat data sesi...</p>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 
@@ -202,218 +197,7 @@ export default function EvaluasiSesi() {
   const selectedMood = SUASANA_HATI_OPTIONS.find(o => o.label === answers.suasana_hati);
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,400;0,600;1,400&display=swap');
-        *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-
-        body { background:#f0faf9; }
-
-        .ev-shell {
-          min-height:100vh; background:#f0faf9;
-          font-family:'DM Sans',sans-serif;
-          display:flex; flex-direction:column;
-        }
-
-        /* TOPBAR */
-        .ev-topbar {
-          height:56px; background:#fff;
-          border-bottom:1px solid #e0f2f1;
-          display:flex; align-items:center;
-          justify-content:space-between;
-          padding:0 32px; flex-shrink:0;
-          position:sticky; top:0; z-index:10;
-        }
-        .ev-brand {
-          font-family:'Fraunces',serif; font-size:17px;
-          font-weight:600; color:#1a1a2e; cursor:pointer;
-        }
-        .ev-brand span { color:#2f7d79; }
-        .ev-topbar-right {
-          display:flex; align-items:center; gap:10px;
-          font-size:12px; color:#888; font-weight:500;
-        }
-        .ev-step-badge {
-          background:#e8f5f3; color:#2f7d79;
-          font-size:11px; font-weight:700;
-          padding:4px 12px; border-radius:20px;
-        }
-
-        /* MAIN */
-        .ev-main {
-          flex:1; display:flex; justify-content:center;
-          padding:40px 20px 60px;
-        }
-        .ev-container { width:100%; max-width:640px; }
-
-        /* HEADER */
-        .ev-header { margin-bottom:32px; }
-        .ev-header-tag {
-          display:inline-flex; align-items:center; gap:6px;
-          background:#e8f5f3; color:#2f7d79;
-          font-size:11px; font-weight:700;
-          padding:4px 12px; border-radius:20px;
-          text-transform:uppercase; letter-spacing:0.06em;
-          margin-bottom:12px;
-        }
-        .ev-header h1 {
-          font-family:'Fraunces',serif; font-size:28px;
-          font-weight:600; color:#1a1a2e; line-height:1.3;
-          margin-bottom:8px;
-        }
-        .ev-header p { font-size:13.5px; color:#888; line-height:1.6; }
-
-        /* KLIEN CARD */
-        .ev-klien-card {
-          background:#fff; border-radius:16px;
-          border:1.5px solid #e0f2f1;
-          padding:16px 20px;
-          display:flex; align-items:center; gap:14px;
-          margin-bottom:28px;
-          box-shadow:0 2px 12px rgba(47,125,121,0.06);
-        }
-        .ev-klien-avatar {
-          width:48px; height:48px; border-radius:50%;
-          background:linear-gradient(135deg,#79d8d1,#2f7d79);
-          display:flex; align-items:center; justify-content:center;
-          font-weight:700; color:#fff; font-size:18px;
-          flex-shrink:0; overflow:hidden;
-        }
-        .ev-klien-avatar img { width:100%; height:100%; object-fit:cover; }
-        .ev-klien-name { font-size:14px; font-weight:700; color:#1a1a2e; }
-        .ev-klien-sub { font-size:12px; color:#888; margin-top:2px; }
-        .ev-klien-badge {
-          margin-left:auto;
-          background:#f0faf9; border:1.5px solid #c8ece8;
-          color:#2f7d79; font-size:11px; font-weight:700;
-          padding:4px 12px; border-radius:20px;
-        }
-
-        /* PROGRESS STEPS */
-        .ev-steps {
-          display:flex; align-items:center; gap:8px;
-          margin-bottom:28px;
-        }
-        .ev-step {
-          flex:1; height:4px; border-radius:4px;
-          background:#e0f2f1; transition:background 0.3s;
-        }
-        .ev-step.active { background:#2f7d79; }
-        .ev-step.done { background:#79d8d1; }
-
-        /* CARD */
-        .ev-card {
-          background:#fff; border-radius:20px;
-          border:1.5px solid #e8f5f3;
-          padding:28px; margin-bottom:16px;
-          box-shadow:0 4px 20px rgba(47,125,121,0.07);
-        }
-        .ev-card-title {
-          font-family:'Fraunces',serif; font-size:18px;
-          font-weight:600; color:#1a1a2e; margin-bottom:6px;
-        }
-        .ev-card-sub { font-size:12.5px; color:#999; margin-bottom:24px; }
-
-        /* SUASANA HATI */
-        .ev-mood-grid {
-          display:flex; flex-wrap:wrap; gap:10px;
-        }
-        .ev-mood-btn {
-          flex:1; min-width:100px;
-          display:flex; flex-direction:column; align-items:center;
-          gap:6px; padding:14px 10px;
-          border-radius:14px; border:2px solid #e8f5f3;
-          background:#fafffe; cursor:pointer;
-          transition:all 0.18s; font-family:'DM Sans',sans-serif;
-        }
-        .ev-mood-btn:hover { border-color:#79d8d1; background:#f0faf9; }
-        .ev-mood-btn.selected {
-          border-color:#2f7d79; background:#e8f5f3;
-        }
-        .ev-mood-emoji { font-size:28px; }
-        .ev-mood-label {
-          font-size:11px; font-weight:700; color:#555;
-          text-align:center; line-height:1.3;
-        }
-        .ev-mood-btn.selected .ev-mood-label { color:#2f7d79; }
-
-        /* SLIDER */
-        .ev-slider-item { margin-bottom:24px; }
-        .ev-slider-item:last-child { margin-bottom:0; }
-        .ev-slider-head {
-          display:flex; justify-content:space-between;
-          align-items:flex-start; margin-bottom:10px;
-        }
-        .ev-slider-label { font-size:13px; font-weight:700; color:#1a1a2e; }
-        .ev-slider-desc { font-size:11px; color:#aaa; margin-top:2px; }
-        .ev-slider-val { font-size:16px; font-weight:800; min-width:40px; text-align:right; }
-        .ev-slider-track-wrap { position:relative; }
-        .ev-range {
-          width:100%; height:6px; border-radius:6px;
-          appearance:none; outline:none; cursor:pointer;
-          background:linear-gradient(to right, var(--color) var(--val), #e0f2f1 var(--val));
-        }
-        .ev-range::-webkit-slider-thumb {
-          appearance:none; width:20px; height:20px;
-          border-radius:50%; background:#fff;
-          border:3px solid var(--color);
-          box-shadow:0 2px 8px rgba(0,0,0,0.15);
-          transition:transform 0.15s;
-        }
-        .ev-range::-webkit-slider-thumb:hover { transform:scale(1.2); }
-        .ev-slider-ticks {
-          display:flex; justify-content:space-between;
-          font-size:10px; color:#ccc; font-weight:600;
-          margin-top:4px; padding:0 2px;
-        }
-
-        /* SUMMARY */
-        .ev-summary {
-          background:linear-gradient(135deg,#2f7d79,#1a5e5a);
-          border-radius:16px; padding:20px 24px;
-          display:flex; align-items:center; gap:16px;
-          margin-bottom:20px;
-        }
-        .ev-summary-score {
-          font-size:40px; font-weight:800; color:#fff;
-          font-family:'Fraunces',serif; line-height:1;
-        }
-        .ev-summary-info { flex:1; }
-        .ev-summary-label { font-size:11px; color:rgba(255,255,255,0.7); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
-        .ev-summary-mood { font-size:20px; margin-top:4px; }
-
-        /* BTN */
-        .ev-btn-row {
-          display:flex; gap:10px; margin-top:8px;
-        }
-        .ev-btn-back {
-          flex:0 0 auto; padding:13px 20px;
-          border:1.5px solid #e0ece9; border-radius:12px;
-          background:#fff; color:#666;
-          font-size:13px; font-weight:600;
-          cursor:pointer; font-family:'DM Sans',sans-serif;
-          transition:background 0.15s;
-        }
-        .ev-btn-back:hover { background:#f5f5f5; }
-        .ev-btn-next {
-          flex:1; padding:13px;
-          border:none; border-radius:12px;
-          background:linear-gradient(135deg,#2f7d79,#1a5e5a);
-          color:#fff; font-size:13px; font-weight:700;
-          cursor:pointer; font-family:'DM Sans',sans-serif;
-          transition:opacity 0.2s;
-        }
-        .ev-btn-next:disabled { opacity:0.45; cursor:not-allowed; }
-        .ev-btn-next:not(:disabled):hover { opacity:0.88; }
-
-        @keyframes fadeUp {
-          from { opacity:0; transform:translateY(16px); }
-          to   { opacity:1; transform:translateY(0); }
-        }
-        .ev-card { animation:fadeUp 0.3s ease both; }
-      `}</style>
-
-      <div className="ev-shell">
+    <div className="ev-shell">
         {/* TOPBAR */}
         <header className="ev-topbar">
           <span className="ev-brand" onClick={() => navigate("/konselor-dashboard")}>
@@ -532,6 +316,5 @@ export default function EvaluasiSesi() {
           </div>
         </main>
       </div>
-    </>
   );
 }

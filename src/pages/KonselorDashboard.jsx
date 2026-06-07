@@ -82,7 +82,7 @@ export default function KonselorDashboard() {
     useEffect(() => {
         const timer = setInterval(() => {
             setNow(new Date());
-        }, 10000);
+        }, 1000);
         return () => clearInterval(timer);
     }, []);
 
@@ -284,10 +284,9 @@ export default function KonselorDashboard() {
 
     if (loadingData) {
         return (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", flexDirection: "column", gap: 12 }}>
-                <div style={{ width: 40, height: 40, border: "4px solid #e0e0e0", borderTop: "4px solid #2f7d79", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-                <p style={{ color: "#2f7d79", fontWeight: 600 }}>Memuat dashboard...</p>
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <div className="kd-loading">
+                <div className="kd-loading-spinner" />
+                <p className="kd-loading-text">Memuat dashboard...</p>
             </div>
         );
     }
@@ -556,11 +555,11 @@ export default function KonselorDashboard() {
                                     const startBuffer = start;
                                     const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
                                     const bisaMulai = ["Terjadwal", "terjadwal"].includes(b.Status) && isTimeRange;
-                                    const bisaMasuk = isBerjalan;
+                                    const bisaMasuk = isBerjalan && (end ? now <= end : true);
 
                                     let statusHelperText = null;
-                                    if (["Terjadwal", "terjadwal"].includes(b.Status)) {
-                                        if (startBuffer && now < startBuffer) {
+                                    if (b.Status !== "Selesai") {
+                                        if (["Terjadwal", "terjadwal"].includes(b.Status) && startBuffer && now < startBuffer) {
                                             const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
                                             statusHelperText = `Mulai pukul ${jamStr} ⏱`;
                                         } else if (end && now > end) {

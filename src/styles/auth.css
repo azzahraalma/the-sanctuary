@@ -151,7 +151,7 @@ body {
   border-radius: var(--radius-sm); border: 1px solid rgba(192,57,43,0.15);
   display: flex; align-items: center; gap: 8px;
 }
-.auth-error::before { content: '⚠'; font-size: 13px; }
+.auth-error::before { content: ''; font-size: 13px; }
 
 .auth-switch {
   font-size: 14px; color: var(--gray); font-weight: 500;

@@ -290,7 +290,7 @@ export default function Home() {
         <div className="hero-media">
           <img src="/counseling_illust.jpg" alt="Sesi konseling" className="hero-photo" />
           <div className="hero-badge">
-            <span className="hero-badge-icon">🛡️</span>
+            <span className="hero-badge-icon">️</span>
             <div>
               <p className="hero-badge-title">Penasihat Terpercaya</p>
               <p className="hero-badge-sub">
@@ -348,7 +348,7 @@ export default function Home() {
             <h4 className="sdc-title">Distribusi Kasus per Kategori</h4>
             <div className="kategori-bars">
               {loadingStats ? (
-                <p style={{ color: "#aaa", fontSize: 13 }}>Memuat data... 🌱</p>
+                <p style={{ color: "#aaa", fontSize: 13 }}>Memuat data...</p>
               ) : (
                 Object.entries(kategoriCount)
                   .sort((a, b) => b[1] - a[1])
@@ -422,7 +422,7 @@ export default function Home() {
         </div>
 
         <div className="feat feat-dark">
-          <div className="feat-shield">🛡️</div>
+          <div className="feat-shield">️</div>
           <h3 className="feat-h3">Cerita Kamu Aman</h3>
           <p className="feat-p">
             Setiap percakapan bersifat pribadi dan hanya diketahui oleh Anda dan konselor sebaya 
@@ -508,7 +508,7 @@ export default function Home() {
 
         <div className="mentors-grid">
           {loadingStats ? (
-            <p style={{ color: "#aaa", fontSize: 14, gridColumn: "1/-1" }}>Memuat konselor... 🌱</p>
+            <p style={{ color: "#aaa", fontSize: 14, gridColumn: "1/-1" }}>Memuat konselor...</p>
           ) : (
             konselor.map((m) => (
               <article className="mcard" key={m.ID}>

@@ -195,7 +195,7 @@ export default function Settings() {
         uploadedUrl = urlData.publicUrl;
         setFotoUrl(uploadedUrl); setFotoPreview(null); setFotoFile(null);
       } else {
-        showToast("Gagal upload foto 😢"); setIsSaving(false); return;
+        showToast("Gagal upload foto"); setIsSaving(false); return;
       }
     }
     const { error } = await supabase.from("profil_pengguna").upsert({ email: userEmail, nama: displayName, foto_url: uploadedUrl }, { onConflict: "email" });
@@ -204,7 +204,7 @@ export default function Settings() {
       showToast("Profil berhasil diperbarui ✓");
       setIsEditing(false);
     } else {
-      showToast("Gagal menyimpan profil 😢");
+      showToast("Gagal menyimpan profil");
     }
     setIsSaving(false);
   };
@@ -219,7 +219,7 @@ export default function Settings() {
     setPwLoading(true);
     try {
       const { error: signInErr } = await supabase.auth.signInWithPassword({ email: userEmail, password: pwLama });
-      if (signInErr) { setPwError("Password lama salah. Coba lagi ya 😅"); return; }
+      if (signInErr) { setPwError("Password lama salah. Coba lagi ya"); return; }
       const { error: updateErr } = await supabase.auth.updateUser({ password: pwBaru });
       if (updateErr) throw updateErr;
       showToast("Password berhasil diubah ✓");
@@ -494,7 +494,7 @@ export default function Settings() {
         <footer className="db-footer">
           <div>
             <span className="db-footer-brand">The Sanctuary</span>
-            <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan 🌱</p>
+            <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
           </div>
           <div className="db-footer-links">
             <span>Kebijakan Privasi</span><span>Syarat dan Ketentuan</span><span>Bantuan</span>

@@ -150,9 +150,9 @@ export default function Notifikasi() {
                   <polyline points="15 18 9 12 15 6"/>
                 </svg>
               </button>
-              <p className="db-greeting-sub" style={{ margin: 0 }}>Notifikasi Kamu 🔔</p>
+              <p className="db-greeting-sub" style={{ margin: 0 }}>Notifikasi Kamu</p>
             </div>
-            <p className="db-greeting-hint">Semua aktivitas dan pesan untukmu, {userName.split(" ")[0]} 🌱</p>
+            <p className="db-greeting-hint">Semua aktivitas dan pesan untukmu, {userName.split(" ")[0]}</p>
           </div>
 
           {/* ── FILTER BAR ── */}
@@ -202,13 +202,13 @@ export default function Notifikasi() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {isLoading && (
               <div style={{ textAlign: "center", padding: "60px 0", color: "#6b8f8c", fontSize: 14 }}>
-                Memuat notifikasi... 🌱
+                Memuat notifikasi...
               </div>
             )}
 
             {!isLoading && filtered.length === 0 && (
               <div style={{ textAlign: "center", padding: "60px 0", color: "#6b8f8c", fontSize: 14 }}>
-                Belum ada notifikasi di kategori ini 🍃
+                Belum ada notifikasi di kategori ini
               </div>
             )}
 
@@ -269,7 +269,7 @@ export default function Notifikasi() {
         <footer className="db-footer">
           <div>
             <span className="db-footer-brand">The Sanctuary</span>
-            <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan 🌱</p>
+            <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
           </div>
           <div className="db-footer-links">
             <span>Kebijakan Privasi</span>

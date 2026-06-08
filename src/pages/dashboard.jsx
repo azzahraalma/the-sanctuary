@@ -720,7 +720,7 @@ export default function Dashboard() {
                 }} />
               )}
             </button>
-            <div className="db-avatar" onClick={() => navigate("/dashboard")}>
+            <div className="db-avatar" onClick={() => navigate("/settings")}>
               {(user?.nama ?? user?.name ?? "U").charAt(0).toUpperCase()}
             </div>
           </div>
@@ -728,8 +728,8 @@ export default function Dashboard() {
 
         <div className="db-content">
           <div className="db-greeting">
-            <p className="db-greeting-sub">Halo, {firstName} 👋</p>
-            <p className="db-greeting-hint">Senang kamu ada di sini. Yuk pantau perjalanan konselingmu hari ini 🌱</p>
+            <p className="db-greeting-sub">Halo, {firstName}</p>
+            <p className="db-greeting-hint">Senang kamu ada di sini. Yuk pantau perjalanan konselingmu hari ini</p>
           </div>
 
           <div className="db-hero-card">
@@ -752,8 +752,8 @@ export default function Dashboard() {
                 <p className="db-hero-badge-title">Progres Mindfulness Kamu</p>
                 <p className="db-hero-badge-desc">
                   {mindfulnessPct > 0
-                    ? `Sudah di ${mindfulnessPct}% — terus jaga konsistensinya ya! 🌿`
-                    : "Mulai sesi pertama untuk lihat perkembangan mindfulness-mu ✨"}
+                    ? `Sudah di ${mindfulnessPct}% — terus jaga konsistensinya ya!`
+                    : "Mulai sesi pertama untuk lihat perkembangan mindfulness-mu"}
                 </p>
               </div>
             </div>
@@ -761,22 +761,22 @@ export default function Dashboard() {
 
           <div className="db-stats-row">
             <div className="db-stat-card">
-              <span className="db-stat-icon">💬</span>
+              <span className="db-stat-icon"></span>
               <div className="db-stat-val">{isLoading ? "..." : totalSesi}</div>
               <div className="db-stat-lbl">Total Sesi Cerita</div>
             </div>
             <div className="db-stat-card">
-              <span className="db-stat-icon">📅</span>
+              <span className="db-stat-icon"></span>
               <div className="db-stat-val" style={{ fontSize: 16 }}>{isLoading ? "..." : lastTanggal}</div>
               <div className="db-stat-lbl">Terakhir Konseling</div>
             </div>
             <div className="db-stat-card">
-              <span className="db-stat-icon">🌿</span>
+              <span className="db-stat-icon"></span>
               <div className="db-stat-val">{isLoading ? "..." : mindfulnessPct ? `${mindfulnessPct}%` : "—"}</div>
               <div className="db-stat-lbl">Progres Mindfulness</div>
             </div>
             <div className="db-stat-card">
-              <span className="db-stat-icon">🤝</span>
+              <span className="db-stat-icon"></span>
               <div className="db-stat-val">{isLoading ? "..." : konselor.length}</div>
               <div className="db-stat-lbl">Teman Konselor</div>
             </div>
@@ -798,9 +798,9 @@ export default function Dashboard() {
                 <button className="db-card-link" onClick={() => navigate("/riwayat")}>Lihat Semua →</button>
               </div>
               <div className="db-konsul-list">
-                {isLoading && <p className="db-empty">Memuat data... 🌱</p>}
+                {isLoading && <p className="db-empty">Memuat data...</p>}
                 {!isLoading && konselor.length === 0 && (
-                  <p className="db-empty">Kamu belum punya sesi konseling. Yuk mulai cerita 🌱</p>
+                  <p className="db-empty">Kamu belum punya sesi konseling. Yuk mulai cerita</p>
                 )}
                 {!isLoading && konselor.map(k => {
                   const bk = bookings.find(b => b.id_konselor === k.id);
@@ -867,9 +867,9 @@ export default function Dashboard() {
                   if (bk && bk.status !== "Selesai") {
                     if (["Terjadwal", "terjadwal"].includes(bk.status) && startBuffer && now < startBuffer) {
                       const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
-                      statusHelperText = `Mulai pukul ${jamStr} ⏱`;
+                      statusHelperText = `Mulai pukul ${jamStr}`;
                     } else if (end && now > end) {
-                      statusHelperText = "Jadwal Terlewat ⌛";
+                      statusHelperText = "Jadwal Terlewat";
                     }
                   }
 
@@ -942,9 +942,9 @@ export default function Dashboard() {
                 )}
               </div>
               <div className="db-pesan-list">
-                {isLoading && <p className="db-empty">Memuat pesan... 🌱</p>}
+                {isLoading && <p className="db-empty">Memuat pesan...</p>}
                 {!isLoading && pesan.length === 0 && (
-                  <p className="db-empty">Belum ada pesan masuk 🌱</p>
+                  <p className="db-empty">Belum ada pesan masuk</p>
                 )}
                 {!isLoading && pesan.map(p => (
                   <div
@@ -982,7 +982,7 @@ export default function Dashboard() {
         <footer className="db-footer">
           <div>
             <span className="db-footer-brand">The Sanctuary</span>
-            <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan 🌱</p>
+            <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
           </div>
           <div className="db-footer-links">
             <span>Kebijakan Privasi</span>

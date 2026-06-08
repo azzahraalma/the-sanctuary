@@ -377,8 +377,8 @@ export default function Statistik() {
         </header>
 
         <div className="sk-greeting">
-          <p className="sk-greeting-sub">Perkembangan Kamu, {firstName} 📊</p>
-          <p className="sk-greeting-hint">Yuk lihat sejauh mana perjalanan konselingmu berjalan 🌱</p>
+          <p className="sk-greeting-sub">Perkembangan Kamu, {firstName}</p>
+          <p className="sk-greeting-hint">Yuk lihat sejauh mana perjalanan konselingmu berjalan</p>
         </div>
 
         <div className="sk-banner">
@@ -386,7 +386,7 @@ export default function Statistik() {
             <span className="sk-banner-tag">PANTAU PERJALANANMU</span>
             <h2 className="sk-banner-h1">Setiap sesi adalah langkah nyata<br />menuju dirimu yang lebih tenang</h2>
             <p className="sk-banner-p">Setiap cerita yang kamu bagi bersama konselor sebaya adalah langkah berani menuju kebaikan diri. Perjalananmu tercatat dan kamu nggak sendirian.</p>
-            <button className="sk-banner-btn" onClick={() => navigate("/konselor")}>Lihat Rekap Mingguan</button>
+            <button className="sk-banner-btn" onClick={() => navigate("/riwayat")}>Lihat Rekap Mingguan</button>
           </div>
           <div className="sk-banner-right">
             <Donut pct={Math.round((latest?.Mindfulness ?? 0) * 100)} size={150} stroke={14} color="#79d8d1" sub="MINDFULNESS" />
@@ -397,10 +397,10 @@ export default function Statistik() {
 
           <div className="sk-stats-row">
             {[
-              { icon: "💬", val: totalSesi,            lbl: "Total Sesi Cerita",  delta: `+${totalSesi}` },
-              { icon: "📅", val: lastTanggal,           lbl: "Sesi Terakhir",      delta: "Terbaru" },
-              { icon: "💚", val: skorKesejahteraan,     lbl: "Skor Kesejahteraan", delta: `+${deltaKesej}` },
-              { icon: "🎯", val: `${targetSelesai}/${targetTotal}`, lbl: "Target Tercapai", delta: targetTotal > 0 ? `${Math.round((targetSelesai / targetTotal) * 100)}%` : "0%" },
+              { icon: "", val: totalSesi,            lbl: "Total Sesi Cerita",  delta: `+${totalSesi}` },
+              { icon: "", val: lastTanggal,           lbl: "Sesi Terakhir",      delta: "Terbaru" },
+              { icon: "", val: skorKesejahteraan,     lbl: "Skor Kesejahteraan", delta: `+${deltaKesej}` },
+              { icon: "", val: `${targetSelesai}/${targetTotal}`, lbl: "Target Tercapai", delta: targetTotal > 0 ? `${Math.round((targetSelesai / targetTotal) * 100)}%` : "0%" },
             ].map((s, i) => (
               <div key={i} className="sk-stat-card">
                 <div className="sk-stat-top">
@@ -416,7 +416,7 @@ export default function Statistik() {
           {!mid ? (
             <div style={{ textAlign: "center", padding: "60px 20px", color: "#6b8f8c" }}>
               <p style={{ fontSize: 15, fontWeight: 600 }}>Data statistik belum tersedia</p>
-              <p style={{ fontSize: 13, marginTop: 8 }}>Hubungi admin untuk menghubungkan akunmu dengan data konseling 🌱</p>
+              <p style={{ fontSize: 13, marginTop: 8 }}>Hubungi admin untuk menghubungkan akunmu dengan data konseling</p>
             </div>
           ) : (
             <>
@@ -498,7 +498,7 @@ export default function Statistik() {
                     <div className="sk-catatan-mentor">
                       <span className="sk-catatan-tag">CATATAN DARI KONSELOR</span>
                       <p className="sk-catatan-text">
-                        "Sesi {sesiTercapai} membahas {kategoriTerakhir} — kamu terlihat {suasanaTerakhir.toLowerCase()} dan terus menunjukkan perkembangan yang berarti. Tetap semangat ya! 🌿"
+                        "Sesi {sesiTercapai} membahas {kategoriTerakhir} — kamu terlihat {suasanaTerakhir.toLowerCase()} dan terus menunjukkan perkembangan yang berarti. Tetap semangat ya!"
                       </p>
                     </div>
                   )}
@@ -535,7 +535,7 @@ export default function Statistik() {
                           </p>
                           {lastProg && (
                             <p className="sk-riwayat-note">
-                              Kondisi berkembang dari {kondisiAwal}% ke {kondisiAkhir}%. Fokus pada topik {bk?.Kategori_Masalah ?? "-"} — kamu sudah sangat berani mau bercerita 💚
+                              Kondisi berkembang dari {kondisiAwal}% ke {kondisiAkhir}%. Fokus pada topik {bk?.Kategori_Masalah ?? "-"} — kamu sudah sangat berani mau bercerita
                             </p>
                           )}
                         </div>
@@ -576,7 +576,7 @@ export default function Statistik() {
                       </div>
                       <p className="sk-mentor-sr">Berhasil bantu {successRate}% mahasiswa</p>
                       <button className={`sk-mentor-btn ${ci === 0 ? "sk-mentor-btn--rec" : ""}`} onClick={() => navigate("/konselor")}>
-                        {ci === 0 ? "⭐ Paling Direkomendasikan" : "→ Mulai Cerita"}
+                        {ci === 0 ? "Paling Direkomendasikan" : "→ Mulai Cerita"}
                       </button>
                     </div>
                   );
@@ -590,7 +590,7 @@ export default function Statistik() {
         <footer className="sk-footer">
           <div>
             <span className="sk-footer-brand">The Sanctuary</span>
-            <p className="sk-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan 🌱</p>
+            <p className="sk-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
           </div>
           <div className="sk-footer-links">
             <span>Kebijakan Privasi</span>

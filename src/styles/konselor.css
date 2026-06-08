@@ -610,18 +610,18 @@
     width: 100%; 
   }
 
-  /* ✅ Tetap 2 card di mobile */
+  /* Tetap 2 card di mobile */
   .kon-grid { 
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
 
-  /* ✅ Tinggi foto menyesuaikan */
+  /* Tinggi foto menyesuaikan */
   .kon-card-photo-wrap {
     height: 180px;
   }
 
-  /* ✅ Padding card lebih compact */
+  /* Padding card lebih compact */
   .kon-card-info {
     padding: 14px;
   }

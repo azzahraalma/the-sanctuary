@@ -254,11 +254,11 @@ export default function KonselorDashboard() {
         .split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
 
     const navItems = [
-        { key: "overview", label: "Overview", icon: "📊" },
-        { key: "klien", label: "Klien Saya", icon: "👥" },
-        { key: "jadwal", label: "Jadwal", icon: "📅" },
-        { key: "performa", label: "Performa", icon: "📈" },
-        { key: "profil", label: "Profil Saya", icon: "👤" },
+        { key: "overview", label: "Overview", icon: "" },
+        { key: "klien", label: "Klien Saya", icon: "" },
+        { key: "jadwal", label: "Jadwal", icon: "" },
+        { key: "performa", label: "Performa", icon: "" },
+        { key: "profil", label: "Profil Saya", icon: "" },
     ];
 
     const keramahan = konselor?.["Keramahan_(30%)"] ?? 0;
@@ -267,9 +267,9 @@ export default function KonselorDashboard() {
     const ratingFinal = konselor?.["Rating_(Final)"] ?? 0;
 
     const SPESIALISASI_DEFAULT = [
-        { icon: "📊", title: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline." },
-        { icon: "🧠", title: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental." },
-        { icon: "🎯", title: "Fokus & Produktivitas", desc: "Teknik untuk meningkatkan konsentrasi belajar." },
+        { icon: "", title: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline." },
+        { icon: "", title: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental." },
+        { icon: "", title: "Fokus & Produktivitas", desc: "Teknik untuk meningkatkan konsentrasi belajar." },
     ];
 
     const TESTIMONI = [
@@ -347,7 +347,7 @@ export default function KonselorDashboard() {
                     {activeTab === "overview" && (
                         <>
                             <div className="kd-greeting">
-                                <h2 className="kd-greeting-h2">Halo, {konselor?.Nama?.split(" ")[0]} 👋</h2>
+                                <h2 className="kd-greeting-h2">Halo, {konselor?.Nama?.split(" ")[0]}</h2>
                                 <p className="kd-greeting-sub">Berikut ringkasan aktivitas konselingmu hari ini.</p>
                             </div>
 
@@ -368,10 +368,10 @@ export default function KonselorDashboard() {
 
                             <div className="kd-stats-row">
                                 {[
-                                    { icon: "⭐", val: ratingFinal.toFixed(1), lbl: "Rating Saya" },
-                                    { icon: "📂", val: total, lbl: "Total Kasus" },
-                                    { icon: "✅", val: selesai, lbl: "Kasus Selesai" },
-                                    { icon: "🔄", val: berjalan, lbl: "Sedang Berjalan" },
+                                    { icon: "", val: ratingFinal.toFixed(1), lbl: "Rating Saya" },
+                                    { icon: "", val: total, lbl: "Total Kasus" },
+                                    { icon: "", val: selesai, lbl: "Kasus Selesai" },
+                                    { icon: "", val: berjalan, lbl: "Sedang Berjalan" },
                                 ].map((s, i) => (
                                     <div key={i} className="kd-stat-card">
                                         <span className="kd-stat-icon">{s.icon}</span>
@@ -561,9 +561,9 @@ export default function KonselorDashboard() {
                                     if (b.Status !== "Selesai") {
                                         if (["Terjadwal", "terjadwal"].includes(b.Status) && startBuffer && now < startBuffer) {
                                             const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
-                                            statusHelperText = `Mulai pukul ${jamStr} ⏱`;
+                                            statusHelperText = `Mulai pukul ${jamStr}`;
                                         } else if (end && now > end) {
-                                            statusHelperText = "Terlewat ⌛";
+                                            statusHelperText = "Terlewat";
                                         }
                                     }
 
@@ -716,7 +716,7 @@ export default function KonselorDashboard() {
                                                             border: `1.5px solid ${s.status === "booked" ? "rgba(232,168,56,0.3)" : "rgba(47,125,121,0.18)"}`,
                                                             borderRadius: 999, fontSize: 13, fontWeight: 600,
                                                         }}>
-                                                            <span>🕐</span>
+                                                            <span></span>
                                                             <span style={{ color: s.status === "booked" ? "#a06030" : "var(--teal)" }}>
                                                                 {s.jam_mulai.slice(0, 5)} – {s.jam_selesai.slice(0, 5)}
                                                             </span>
@@ -849,7 +849,7 @@ export default function KonselorDashboard() {
                                         <h2 className="kd-greeting-h2">Profil Saya</h2>
                                         <p className="kd-greeting-sub">Tampilan profil publikmu seperti yang dilihat oleh mahasiswa.</p>
                                     </div>
-                                    <button className="kd-card-link" onClick={() => setShowEditModal(true)}>✏️ Edit Profil</button>
+                                    <button className="kd-card-link" onClick={() => setShowEditModal(true)}>️ Edit Profil</button>
                                 </div>
                             </div>
 

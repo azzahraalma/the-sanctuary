@@ -49,10 +49,10 @@ function MiniDonut({ pct, color, label }) {
 
 function MoodBadge({ mood }) {
   const map = {
-    "Sangat Baik": { cls: "mood-sangat-baik", icon: "😊" },
-    "Baik":        { cls: "mood-baik",        icon: "🙂" },
-    "Netral":      { cls: "mood-netral",       icon: "😐" },
-    "Stres":       { cls: "mood-stres",        icon: "😔" },
+    "Sangat Baik": { cls: "mood-sangat-baik", icon: "" },
+    "Baik":        { cls: "mood-baik",        icon: "" },
+    "Netral":      { cls: "mood-netral",       icon: "" },
+    "Stres":       { cls: "mood-stres",        icon: "" },
   };
   const m = map[mood] ?? map["Netral"];
   return (
@@ -324,18 +324,18 @@ export default function RiwayatSesi() {
           >
             ← Kembali ke Statistik
           </button>
-          <p className="sk-greeting-sub">Riwayat Sesi Cerita, {firstName} 📋</p>
-          <p className="sk-greeting-hint">Detail lengkap setiap sesi konseling yang pernah kamu jalani 🌱</p>
+          <p className="sk-greeting-sub">Riwayat Sesi Cerita, {firstName}</p>
+          <p className="sk-greeting-hint">Detail lengkap setiap sesi konseling yang pernah kamu jalani</p>
         </div>
 
         <div className="sk-content">
 
           <div className="sk-stats-row">
             {[
-              { icon:"💬", val:totalSesi,   lbl:"Total Sesi",    delta:`${totalSesi} sesi` },
-              { icon:"📅", val:lastTanggal, lbl:"Sesi Terakhir", delta:"Terbaru" },
-              { icon:"💚", val:skorAkhir,   lbl:"Skor Terakhir", delta:deltaSkor },
-              { icon:"🏅", val:selesai,     lbl:"Sesi Selesai",  delta:`dari ${myBookings.length} booking` },
+              { icon:"", val:totalSesi,   lbl:"Total Sesi",    delta:`${totalSesi} sesi` },
+              { icon:"", val:lastTanggal, lbl:"Sesi Terakhir", delta:"Terbaru" },
+              { icon:"", val:skorAkhir,   lbl:"Skor Terakhir", delta:deltaSkor },
+              { icon:"", val:selesai,     lbl:"Sesi Selesai",  delta:`dari ${myBookings.length} booking` },
             ].map((s, i) => (
               <div key={i} className="sk-stat-card">
                 <div className="sk-stat-top">
@@ -358,11 +358,11 @@ export default function RiwayatSesi() {
           {!mid ? (
             <div style={{ textAlign:"center", padding:"60px 20px", color:"#6b8f8c" }}>
               <p style={{ fontSize:15, fontWeight:600 }}>Data riwayat belum tersedia</p>
-              <p style={{ fontSize:13, marginTop:8 }}>Hubungi admin untuk menghubungkan akunmu dengan data konseling 🌱</p>
+              <p style={{ fontSize:13, marginTop:8 }}>Hubungi admin untuk menghubungkan akunmu dengan data konseling</p>
             </div>
           ) : myProgress.length === 0 ? (
             <div className="rw-empty">
-              <div className="rw-empty-icon">📭</div>
+              <div className="rw-empty-icon"></div>
               <p className="rw-empty-title">Belum ada sesi konseling</p>
               <p className="rw-empty-sub">Mulai cerita dengan konselor sebaya kamu</p>
               <button className="sk-cta" style={{ marginTop:20 }} onClick={() => navigate("/konselor")}>
@@ -408,11 +408,11 @@ export default function RiwayatSesi() {
                         </div>
                         <div className="rw-meta-sub">
                           <span>
-                            📅 {p.Tanggal
+                            {p.Tanggal
                               ? new Date(p.Tanggal).toLocaleDateString("id-ID", { day:"2-digit", month:"long", year:"numeric" })
                               : "—"}
                           </span>
-                          <span>📁 {p.Kategori_Masalah}</span>
+                          <span>{p.Kategori_Masalah}</span>
                           {delta !== null && (
                             <span className={Number(delta) >= 0 ? "rw-delta-pos" : "rw-delta-neg"}>
                               {Number(delta) >= 0 ? "↑" : "↓"} {Math.abs(delta)} poin
@@ -496,7 +496,7 @@ export default function RiwayatSesi() {
                                   </div>
                                 </div>
                                 <div className="rw-kondisi-note">
-                                  🌱 Kondisi berkembang {Math.round((booking.Kondisi_Saat_Ini - booking.Kondisi_Awal) * 100)} poin — terus semangat ya!
+                                  Kondisi berkembang {Math.round((booking.Kondisi_Saat_Ini - booking.Kondisi_Awal) * 100)} poin — terus semangat ya!
                                 </div>
                               </div>
                             )}
@@ -504,7 +504,7 @@ export default function RiwayatSesi() {
                             <div className="rw-catatan">
                               <div className="rw-panel-title" style={{ marginBottom:8 }}>Catatan Sesi</div>
                               <p>
-                                "Sesi {p.Sesi_Konseling} membahas {p.Kategori_Masalah} — kamu terlihat {(p.Suasana_Hati ?? "baik").toLowerCase()} dan terus menunjukkan perkembangan yang berarti. Tetap semangat ya! 🌿"
+                                "Sesi {p.Sesi_Konseling} membahas {p.Kategori_Masalah} — kamu terlihat {(p.Suasana_Hati ?? "baik").toLowerCase()} dan terus menunjukkan perkembangan yang berarti. Tetap semangat ya!"
                               </p>
                             </div>
                           </div>
@@ -523,7 +523,7 @@ export default function RiwayatSesi() {
           <div>
             <span className="sk-footer-brand">The Sanctuary</span>
             <p className="sk-footer-copy">
-              © 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan 🌱
+              © 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan
             </p>
           </div>
           <div className="sk-footer-links">

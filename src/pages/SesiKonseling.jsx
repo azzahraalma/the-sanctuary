@@ -152,7 +152,7 @@ export default function SesiKonseling() {
         } else {
           // If not in time range
           if (startBuffer && now < startBuffer) {
-            alert("Sesi ini belum dimulai. Silakan tunggu jadwal sesimu ya! ⏱");
+            alert("Sesi ini belum dimulai. Silakan tunggu jadwal sesimu ya!");
           } else {
             alert("Jadwal sesi ini sudah berakhir. Sesi tidak dapat dimulai.");
           }
@@ -219,7 +219,7 @@ export default function SesiKonseling() {
         if (payload.new.status === "Selesai") {
           setBooking(payload.new);
           if (user?.role === "mahasiswa") {
-            alert("Sesi konseling telah selesai. Terima kasih telah bercerita! 🌿");
+            alert("Sesi konseling telah selesai. Terima kasih telah bercerita!");
             navigate("/dashboard");
           }
         }
@@ -307,7 +307,7 @@ export default function SesiKonseling() {
       height: "100vh", background: "#f5fffe",
       fontFamily: "'DM Sans', sans-serif", color: "#2f7d79", fontSize: 15,
     }}>
-      Memuat sesi... 🌱
+      Memuat sesi...
     </div>
   );
 
@@ -319,7 +319,7 @@ export default function SesiKonseling() {
       {showEndModal && (
         <div className="sk-overlay">
           <div className="sk-modal">
-            <div className="sk-modal-emoji">🌻</div>
+            <div className="sk-modal-emoji"></div>
             <h3>Akhiri Sesi Ini?</h3>
             <p>
               Kamu sudah menghabiskan <strong>{elapsedStr}</strong> bersama{" "}
@@ -347,7 +347,7 @@ export default function SesiKonseling() {
           <div className="sk-session-info">
             <div className="sk-dot" />
             <span>Sesi dengan {konselor?.nama ?? "Konselor"}</span>
-            <span className="sk-timer">⏱ {elapsedStr}</span>
+            <span className="sk-timer">{elapsedStr}</span>
           </div>
           {user?.role === "konselor" ? (
             <button className="sk-end-btn" onClick={() => setShowEndModal(true)}>
@@ -375,7 +375,7 @@ export default function SesiKonseling() {
             )}
             {konselor?.["Rating_(Final)"] && (
               <span className="sk-kons-rating">
-                ⭐ {Number(konselor["Rating_(Final)"]).toFixed(1)}
+                {Number(konselor["Rating_(Final)"]).toFixed(1)}
               </span>
             )}
             <div className="sk-divider" />
@@ -397,7 +397,7 @@ export default function SesiKonseling() {
               {messages.length === 0 ? (
                 <div className="sk-empty-chat">
                   {/* Diubah dari className="emoji" → className="sk-empty-emoji" */}
-                  <span className="sk-empty-emoji">🌱</span>
+                  <span className="sk-empty-emoji"></span>
                   <span>Sesi dimulai! Apa yang ingin kamu ceritakan hari ini?</span>
                 </div>
               ) : (
@@ -425,10 +425,10 @@ export default function SesiKonseling() {
               <p className="sk-quick-ref-label">Quick Reflection</p>
               <div className="sk-chips">
                 {[
-                  "Aku merasa lebih baik sekarang 🌿",
-                  "Aku masih bingung 😕",
-                  "Aku butuh waktu untuk merenung 💭",
-                  "Terima kasih sudah mendengarkan 🙏",
+                  "Aku merasa lebih baik sekarang",
+                  "Aku masih bingung",
+                  "Aku butuh waktu untuk merenung",
+                  "Terima kasih sudah mendengarkan",
                 ].map(chip => (
                   <button key={chip} className="sk-chip" onClick={() => setInput(chip)}>
                     {chip}

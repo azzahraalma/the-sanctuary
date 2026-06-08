@@ -20,8 +20,8 @@ export async function seedAll() {
     }));
 
     const { error: e1 } = await supabase.from("konselor").upsert(konselorRows);
-    if (e1) console.error("❌ Konselor:", e1.message);
-    else console.log("✅ Konselor selesai!");
+    if (e1) console.error("Konselor:", e1.message);
+    else console.log("Konselor selesai!");
 
     const bookingRows = data_booking
         .filter((b) => b.ID_Booking !== null)
@@ -39,8 +39,8 @@ export async function seedAll() {
         }));
 
     const { error: e2 } = await supabase.from("booking").upsert(bookingRows);
-    if (e2) console.error("❌ Booking:", e2.message);
-    else console.log("✅ Booking selesai!");
+    if (e2) console.error("Booking:", e2.message);
+    else console.log("Booking selesai!");
 
     const userRows = users.map((u) => ({
         email: u.email,
@@ -52,6 +52,6 @@ export async function seedAll() {
     }));
 
     const { error: e3 } = await supabase.from("users").upsert(userRows, { onConflict: "email" });
-    if (e3) console.error("❌ Users:", e3.message);
-    else console.log("✅ Users selesai!");
+    if (e3) console.error("Users:", e3.message);
+    else console.log("Users selesai!");
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import "../styles/riwayat-sesi-admin.css";
@@ -278,7 +278,7 @@ export default function RiwayatSesiAdmin() {
         </div>
       ) : error ? (
         <div className="rsa-error">
-          <span>⚠ Gagal memuat data: {error}</span>
+          <span>Gagal memuat data: {error}</span>
           <button onClick={fetchAllSesi}>Coba lagi</button>
         </div>
       ) : filtered.length === 0 ? (

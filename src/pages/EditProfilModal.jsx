@@ -3,9 +3,9 @@ import { createPortal } from "react-dom";
 import "../styles/edit-profil-modal.css";
 
 const SPESIALISASI_DEFAULT = [
-    { icon: "📊", title: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan." },
-    { icon: "🧠", title: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental di tengah tuntutan perkuliahan yang tinggi." },
-    { icon: "🎯", title: "Fokus & Produktivitas", desc: "Teknik dan strategi untuk meningkatkan konsentrasi belajar dan produktivitas akademik sehari-hari." },
+    { icon: "", title: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan." },
+    { icon: "", title: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental di tengah tuntutan perkuliahan yang tinggi." },
+    { icon: "", title: "Fokus & Produktivitas", desc: "Teknik dan strategi untuk meningkatkan konsentrasi belajar dan produktivitas akademik sehari-hari." },
 ];
 
 export default function EditProfilModal({ profil, onSave, onClose }) {
@@ -75,7 +75,7 @@ export default function EditProfilModal({ profil, onSave, onClose }) {
                                 className="ep-input-icon"
                                 value={k.icon}
                                 onChange={(e) => updateKeahlian(i, "icon", e.target.value)}
-                                placeholder="🎯"
+                                placeholder=""
                                 maxLength={2}
                             />
                             <div className="ep-keahlian-fields">

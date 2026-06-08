@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,700;1,300&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,700&display=swap');
 
 .rsa-back-btn {
   display: flex;
@@ -14,10 +14,11 @@
   cursor: pointer;
   transition: all 0.15s;
   margin-bottom: 1rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-back-btn:hover {
-  border-color: #7c6f9f;
-  color: #7c6f9f;
+  border-color: #2f7d79;
+  color: #2f7d79;
 }
 
 /* ─── PAGE LAYOUT ─────────────────────────────────────────────────── */
@@ -25,8 +26,13 @@
   padding: 2rem 2.5rem;
   min-height: 100vh;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  color: var(--text-primary, #1a1a2e);
-  background: var(--bg-main, #f7f6f3);
+  color: #1a2e2c;
+  background: #f2f2ea;
+}
+
+/* ─── TAB CONTENT ─────────────────────────────────────────────────── */
+.rsa-tab-content {
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ─── HEADER ──────────────────────────────────────────────────────── */
@@ -42,21 +48,24 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7c6f9f;
+  color: #2f7d79;
   margin-bottom: 0.3rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-weight: 800;
+  color: #1a2e2c;
   margin: 0 0 0.25rem;
   line-height: 1.1;
+  letter-spacing: -0.5px;
 }
 .rsa-subtitle {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: #666;
   margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-refresh-btn {
   display: flex;
@@ -64,53 +73,56 @@
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   background: white;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid #e4e4dc;
   border-radius: 8px;
   font-size: 0.82rem;
-  font-weight: 500;
-  color: #374151;
+  font-weight: 600;
+  color: #666;
   cursor: pointer;
   transition: all 0.15s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-refresh-btn:hover {
-  border-color: #7c6f9f;
-  color: #7c6f9f;
+  border-color: #2f7d79;
+  color: #2f7d79;
 }
 
 /* ─── SUMMARY CARDS ───────────────────────────────────────────────── */
 .rsa-summary {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: 14px;
   margin-bottom: 1.75rem;
 }
 .rsa-stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.2rem 1.5rem;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  border: 1.5px solid #f0eeeb;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  gap: 6px;
+  border: 1px solid rgba(47,125,121,0.07);
+  box-shadow: 0 2px 16px rgba(47,125,121,0.08);
 }
 .rsa-stat-value {
-  font-family: 'Fraunces', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: #1a2e2c;
   line-height: 1;
+  letter-spacing: -1px;
 }
 .rsa-stat-label {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: #9ca3af;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.5px;
 }
-.rsa-stat-selesai .rsa-stat-value { color: #059669; }
+.rsa-stat-selesai .rsa-stat-value   { color: #2f7d79; }
 .rsa-stat-terjadwal .rsa-stat-value { color: #2563eb; }
-.rsa-stat-dibatalkan .rsa-stat-value { color: #dc2626; }
+.rsa-stat-dibatalkan .rsa-stat-value{ color: #c0392b; }
 
 /* ─── FILTER BAR ──────────────────────────────────────────────────── */
 .rsa-filter-bar {
@@ -136,35 +148,37 @@
 .rsa-search {
   width: 100%;
   padding: 0.55rem 0.75rem 0.55rem 2.25rem;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid #e4e4dc;
   border-radius: 8px;
-  font-family: inherit;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.85rem;
   background: white;
-  color: #1a1a2e;
+  color: #1a2e2c;
   transition: border-color 0.15s;
   box-sizing: border-box;
 }
 .rsa-search:focus {
   outline: none;
-  border-color: #7c6f9f;
+  border-color: #2f7d79;
 }
 .rsa-select {
   padding: 0.55rem 0.9rem;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid #e4e4dc;
   border-radius: 8px;
-  font-family: inherit;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.83rem;
+  font-weight: 500;
   background: white;
-  color: #374151;
+  color: #444;
   cursor: pointer;
   transition: border-color 0.15s;
 }
 .rsa-select:focus {
   outline: none;
-  border-color: #7c6f9f;
+  border-color: #2f7d79;
 }
 .rsa-count {
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 0.8rem;
   color: #9ca3af;
   white-space: nowrap;
@@ -175,41 +189,44 @@
 .rsa-table-wrap {
   background: white;
   border-radius: 14px;
-  border: 1.5px solid #f0eeeb;
+  border: 1px solid rgba(47,125,121,0.07);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 16px rgba(47,125,121,0.08);
   overflow-x: auto;
 }
 .rsa-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.84rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-table thead tr {
-  background: #faf9f7;
-  border-bottom: 1.5px solid #f0eeeb;
+  background: #f9f9f5;
+  border-bottom: 1.5px solid rgba(47,125,121,0.08);
 }
 .rsa-table th {
   padding: 0.85rem 1rem;
   text-align: left;
-  font-size: 0.72rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: #666;
   white-space: nowrap;
 }
 .rsa-row {
-  border-bottom: 1px solid #f9f8f6;
+  border-bottom: 1px solid rgba(47,125,121,0.05);
   cursor: pointer;
   transition: background 0.12s;
 }
 .rsa-row:last-child { border-bottom: none; }
-.rsa-row:hover { background: #faf9f7; }
+.rsa-row:hover { background: #f9f9f5; }
 .rsa-table td {
   padding: 0.9rem 1rem;
   vertical-align: middle;
-  color: #374151;
+  color: #444;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* Cell types */
@@ -222,10 +239,11 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7c6f9f, #a78bfa);
+  background: linear-gradient(135deg, #2f7d79, #79d8d1);
   color: white;
   font-size: 0.8rem;
   font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,26 +251,29 @@
 }
 .rsa-name {
   font-weight: 600;
-  color: #1a1a2e;
+  color: #1a2e2c;
   font-size: 0.84rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-id {
   font-size: 0.72rem;
   color: #9ca3af;
   margin-top: 1px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.rsa-td-konselor { color: #6b7280; }
-.rsa-td-date { white-space: nowrap; color: #6b7280; }
-.rsa-td-center { text-align: center; }
+.rsa-td-konselor { color: #666; }
+.rsa-td-date     { white-space: nowrap; color: #666; }
+.rsa-td-center   { text-align: center; }
 
 .rsa-kategori {
   display: inline-block;
   padding: 0.22rem 0.65rem;
-  background: #f3f0ff;
-  color: #6d28d9;
+  background: rgba(47,125,121,0.08);
+  color: #2f7d79;
   border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .rsa-sesi-badge {
@@ -261,11 +282,12 @@
   height: 28px;
   line-height: 28px;
   text-align: center;
-  background: #f1f5f9;
+  background: rgba(47,125,121,0.08);
   border-radius: 50%;
   font-weight: 700;
   font-size: 0.78rem;
-  color: #334155;
+  color: #2f7d79;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* Status badges */
@@ -276,28 +298,30 @@
   font-size: 0.74rem;
   font-weight: 600;
   white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.status-selesai   { background: #d1fae5; color: #065f46; }
+.status-selesai   { background: rgba(47,125,121,0.10); color: #2f7d79; }
 .status-terjadwal { background: #dbeafe; color: #1e40af; }
-.status-dibatalkan{ background: #fee2e2; color: #991b1b; }
+.status-dibatalkan{ background: #fdecea; color: #c0392b; }
 .status-unknown   { background: #f3f4f6; color: #6b7280; }
 
 .rsa-detail-btn {
   padding: 0.3rem 0.8rem;
   background: transparent;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid #e4e4dc;
   border-radius: 6px;
   font-size: 0.76rem;
   font-weight: 600;
-  color: #6b7280;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #666;
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
 }
 .rsa-detail-btn:hover {
-  border-color: #7c6f9f;
-  color: #7c6f9f;
-  background: #faf5ff;
+  border-color: #2f7d79;
+  color: #2f7d79;
+  background: rgba(47,125,121,0.05);
 }
 
 /* ─── STATES ──────────────────────────────────────────────────────── */
@@ -312,28 +336,31 @@
   padding: 4rem 2rem;
   color: #9ca3af;
   font-size: 0.9rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   background: white;
   border-radius: 14px;
-  border: 1.5px solid #f0eeeb;
+  border: 1px solid rgba(47,125,121,0.07);
 }
 .rsa-spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid #f0eeeb;
-  border-top-color: #7c6f9f;
+  border: 3px solid rgba(47,125,121,0.12);
+  border-top-color: #2f7d79;
   border-radius: 50%;
   animation: rsaSpin 0.75s linear infinite;
 }
 @keyframes rsaSpin { to { transform: rotate(360deg); } }
-.rsa-error { color: #dc2626; }
+.rsa-error { color: #c0392b; }
 .rsa-error button {
   padding: 0.4rem 1rem;
-  background: #dc2626;
+  background: #c0392b;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.82rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
 }
 
 /* ─── MODAL ───────────────────────────────────────────────────────── */
@@ -358,12 +385,13 @@
   max-width: 580px;
   max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+  box-shadow: 0 24px 64px rgba(47,125,121,0.15);
   animation: rsaSlideUp 0.25s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 @keyframes rsaSlideUp {
   from { transform: translateY(24px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
 .rsa-modal-header {
@@ -371,7 +399,7 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: 1.75rem 1.75rem 1.25rem;
-  border-bottom: 1.5px solid #f0eeeb;
+  border-bottom: 1px solid rgba(47,125,121,0.08);
 }
 .rsa-modal-eyebrow {
   display: block;
@@ -379,19 +407,22 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #7c6f9f;
+  color: #2f7d79;
   margin-bottom: 0.3rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-modal-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 1.4rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-weight: 800;
+  color: #1a2e2c;
   margin: 0 0 0.2rem;
+  letter-spacing: -0.3px;
 }
 .rsa-modal-id {
   font-size: 0.76rem;
   color: #9ca3af;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-modal-close {
   background: none;
@@ -403,13 +434,14 @@
   transition: color 0.15s;
   flex-shrink: 0;
 }
-.rsa-modal-close:hover { color: #1a1a2e; }
+.rsa-modal-close:hover { color: #1a2e2c; }
 
 .rsa-modal-body {
   padding: 1.5rem 1.75rem 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .rsa-modal-grid {
@@ -429,11 +461,13 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #9ca3af;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-modal-field span {
   font-size: 0.88rem;
-  color: #1a1a2e;
+  color: #1a2e2c;
   font-weight: 500;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-mono {
   font-family: monospace;
@@ -449,6 +483,7 @@
   letter-spacing: 0.08em;
   color: #9ca3af;
   margin: 0 0 0.9rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* Progress */
@@ -469,6 +504,7 @@
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: #9ca3af;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-kondisi-arrow {
   font-size: 1.1rem;
@@ -478,14 +514,14 @@
 }
 .progress-track {
   height: 8px;
-  background: #f3f4f6;
+  background: rgba(47,125,121,0.10);
   border-radius: 999px;
   position: relative;
   overflow: visible;
 }
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #7c6f9f, #a78bfa);
+  background: linear-gradient(90deg, #2f7d79, #79d8d1);
   border-radius: 999px;
   transition: width 0.5s ease;
 }
@@ -493,8 +529,9 @@
   display: block;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #374151;
+  color: #444;
   margin-top: 0.35rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-delta {
   margin-top: 0.9rem;
@@ -502,15 +539,21 @@
   border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.delta-up   { background: #d1fae5; color: #065f46; }
-.delta-down { background: #fee2e2; color: #991b1b; }
+.delta-up   { background: rgba(47,125,121,0.08); color: #2f7d79; }
+.delta-down { background: #fdecea; color: #c0392b; }
 
 /* ─── RESPONSIVE ──────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .rsa-page { padding: 1.25rem; }
+@media (max-width: 900px) {
   .rsa-summary { grid-template-columns: repeat(2, 1fr); }
-  .rsa-modal-grid { grid-template-columns: 1fr; }
-  .rsa-kondisi-row { flex-direction: column; }
-  .rsa-kondisi-arrow { display: none; }
+}
+@media (max-width: 768px) {
+  .rsa-page         { padding: 1.25rem; }
+  .rsa-modal-grid   { grid-template-columns: 1fr; }
+  .rsa-kondisi-row  { flex-direction: column; }
+  .rsa-kondisi-arrow{ display: none; }
+}
+@media (max-width: 600px) {
+  .rsa-summary { grid-template-columns: 1fr 1fr; }
 }

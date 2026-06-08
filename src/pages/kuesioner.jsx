@@ -360,17 +360,17 @@ function HalamanHasil({
 
   const pendekatan = [
     {
-      icon: "👥",
+      icon: "",
       judul: "Komunitas Sebaya",
       desc: "Sharing bareng mahasiswa lain yang punya pengalaman serupa, di ruang yang aman dan supportif.",
     },
     {
-      icon: "🧘",
+      icon: "",
       judul: "Latihan Mindfulness",
       desc: "Latihan singkat buat bantu kamu kelola kecemasan, lebih hadir, dan istirahat lebih berkualitas.",
     },
     {
-      icon: "📔",
+      icon: "",
       judul: "Jurnal Digital",
       desc: "Nulis perasaan dan pikiranmu kadang nulis aja udah bikin lega lebih dari yang kamu kira.",
     },
@@ -383,7 +383,7 @@ function HalamanHasil({
       <main className="hasil-main">
         {isPrasetyo && (
           <div className="hasil-saved-notice">
-            ✅ Jawaban kamu udah tersimpan di data sesi ini, Prasetyo!
+            Jawaban kamu udah tersimpan di data sesi ini, Prasetyo!
           </div>
         )}
 
@@ -450,7 +450,7 @@ function HalamanHasil({
           )}
 
           <div className="hasil-insight-box">
-            <span className="hasil-insight-icon">💬</span>
+            <span className="hasil-insight-icon"></span>
             <p className="hasil-insight-text">{insight}</p>
           </div>
         </div>
@@ -711,7 +711,7 @@ export default function Kuesioner() {
       <main className="kuis-main">
         <div className="kuis-header">
           <div className="kuis-greeting">
-            Halo, {firstName}! 👋 Makasih udah mau luangin waktu buat ini
+            Halo, {firstName}! Makasih udah mau luangin waktu buat ini
           </div>
 
           <h1 className="kuis-h1">Gimana kabarmu sekarang?</h1>
@@ -826,7 +826,7 @@ export default function Kuesioner() {
               }
             >
               {soalIdx + 1 === totalSoal
-                ? "Lihat hasilnya ✨"
+                ? "Lihat hasilnya"
                 : "Lanjut →"}
             </button>
           </div>

@@ -220,7 +220,7 @@ export default function Konselor() {
       {/* ── HERO HEADER ── */}
       <section className="kon-hero">
         <div className="kon-hero-inner">
-          <span className="kon-hero-pill">👥 Konselor Sebaya Aktif</span>
+          <span className="kon-hero-pill">Konselor Sebaya Aktif</span>
           <h1 className="kon-hero-h1">Daftar Konselor</h1>
           <p className="kon-hero-sub">
             Panduan pilihan untuk perjalanan ketangguhanmu. Terhubung dengan konselor
@@ -332,7 +332,7 @@ export default function Konselor() {
           {/* Error state */}
           {error && (
             <div className="kon-empty">
-              <div className="kon-empty-icon">⚠️</div>
+              <div className="kon-empty-icon">️</div>
               <h3 className="kon-empty-h">Gagal memuat data konselor</h3>
               <p className="kon-empty-p">{error}</p>
             </div>
@@ -356,7 +356,7 @@ export default function Konselor() {
           {/* Empty state */}
           {!loading && !error && filtered.length === 0 && (
             <div className="kon-empty">
-              <div className="kon-empty-icon">🔍</div>
+              <div className="kon-empty-icon"></div>
               <h3 className="kon-empty-h">Tidak ada konselor yang cocok</h3>
               <p className="kon-empty-p">Coba ubah atau hapus filter yang aktif.</p>
               <button className="kon-reset-btn" style={{ margin: "0 auto" }} onClick={resetFilters}>
@@ -408,7 +408,7 @@ export default function Konselor() {
                         <StarRating rating={k["Rating_(Final)"]} />
 
                         <div className="kon-card-meta">
-                          <span className="kon-card-exp">⏱ {k.Pengalaman}</span>
+                          <span className="kon-card-exp">{k.Pengalaman}</span>
                           <span className="kon-card-cases">
                             {k.Kasus_Selesai}/{k.Jumlah_Kasus} kasus
                           </span>

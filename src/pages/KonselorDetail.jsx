@@ -36,24 +36,24 @@ function StarRating({ rating, size = 14 }) {
 // ── Static maps (tidak perlu dari DB) ────────────────────────────────────────
 const SPESIALISASI_MAP = {
   "Tekanan Akademik & Kesejahteraan Mahasiswa": [
-    { icon: "📚", judul: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan." },
-    { icon: "🧘", judul: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental di tengah tuntutan perkuliahan yang tinggi." },
-    { icon: "🎯", judul: "Fokus & Produktivitas", desc: "Teknik dan strategi untuk meningkatkan konsentrasi belajar dan produktivitas akademik sehari-hari." },
+    { icon: "", judul: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan." },
+    { icon: "", judul: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental di tengah tuntutan perkuliahan yang tinggi." },
+    { icon: "", judul: "Fokus & Produktivitas", desc: "Teknik dan strategi untuk meningkatkan konsentrasi belajar dan produktivitas akademik sehari-hari." },
   ],
   "Perencanaan Karier & Kehidupan Kampus": [
-    { icon: "🗺️", judul: "Perencanaan Karier", desc: "Membantu mahasiswa merancang jalur karier yang sesuai dengan minat, bakat, dan kondisi pasar kerja saat ini." },
-    { icon: "🤝", judul: "Kehidupan Kampus", desc: "Pendampingan adaptasi di lingkungan kampus, membangun relasi, dan memaksimalkan pengalaman perkuliahan." },
-    { icon: "💼", judul: "Persiapan Dunia Kerja", desc: "Bimbingan menyiapkan diri untuk transisi dari dunia kampus ke dunia profesional dengan percaya diri." },
+    { icon: "️", judul: "Perencanaan Karier", desc: "Membantu mahasiswa merancang jalur karier yang sesuai dengan minat, bakat, dan kondisi pasar kerja saat ini." },
+    { icon: "", judul: "Kehidupan Kampus", desc: "Pendampingan adaptasi di lingkungan kampus, membangun relasi, dan memaksimalkan pengalaman perkuliahan." },
+    { icon: "", judul: "Persiapan Dunia Kerja", desc: "Bimbingan menyiapkan diri untuk transisi dari dunia kampus ke dunia profesional dengan percaya diri." },
   ],
   "Pengelolaan Kebiasaan & Emosi Mahasiswa": [
-    { icon: "💡", judul: "Regulasi Emosi", desc: "Teknik mengelola emosi agar tidak menghambat aktivitas dan hubungan sosial di lingkungan kampus." },
-    { icon: "🌱", judul: "Pembentukan Kebiasaan Baik", desc: "Membangun rutinitas positif yang mendukung pertumbuhan diri dan pencapaian tujuan jangka panjang." },
-    { icon: "💬", judul: "Komunikasi Asertif", desc: "Melatih kemampuan menyampaikan pikiran dan perasaan secara sehat, jelas, dan efektif." },
+    { icon: "", judul: "Regulasi Emosi", desc: "Teknik mengelola emosi agar tidak menghambat aktivitas dan hubungan sosial di lingkungan kampus." },
+    { icon: "", judul: "Pembentukan Kebiasaan Baik", desc: "Membangun rutinitas positif yang mendukung pertumbuhan diri dan pencapaian tujuan jangka panjang." },
+    { icon: "", judul: "Komunikasi Asertif", desc: "Melatih kemampuan menyampaikan pikiran dan perasaan secara sehat, jelas, dan efektif." },
   ],
   "Kelelahan Akademik & Aktivitas Kampus": [
-    { icon: "🔋", judul: "Pemulihan Burnout", desc: "Strategi mengenali, mengatasi, dan pulih dari kelelahan akademik yang berkepanjangan secara bertahap." },
-    { icon: "⚖️", judul: "Work-Life Balance Kampus", desc: "Menyeimbangkan aktivitas akademik, organisasi, dan kehidupan pribadi tanpa mengorbankan kesehatan." },
-    { icon: "🌿", judul: "Self-Care & Resiliensi", desc: "Membangun ketahanan diri agar mampu bangkit dari tekanan dan tantangan kehidupan kampus." },
+    { icon: "", judul: "Pemulihan Burnout", desc: "Strategi mengenali, mengatasi, dan pulih dari kelelahan akademik yang berkepanjangan secara bertahap." },
+    { icon: "️", judul: "Work-Life Balance Kampus", desc: "Menyeimbangkan aktivitas akademik, organisasi, dan kehidupan pribadi tanpa mengorbankan kesehatan." },
+    { icon: "", judul: "Self-Care & Resiliensi", desc: "Membangun ketahanan diri agar mampu bangkit dari tekanan dan tantangan kehidupan kampus." },
   ],
 };
 
@@ -582,7 +582,7 @@ export default function KonselorDetail() {
             {/* Confirm booking */}
             {bookingDone ? (
               <div className="kd-booking-success">
-                <span className="kd-booking-success-icon">✅</span>
+                <span className="kd-booking-success-icon"></span>
                 <p>Sesi berhasil dijadwalkan!</p>
                 <span>
                   {selectedDay} {BULAN[calMonth]} {calYear},{" "}

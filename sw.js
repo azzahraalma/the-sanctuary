@@ -25,7 +25,7 @@ self.addEventListener("push", (event) => {
     payload = { title: "The Sanctuary", body: event.data.text() };
   }
 
-  const title   = payload.title ?? "The Sanctuary 🌱";
+  const title   = payload.title ?? "The Sanctuary";
   const options = {
     body:    payload.body  ?? "Kamu punya pesan baru",
     icon:    payload.icon  ?? "/icon-192.png",   // ganti sesuai asset kamu

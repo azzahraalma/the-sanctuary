@@ -9,11 +9,11 @@ const supabase = createClient(
 );
 
 const SUASANA_HATI_OPTIONS = [
-  { label: "Sangat Baik", emoji: "😄", value: 1.0 },
-  { label: "Baik",        emoji: "🙂", value: 0.75 },
-  { label: "Netral",      emoji: "😐", value: 0.5 },
-  { label: "Stres",       emoji: "😟", value: 0.25 },
-  { label: "Sangat Stres",emoji: "😢", value: 0.1 },
+  { label: "Sangat Baik", emoji: "", value: 1.0 },
+  { label: "Baik",        emoji: "", value: 0.75 },
+  { label: "Netral",      emoji: "", value: 0.5 },
+  { label: "Stres",       emoji: "", value: 0.25 },
+  { label: "Sangat Stres",emoji: "", value: 0.1 },
 ];
 
 const SLIDER_FIELDS = [
@@ -214,7 +214,7 @@ export default function EvaluasiSesi() {
 
             {/* HEADER */}
             <div className="ev-header">
-              <div className="ev-header-tag">📋 Evaluasi Sesi</div>
+              <div className="ev-header-tag">Evaluasi Sesi</div>
               <h1>Bagaimana kondisi klien<br />setelah sesi ini?</h1>
               <p>Isi evaluasi singkat ini untuk memantau perkembangan klien dari sesi ke sesi.</p>
             </div>

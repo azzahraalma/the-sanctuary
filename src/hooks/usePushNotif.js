@@ -62,7 +62,7 @@ export function usePushNotif(userEmail) {
     setLoading(true);
     try {
       await navigator.serviceWorker.register("/sw.js");
-      const reg = await navigator.serviceWorker.ready; // ✅ pakai reg dari .ready
+      const reg = await navigator.serviceWorker.ready; // pakai reg dari .ready
 
       const perm = await Notification.requestPermission();
       if (perm === "denied") { setStatus("denied"); return; }

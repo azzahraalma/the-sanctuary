@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import "../styles/admin-dashboard.css";
@@ -295,7 +295,7 @@ function RiwayatSesiTab() {
       {loading ? (
         <div className="rsa-loading"><div className="rsa-spinner" /><span>Memuat data sesi...</span></div>
       ) : error ? (
-        <div className="rsa-error"><span>⚠ Gagal memuat data: {error}</span><button onClick={fetchAllSesi}>Coba lagi</button></div>
+        <div className="rsa-error"><span>Gagal memuat data: {error}</span><button onClick={fetchAllSesi}>Coba lagi</button></div>
       ) : filtered.length === 0 ? (
         <div className="rsa-empty"><span>Tidak ada sesi yang sesuai filter</span></div>
       ) : (
@@ -429,7 +429,7 @@ function DashboardTab() {
 
   if (error) return (
     <div className="rsa-error" style={{ marginTop: "4rem" }}>
-      <span>⚠ Gagal memuat data: {error}</span>
+      <span>Gagal memuat data: {error}</span>
       <button onClick={fetchData}>Coba lagi</button>
     </div>
   );

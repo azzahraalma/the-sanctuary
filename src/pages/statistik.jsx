@@ -1,12 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase.js";
 import "../styles/statistik.css";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 function mapKonselor(k) {
   return {
@@ -214,9 +209,19 @@ export default function Statistik() {
         }
       }
 
-      let rekoQuery = supabase.from("data_konselor").select("*").order("rating_final", { ascending: false }).limit(6);
+      // [FIX] Filter NOT IN menggunakan sintaks Supabase yang benar.
+      // Sebelumnya: .not("id", "in", `(${ids.map(id => `"${id}"`).join(",")})`)
+      // Format string itu salah — Supabase .not() dengan operator "in" membutuhkan array,
+      // bukan string literal SQL. Kondisi sebelumnya selalu gagal diam-diam dan
+      // mengembalikan semua konselor tanpa filter.
+      let rekoQuery = supabase
+        .from("data_konselor")
+        .select("*")
+        .order("rating_final", { ascending: false })
+        .limit(6);
+
       if (konselorIDs.length > 0) {
-        rekoQuery = rekoQuery.not("id", "in", `(${konselorIDs.map((id) => `"${id}"`).join(",")})`);
+        rekoQuery = rekoQuery.not("id", "in", `(${konselorIDs.join(",")})`);
       }
 
       const { data: rekoData } = await rekoQuery;
@@ -224,8 +229,16 @@ export default function Statistik() {
 
       if (active) {
         if (reko.length === 0) {
-          const { data: fallbackData } = await supabase.from("data_konselor").select("*").order("rating_final", { ascending: false }).limit(3);
-          setFinalReko((fallbackData ?? []).map(mapKonselor));
+          // [FIX] Fallback tetap filter konselor yang sudah pernah sesi
+          const { data: fallbackData } = await supabase
+            .from("data_konselor")
+            .select("*")
+            .order("rating_final", { ascending: false })
+            .limit(3 + konselorIDs.length);
+          const filtered = (fallbackData ?? [])
+            .filter(k => !konselorIDs.includes(k.id))
+            .slice(0, 3);
+          setFinalReko(filtered.map(mapKonselor));
         } else {
           setFinalReko(reko);
         }
@@ -237,7 +250,44 @@ export default function Statistik() {
     }
 
     fetchAll();
-    return () => { active = false; };
+
+    // Realtime: update otomatis saat ada sesi baru atau booking berubah
+    const progressChannel = supabase
+      .channel(`statistik-progress-${mid}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "progress_konseling",
+        filter: `id_mahasiswa=eq.${mid}`,
+      }, () => { if (active) fetchAll(); })
+      .subscribe();
+
+    const bookingChannel = supabase
+      .channel(`statistik-booking-${mid}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "booking",
+        filter: `id_mahasiswa=eq.${mid}`,
+      }, () => { if (active) fetchAll(); })
+      .subscribe();
+
+    const targetChannel = supabase
+      .channel(`statistik-target-${mid}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "data_target",
+        filter: `id_mahasiswa=eq.${mid}`,
+      }, () => { if (active) fetchAll(); })
+      .subscribe();
+
+    return () => {
+      active = false;
+      supabase.removeChannel(progressChannel);
+      supabase.removeChannel(bookingChannel);
+      supabase.removeChannel(targetChannel);
+    };
   }, [mid]);
 
   const latest = myProgress[myProgress.length - 1] ?? null;
@@ -286,6 +336,7 @@ export default function Statistik() {
   const suasanaTerakhir  = latest?.Suasana_Hati      ?? "Baik";
 
   const handleLogout = () => {
+    supabase.auth.signOut();
     localStorage.removeItem("sanctuary_user");
     navigate("/login");
   };
@@ -515,7 +566,11 @@ export default function Statistik() {
 
               <div className="sk-riwayat-list">
                 {myKonselor.map((k) => {
-                  const bk = myBookings.find((b) => b.ID_Konselor === k.ID);
+                  // [FIX] Ambil booking TERBARU per konselor, bukan yang pertama ditemukan
+                  const booksForKonselor = myBookings.filter((b) => b.ID_Konselor === k.ID);
+                  const bk = booksForKonselor.sort((a, b) =>
+                    new Date(b.Tanggal_Sesi) - new Date(a.Tanggal_Sesi)
+                  )[0] ?? null;
                   const kondisiAwal  = bk ? Math.round(bk.Kondisi_Awal * 100) : 0;
                   const kondisiAkhir = bk ? Math.round(bk.Kondisi_Saat_Ini * 100) : 0;
                   const progList = myProgress.filter((p) => p.Kategori_Masalah === bk?.Kategori_Masalah);

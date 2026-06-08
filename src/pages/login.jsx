@@ -1,16 +1,36 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import "../styles/auth.css";
 
 export default function Login() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const [mode, setMode]         = useState("mahasiswa");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw]     = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
+
+  // Pesan dari halaman register (misal setelah daftar berhasil)
+  const notice = location.state?.notice ?? "";
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Masukkan email kamu dulu sebelum reset password ya.");
+      return;
+    }
+    const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/settings`,
+    });
+    if (resetErr) {
+      setError("Gagal kirim email reset: " + resetErr.message);
+    } else {
+      setError("");
+      alert(`Link reset password sudah dikirim ke ${email}. Cek inbox atau folder spam ya.`);
+    }
+  };
 
   const handleModeSwitch = (newMode) => {
     setMode(newMode);
@@ -37,7 +57,16 @@ export default function Login() {
     });
 
     if (authError || !authData.user) {
-      setError("Hmm, email atau password kamu belum cocok. Coba cek lagi ya.");
+      // Bedakan pesan error berdasarkan penyebabnya
+      if (authError?.message?.toLowerCase().includes("email not confirmed")) {
+        setError("Email kamu belum dikonfirmasi. Cek inbox atau folder spam ya.");
+      } else if (authError?.message?.toLowerCase().includes("invalid login credentials")) {
+        setError("Hmm, email atau password kamu belum cocok. Coba cek lagi ya.");
+      } else if (authError?.message?.toLowerCase().includes("too many requests")) {
+        setError("Terlalu banyak percobaan login. Tunggu sebentar lalu coba lagi.");
+      } else {
+        setError(authError?.message ?? "Hmm, email atau password kamu belum cocok. Coba cek lagi ya.");
+      }
       setLoading(false);
       return;
     }
@@ -99,6 +128,8 @@ export default function Login() {
 
     if (upserted?.student_id) studentId = upserted.student_id;
 
+    // Tulis localStorage SEBELUM navigate agar useCurrentUser di App.jsx
+    // selalu dapat data valid saat route guard dievaluasi
     localStorage.setItem("sanctuary_user", JSON.stringify({
       id:         authData.user.id,
       name:       nama,
@@ -116,7 +147,7 @@ export default function Login() {
     } else if (role === "konselor") {
       navigate("/konselor-dashboard", { replace: true });
     } else {
-      const redirect = sessionStorage.getItem("redirect_after_login") || "/";
+      const redirect = sessionStorage.getItem("redirect_after_login") || "/dashboard";
       sessionStorage.removeItem("redirect_after_login");
       navigate(redirect, { replace: true });
     }
@@ -212,7 +243,7 @@ export default function Login() {
             <div className="auth-field">
               <div className="auth-label-row">
                 <label className="auth-label">Password</label>
-                <button type="button" className="auth-forgot">Lupa password?</button>
+                <button type="button" className="auth-forgot" onClick={handleForgotPassword}>Lupa password?</button>
               </div>
               <div className="auth-input-wrap">
                 <input
@@ -239,6 +270,7 @@ export default function Login() {
               </div>
             </div>
 
+            {notice && <p className="auth-notice">{notice}</p>}
             {error && <p className="auth-error">{error}</p>}
 
             <button

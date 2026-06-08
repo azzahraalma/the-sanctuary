@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useKonselor } from "../hooks/useKonselor.js";
+import { supabase } from "../lib/supabase.js";
 import "../styles/konselor.css";
 
 // ── StarRating ────────────────────────────────────────────────────────────────
@@ -160,6 +161,7 @@ export default function Konselor() {
   })();
 
   const handleLogout = () => {
+    supabase.auth.signOut();
     localStorage.removeItem("sanctuary_user");
     navigate("/login");
   };

@@ -1,12 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import "../styles/dashboard.css";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "../lib/supabase.js";
 
 function Donut({ pct, size = 88, stroke = 10, color = "#79d8d1", label }) {
   const r = (size - stroke) / 2;
@@ -189,9 +184,16 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
         .eq("email", userKey)
         .maybeSingle();
       if (data) {
+      const j = data.jawaban ?? {};
+      const isUXFormat =
+        j && typeof j === "object" &&
+        ("kemudahan" in j || "kejelasan" in j || "daya_tarik" in j);
+
+      if (isUXFormat && data.ux_score > 0) {
         setSubmitted(true);
-        setAnswers(data.jawaban ?? { kemudahan: {}, kejelasan: {}, daya_tarik: {} });
+        setAnswers(j);
       }
+    }
       if (error) console.error(error);
       setIsLoading(false);
     }
@@ -212,12 +214,15 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
 
   const handleSubmit = async () => {
     if (!allDone || submitted) return;
+    // [FIX] Pakai upsert agar tidak crash duplicate key kalau user isi ulang
     const { error } = await supabase
       .from("hasil_kuesioner")
-      .insert([{ email: userKey, nama: userName, ux_score: uxIdx, jawaban: answers }]);
+      .upsert(
+        [{ email: userKey, nama: userName, ux_score: uxIdx, jawaban: answers }],
+        { onConflict: "email" }
+      );
     if (error) {
       console.error(error);
-      if (error.code === "23505") alert("Kamu sudah pernah isi kuesioner");
       return;
     }
     setSubmitted(true);
@@ -359,12 +364,14 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
+  const mins  = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
+  const days  = Math.floor(diff / 86400000);
+  if (mins < 1)   return "Baru saja";
+  if (mins < 60)  return `${mins} menit lalu`;
+  if (hours < 24) return `${hours} jam lalu`;
+  if (days < 7)   return `${days} hari lalu`;
+  return new Date(dateStr).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
 }
 
 async function seedPesan(email, firstName, bookings, konselorData) {
@@ -389,34 +396,43 @@ async function seedPesan(email, firstName, bookings, konselorData) {
   }
 
   for (const k of (konselorData ?? [])) {
-    const bk = bookings.find(b => b.id_konselor === k.id);
+    // Ambil booking TERBARU untuk konselor ini (sorted by tanggal desc)
+    const bksForKonselor = bookings
+      .filter(b => b.id_konselor === k.id)
+      .sort((a, b) => new Date(b.tanggal_sesi) - new Date(a.tanggal_sesi));
+    const bk = bksForKonselor[0];
     if (!bk) continue;
 
     if (bk.status === "Selesai") {
-      const tipe = `pasca_sesi_${k.id}`;
+      // Tipe unik per booking ID agar setiap sesi selesai dapat notifikasi sendiri
+      const tipe = `pasca_sesi_${bk.id ?? k.id}`;
       if (!tipeYangAda.has(tipe)) {
         toInsert.push({
-          id_penerima: email,
-          id_pengirim: k.id,
+          id_penerima:  email,
+          id_pengirim:  k.id,
           nama_pengirim: k.nama,
           foto_pengirim: k.foto_url ?? null,
-          teks: `Sesi ${bk.sesi_konseling} kita udah selesai ya ${firstName}! Gimana perasaanmu sekarang? Semangat terus, kamu udah berani cerita`,
+          teks:   `Sesi ${bk.sesi_konseling} kita udah selesai ya ${firstName}! Gimana perasaanmu sekarang? Semangat terus, kamu udah berani cerita`,
           dibaca: false,
           tipe,
         });
       }
-    } else if (bk.status === "Berjalan") {
-      const tipe = `pengingat_sesi_${k.id}`;
+    } else if (
+      // [FIX] Tangkap semua status aktif: terjadwal, berjalan, aktif
+      ["terjadwal", "Terjadwal", "Berjalan", "berjalan", "aktif", "Aktif"].includes(bk.status)
+    ) {
+      // Tipe unik per booking ID agar setiap jadwal baru dapat notifikasi sendiri
+      const tipe = `pengingat_sesi_${bk.id ?? k.id}`;
       if (!tipeYangAda.has(tipe)) {
         const tglSesi = new Date(bk.tanggal_sesi).toLocaleDateString("id-ID", {
           timeZone: "Asia/Jakarta", weekday: "long", day: "numeric", month: "long",
         });
         toInsert.push({
-          id_penerima: email,
-          id_pengirim: k.id,
+          id_penerima:  email,
+          id_pengirim:  k.id,
           nama_pengirim: k.nama,
           foto_pengirim: k.foto_url ?? null,
-          teks: `Hai ${firstName}! Jangan lupa sesi kita ${tglSesi} ya Siapkan dirimu, aku siap mendengarkan`,
+          teks:   `Hai ${firstName}! Jangan lupa sesi kita ${tglSesi} ya Siapkan dirimu, aku siap mendengarkan`,
           dibaca: false,
           tipe,
         });
@@ -513,73 +529,82 @@ export default function Dashboard() {
 
     let active = true;
     async function fetchDashboardData() {
-      const [bookingRes, progressRes] = await Promise.all([
-        supabase
-          .from("booking")
-          .select("*")
-          .eq("id_mahasiswa", mid)
-          .order("tanggal_sesi", { ascending: false }),
-        supabase
-          .from("progress_konseling")
-          .select("*")
-          .eq("id_mahasiswa", mid)
-          .order("sesi_konseling", { ascending: false }),
-      ]);
-
-      if (!active) return;
-
-      const myBookings = bookingRes.data ?? [];
-      const myProgress = (progressRes.data ?? []).map(p => ({
-        ...p,
-        mindfulness: Number(p.mindfulness) || 0,
-      }));
-
-      setBookings(myBookings);
-      setProgress(myProgress);
-
-      const konselorIds = [...new Set(myBookings.map(b => b.id_konselor).filter(Boolean))];
-      let konselorData = [];
-      let slotsData = [];
-
-      if (konselorIds.length > 0) {
-        const [kRes, sRes] = await Promise.all([
+      try {
+        const [bookingRes, progressRes] = await Promise.all([
           supabase
-            .from("data_konselor")
+            .from("booking")
             .select("*")
-            .in("id", konselorIds),
+            .eq("id_mahasiswa", mid)
+            .order("tanggal_sesi", { ascending: false }),
           supabase
-            .from("konselor_availability")
+            .from("progress_konseling")
             .select("*")
-            .in("konselor_id", konselorIds)
-            .eq("status", "booked")
+            .eq("id_mahasiswa", mid)
+            .order("sesi_konseling", { ascending: false }),
         ]);
-        konselorData = kRes.data ?? [];
-        slotsData = sRes.data ?? [];
-        if (active) {
-          setKonselor(konselorData);
-          setSlots(slotsData);
+
+        if (!active) return;
+
+        const myBookings = bookingRes.data ?? [];
+        const myProgress = (progressRes.data ?? []).map(p => ({
+          ...p,
+          mindfulness: Number(p.mindfulness) || 0,
+        }));
+
+        setBookings(myBookings);
+        setProgress(myProgress);
+
+        const konselorIds = [...new Set(myBookings.map(b => b.id_konselor).filter(Boolean))];
+        let konselorData = [];
+        let slotsData = [];
+
+        if (konselorIds.length > 0) {
+          const [kRes, sRes] = await Promise.all([
+            supabase
+              .from("data_konselor")
+              .select("*")
+              .in("id", konselorIds),
+            supabase
+              .from("konselor_availability")
+              .select("*")
+              .in("konselor_id", konselorIds)
+              .eq("status", "booked")
+          ]);
+          konselorData = kRes.data ?? [];
+          slotsData = sRes.data ?? [];
+          if (active) {
+            setKonselor(konselorData);
+            setSlots(slotsData);
+          }
         }
-      }
 
-      await seedPesan(userEmail, firstName, myBookings, konselorData);
+        // [FIX] seedPesan tidak diawait langsung — error tidak memblokir loading
+        await seedPesan(userEmail, firstName, myBookings, konselorData).catch(err => {
+          console.warn("seedPesan error (non-fatal):", err);
+        });
 
-      const { data: pesanData } = await supabase
-        .from("pesan")
-        .select("*")
-        .eq("id_penerima", userEmail)
-        .order("created_at", { ascending: false });
+        const { data: pesanData } = await supabase
+          .from("pesan")
+          .select("*")
+          .eq("id_penerima", userEmail)
+          .order("created_at", { ascending: false });
 
-      if (active) {
-        setPesan((pesanData ?? []).map(p => ({
-          id: p.id,
-          nama: p.nama_pengirim,
-          avatar: p.nama_pengirim?.charAt(0) ?? "S",
-          foto: p.foto_pengirim ?? null,
-          waktu: timeAgo(p.created_at),
-          teks: p.teks,
-          unread: !p.dibaca,
-        })));
-        setIsLoading(false);
+        if (active) {
+          setPesan((pesanData ?? []).map(p => ({
+            id: p.id,
+            nama: p.nama_pengirim,
+            avatar: p.nama_pengirim?.charAt(0) ?? "S",
+            foto: p.foto_pengirim ?? null,
+            waktu: timeAgo(p.created_at),
+            teks: p.teks,
+            unread: !p.dibaca,
+          })));
+        }
+      } catch (err) {
+        console.error("fetchDashboardData error:", err);
+      } finally {
+        // [FIX] Selalu matikan loading, bahkan jika ada error
+        if (active) setIsLoading(false);
       }
     }
 
@@ -630,6 +655,7 @@ export default function Dashboard() {
   const unreadCount    = pesan.filter(p => p.unread).length;
 
   const handleLogout = () => {
+    supabase.auth.signOut();
     localStorage.removeItem("sanctuary_user");
     navigate("/login");
   };

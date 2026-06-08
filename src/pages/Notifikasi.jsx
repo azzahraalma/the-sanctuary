@@ -79,7 +79,40 @@ export default function Notifikasi() {
     }
 
     fetchData();
-    return () => { active = false; };
+
+    // Realtime: tampilkan pesan baru tanpa refresh
+    const pesanChannel = supabase
+      .channel(`notifikasi-pesan-${userEmail}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "pesan",
+        filter: `id_penerima=eq.${userEmail}`,
+      }, payload => {
+        if (!active) return;
+        const p = payload.new;
+        const cfg = getTipeConfig(p.tipe ?? "");
+        setNotifikasi(prev => [{
+          id:      p.id,
+          type:    cfg.type,
+          label:   cfg.label,
+          color:   cfg.color,
+          bg:      cfg.bg,
+          border:  cfg.border,
+          judul:   p.nama_pengirim ?? "The Sanctuary",
+          teks:    p.teks,
+          waktu:   p.created_at,
+          foto:    p.foto_pengirim ?? null,
+          inisial: (p.nama_pengirim ?? "S").charAt(0),
+          dibaca:  p.dibaca ?? false,
+        }, ...prev]);
+      })
+      .subscribe();
+
+    return () => {
+      active = false;
+      supabase.removeChannel(pesanChannel);
+    };
   }, [userEmail]);
 
   const tandaiBaca = async (item) => {
@@ -107,8 +140,59 @@ export default function Notifikasi() {
 
   const unreadCount = notifikasi.filter(n => !n.dibaca && !dibacaSet.has(n.id)).length;
 
-  return (
+    return (
     <div className="db-shell">
+      {/* ── SIDEBAR ── */}
+      <aside className="db-sidebar">
+        <div className="db-sidebar-top">
+          <span className="db-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+          <nav className="db-nav">
+            <div className="db-nav-item" onClick={() => navigate("/dashboard")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              Beranda
+            </div>
+            <div className="db-nav-item" onClick={() => navigate("/statistik")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              Statistik
+            </div>
+            <div className="db-nav-item" onClick={() => navigate("/riwayat")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              Riwayat Sesi
+            </div>
+            <div className="db-nav-item db-nav-item--active">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              Notifikasi
+            </div>
+            <div className="db-nav-item" onClick={() => navigate("/settings")}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+              </svg>
+              Pengaturan
+            </div>
+          </nav>
+        </div>
+        <button className="db-logout" onClick={() => { supabase.auth.signOut(); localStorage.removeItem("sanctuary_user"); navigate("/login"); }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Keluar
+        </button>
+      </aside>
+
       <main className="db-main">
         {/* ── TOPBAR ── */}
         <header className="db-topbar">

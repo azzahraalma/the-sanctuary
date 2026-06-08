@@ -94,50 +94,60 @@ export default function KonselorDashboard() {
     const kid = user?.konselorId ?? null;
 
     useEffect(() => {
-        if (!kid) return;
+        if (!kid) {
+            setLoadingData(false);
+            return;
+        }
         async function fetchData() {
             setLoadingData(true);
-            const [{ data: kData }, { data: bData }] = await Promise.all([
-                supabase.from("data_konselor").select("*").eq("id", kid).single(),
-                supabase.from("booking").select("*").eq("id_konselor", kid).order("tanggal_sesi", { ascending: false }),
-            ]);
+            try {
+                const [{ data: kData, error: kErr }, { data: bData, error: bErr }] = await Promise.all([
+                    supabase.from("data_konselor").select("*").eq("id", kid).single(),
+                    supabase.from("booking").select("*").eq("id_konselor", kid).order("tanggal_sesi", { ascending: false }),
+                ]);
 
-            if (kData) {
-                setKonselor({
-                    ID: kData.id,
-                    Nama: kData.nama,
-                    Kategori_Masalah: kData.kategori_masalah,
-                    Pengalaman: kData.pengalaman,
-                    "Rating_(Final)": kData.rating_final ?? 0,
-                    "Keramahan_(30%)": kData.keramahan ?? 0,
-                    "Solusi_(50%)": kData.solusi ?? 0,
-                    "Respon_(20%)": kData.respon ?? 0,
-                    Jumlah_Kasus: kData.jumlah_kasus ?? 0,
-                    Kasus_Selesai: kData.kasus_selesai ?? 0,
-                    Success_Rate: kData.success_rate ?? 0,
-                    image: kData.image_url,
-                    foto: kData.foto_url,
-                    bio: kData.bio,
-                    spesialisasi: kData.spesialisasi,
-                });
+                if (kErr) console.error("Fetch konselor error:", kErr.message);
+                if (bErr) console.error("Fetch booking error:", bErr.message);
+
+                if (kData) {
+                    setKonselor({
+                        ID: kData.id,
+                        Nama: kData.nama,
+                        Kategori_Masalah: kData.kategori_masalah,
+                        Pengalaman: kData.pengalaman,
+                        "Rating_(Final)": kData.rating_final ?? 0,
+                        "Keramahan_(30%)": kData.keramahan ?? 0,
+                        "Solusi_(50%)": kData.solusi ?? 0,
+                        "Respon_(20%)": kData.respon ?? 0,
+                        Jumlah_Kasus: kData.jumlah_kasus ?? 0,
+                        Kasus_Selesai: kData.kasus_selesai ?? 0,
+                        Success_Rate: kData.success_rate ?? 0,
+                        image: kData.image_url,
+                        foto: kData.foto_url,
+                        bio: kData.bio,
+                        spesialisasi: kData.spesialisasi,
+                    });
+                }
+
+                if (bData) {
+                    setMyBookings(bData.map((b) => ({
+                        ID_Booking: b.id,
+                        ID_Konselor: b.id_konselor,
+                        ID_Mahasiswa: b.id_mahasiswa,
+                        Nama_Mahasiswa: b.nama_mahasiswa,
+                        Kategori_Masalah: b.kategori_masalah,
+                        Tanggal_Sesi: b.tanggal_sesi,
+                        Sesi_Konseling: b.sesi_konseling,
+                        Status: b.status,
+                        Kondisi_Awal: b.kondisi_awal,
+                        Kondisi_Saat_Ini: b.kondisi_saat_ini,
+                    })));
+                }
+            } catch (err) {
+                console.error("KonselorDashboard fetchData error:", err);
+            } finally {
+                setLoadingData(false);
             }
-
-            if (bData) {
-                setMyBookings(bData.map((b) => ({
-                    ID_Booking: b.id,
-                    ID_Konselor: b.id_konselor,
-                    ID_Mahasiswa: b.id_mahasiswa,
-                    Nama_Mahasiswa: b.nama_mahasiswa,
-                    Kategori_Masalah: b.kategori_masalah,
-                    Tanggal_Sesi: b.tanggal_sesi,
-                    Sesi_Konseling: b.sesi_konseling,
-                    Status: b.status,
-                    Kondisi_Awal: b.kondisi_awal,
-                    Kondisi_Saat_Ini: b.kondisi_saat_ini,
-                })));
-            }
-
-            setLoadingData(false);
         }
         fetchData();
     }, [kid]);
@@ -145,13 +155,18 @@ export default function KonselorDashboard() {
     useEffect(() => {
         if (!kid) return;
         async function fetchSlots() {
-            const { data } = await supabase
-                .from("konselor_availability")
-                .select("*")
-                .eq("konselor_id", kid)
-                .order("tanggal", { ascending: true })
-                .order("jam_mulai", { ascending: true });
-            setSlots(data || []);
+            try {
+                const { data, error } = await supabase
+                    .from("konselor_availability")
+                    .select("*")
+                    .eq("konselor_id", kid)
+                    .order("tanggal", { ascending: true })
+                    .order("jam_mulai", { ascending: true });
+                if (error) console.error("Fetch slots error:", error.message);
+                setSlots(data || []);
+            } catch (err) {
+                console.error("fetchSlots error:", err);
+            }
         }
         fetchSlots();
     }, [kid]);
@@ -218,6 +233,7 @@ export default function KonselorDashboard() {
     }, [myBookings, filterKlien]);
 
     function handleLogout() {
+        supabase.auth.signOut();
         localStorage.removeItem("sanctuary_user");
         navigate("/login");
     }
@@ -272,14 +288,13 @@ export default function KonselorDashboard() {
         { icon: "", title: "Fokus & Produktivitas", desc: "Teknik untuk meningkatkan konsentrasi belajar." },
     ];
 
-    const TESTIMONI = [
-        { nama: "Rizki Pratama", sub: "Mahasiswa Semester 6", rating: 5, teks: "Konselor sangat sabar dan penuh empati. Sangat recommended!" },
-        { nama: "Sari Dewi", sub: "Mahasiswa Semester 4", rating: 5, teks: "Sesi bersama konselor benar-benar mengubah cara pandang saya." },
-    ];
+    // [FIX] Hapus TESTIMONI hardcoded — ganti dengan pesan bahwa fitur ini
+    // belum memiliki tabel di database. Testimoni akan ditambahkan saat tabel
+    // "testimoni_konselor" tersedia di Supabase.
 
     const ratingDist = [5, 4, 3, 2, 1].map((bintang) => ({
         bintang,
-        count: TESTIMONI.filter((t) => t.rating === bintang).length,
+        count: 0,
     }));
 
     if (loadingData) {
@@ -287,6 +302,24 @@ export default function KonselorDashboard() {
             <div className="kd-loading">
                 <div className="kd-loading-spinner" />
                 <p className="kd-loading-text">Memuat dashboard...</p>
+            </div>
+        );
+    }
+
+    // [FIX] Tampilkan pesan jelas kalau konselor belum punya konselorId di profil
+    if (!kid) {
+        return (
+            <div className="kd-loading">
+                <p className="kd-loading-text" style={{ textAlign: "center", maxWidth: 360 }}>
+                    Akun kamu belum terhubung ke data konselor.<br />
+                    Hubungi admin untuk menghubungkan akun ini dengan profil konselor.
+                </p>
+                <button
+                    style={{ marginTop: 20, padding: "10px 24px", background: "#2f7d79", color: "#fff", border: "none", borderRadius: 10, cursor: "pointer", fontSize: 13, fontWeight: 600 }}
+                    onClick={() => { supabase.auth.signOut(); localStorage.removeItem("sanctuary_user"); navigate("/login"); }}
+                >
+                    Keluar
+                </button>
             </div>
         );
     }
@@ -953,19 +986,15 @@ export default function KonselorDashboard() {
                                             <div className="kd-testi-big-rating">
                                                 <span className="kd-testi-big-num">{ratingFinal.toFixed(1)}</span>
                                                 <Stars rating={ratingFinal} size="sm" />
-                                                <span className="kd-testi-ulasan">{TESTIMONI.length} ulasan</span>
                                             </div>
                                             <div className="kd-testi-dist">
                                                 {ratingDist.map((r) => (
                                                     <div key={r.bintang} className="kd-testi-dist-row">
                                                         <span className="kd-testi-dist-bintang">{r.bintang} ★</span>
                                                         <div className="kd-bar-track" style={{ flex: 1, height: 6 }}>
-                                                            <div className="kd-bar-fill" style={{
-                                                                width: TESTIMONI.length > 0 ? `${(r.count / TESTIMONI.length) * 100}%` : "0%",
-                                                                background: "#f5c842",
-                                                            }} />
+                                                            <div className="kd-bar-fill" style={{ width: "0%", background: "#f5c842" }} />
                                                         </div>
-                                                        <span className="kd-testi-dist-count">{r.count}</span>
+                                                        <span className="kd-testi-dist-count">0</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -978,19 +1007,11 @@ export default function KonselorDashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="kd-testi-cards">
-                                            {TESTIMONI.map((t, i) => (
-                                                <div key={i} className="kd-testi-card">
-                                                    <p className="kd-testi-text">"{t.teks}"</p>
-                                                    <div className="kd-testi-foot">
-                                                        <div className="kd-testi-avatar">{t.nama.charAt(0)}</div>
-                                                        <div>
-                                                            <div className="kd-testi-nama">{t.nama}</div>
-                                                            <div className="kd-testi-sub">{t.sub}</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            ))}
+                                        {/* Belum ada tabel testimoni di database — tampilkan placeholder */}
+                                        <div className="kd-testi-cards" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                            <p style={{ color: "#aaa", fontSize: 13, textAlign: "center", padding: "20px 0" }}>
+                                                Belum ada testimoni. Fitur ini akan aktif setelah mahasiswa dapat memberikan ulasan sesi.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

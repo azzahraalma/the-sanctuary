@@ -19,7 +19,8 @@ export async function seedAll() {
         image_url: k.image,
     }));
 
-    const { error: e1 } = await supabase.from("konselor").upsert(konselorRows);
+    // [FIX] Gunakan tabel yang benar: "data_konselor", bukan "konselor"
+    const { error: e1 } = await supabase.from("data_konselor").upsert(konselorRows);
     if (e1) console.error("Konselor:", e1.message);
     else console.log("Konselor selesai!");
 
@@ -42,16 +43,21 @@ export async function seedAll() {
     if (e2) console.error("Booking:", e2.message);
     else console.log("Booking selesai!");
 
+    // [FIX] Jangan simpan password plaintext ke database.
+    // Tabel "users" di sini seharusnya hanya untuk profil/metadata,
+    // bukan untuk autentikasi. Password wajib di-handle via Supabase Auth.
+    // Kolom password di bawah ini sengaja dihapus dari upsert.
     const userRows = users.map((u) => ({
-        email: u.email,
-        nama: u.nama ?? u.Nama,
-        nim: u.nim ?? u.NIM,
-        role: u.role ?? "mahasiswa",
+        email:       u.email,
+        nama:        u.nama ?? u.Nama,
+        nim:         u.nim  ?? u.NIM,
+        role:        u.role ?? "mahasiswa",
         konselor_id: u.konselorId ?? null,
-        password: u.password,
+        // password field DIHAPUS — jangan simpan plaintext password
     }));
 
-    const { error: e3 } = await supabase.from("users").upsert(userRows, { onConflict: "email" });
+    // [FIX] Target tabel adalah profil_pengguna, bukan "users" (tabel dummy)
+    const { error: e3 } = await supabase.from("profil_pengguna").upsert(userRows, { onConflict: "email" });
     if (e3) console.error("Users:", e3.message);
     else console.log("Users selesai!");
 }

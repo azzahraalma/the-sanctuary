@@ -8,6 +8,7 @@ export default function Register() {
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw]     = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
 
@@ -55,6 +56,10 @@ export default function Register() {
       return;
     }
 
+    // Supabase mengirim email konfirmasi jika fitur itu aktif.
+    // authData.user ada tapi session null = email belum dikonfirmasi.
+    const needsConfirmation = authData.user && !authData.session;
+
     await supabase
       .from("profil_pengguna")
       .upsert(
@@ -68,6 +73,19 @@ export default function Register() {
         { onConflict: "email" }
       );
 
+    setLoading(false);
+
+    if (needsConfirmation) {
+      // Jangan auto-login — arahkan ke halaman login dengan pesan
+      navigate("/login", {
+        replace: true,
+        state: { notice: `Akun berhasil dibuat! Cek email ${emailLower} untuk konfirmasi, lalu login.` },
+      });
+      return;
+    }
+
+    // Jika tidak perlu konfirmasi (email confirmation dimatikan di Supabase),
+    // simpan session dan langsung masuk
     localStorage.setItem("sanctuary_user", JSON.stringify({
       id:         authData.user.id,
       name,
@@ -78,7 +96,6 @@ export default function Register() {
       student_id: studentId,
     }));
 
-    setLoading(false);
     navigate("/", { replace: true });
   };
 
@@ -126,13 +143,29 @@ export default function Register() {
             </div>
             <div className="auth-field">
               <label className="auth-label">Buat Password</label>
-              <input
-                type="password"
-                className="auth-input"
-                placeholder="Minimal 6 karakter"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="auth-input-wrap">
+                <input
+                  type={showPw ? "text" : "password"}
+                  className="auth-input"
+                  placeholder="Minimal 6 karakter"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button type="button" className="auth-eye" onClick={() => setShowPw(!showPw)}>
+                  {showPw ? (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                      <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             {error && <p className="auth-error">{error}</p>}

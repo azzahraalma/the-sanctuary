@@ -1,12 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase.js";
 import "../styles/riwayat.css";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 function mapKonselor(k) {
   return {
@@ -138,6 +133,7 @@ export default function RiwayatSesi() {
     if (!mid) return;
 
     let active = true;
+
     async function fetchAll() {
       const [progRes, bookRes] = await Promise.all([
         supabase
@@ -172,6 +168,7 @@ export default function RiwayatSesi() {
 
       const bookings = (bookRes.data ?? []).map(b => ({
         ID_Konselor:      b.id_konselor,
+        Tanggal_Sesi:     b.tanggal_sesi,
         Kondisi_Awal:     Number(b.kondisi_awal)     || 0,
         Kondisi_Saat_Ini: Number(b.kondisi_saat_ini) || 0,
         Status:           b.status,
@@ -196,16 +193,40 @@ export default function RiwayatSesi() {
         }
       }
 
-      if (active) {
-        setLoading(false);
-      }
+      if (active) setLoading(false);
     }
 
     fetchAll();
-    return () => { active = false; };
+
+    // Realtime: dengarkan INSERT/UPDATE di progress_konseling milik user ini
+    const progressChannel = supabase
+      .channel(`riwayat-progress-${mid}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "progress_konseling", filter: `id_mahasiswa=eq.${mid}` },
+        () => { if (active) fetchAll(); }
+      )
+      .subscribe();
+
+    // Realtime: dengarkan UPDATE di booking (perubahan status, kondisi_saat_ini)
+    const bookingChannel = supabase
+      .channel(`riwayat-booking-${mid}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "booking", filter: `id_mahasiswa=eq.${mid}` },
+        () => { if (active) fetchAll(); }
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+      supabase.removeChannel(progressChannel);
+      supabase.removeChannel(bookingChannel);
+    };
   }, [mid]);
 
   const handleLogout = () => {
+    supabase.auth.signOut();
     localStorage.removeItem("sanctuary_user");
     navigate("/login");
   };
@@ -374,7 +395,11 @@ export default function RiwayatSesi() {
               {myProgress.map((p, idx) => {
                 const isOpen   = expanded === idx;
                 const konselor = myKonselor.find(k => k.ID === p.ID_Konselor) ?? myKonselor[0] ?? null;
-                const booking  = myBookings.find(b => b.ID_Konselor === p.ID_Konselor) ?? null;
+                // [FIX] Ambil booking terbaru untuk konselor ini, bukan yang pertama ditemukan
+                const bookingsForKonselor = myBookings
+                  .filter(b => b.ID_Konselor === p.ID_Konselor)
+                  .sort((a, b) => new Date(b.Tanggal_Sesi ?? 0) - new Date(a.Tanggal_Sesi ?? 0));
+                const booking  = bookingsForKonselor[0] ?? null;
                 const prevSkor = idx > 0 ? myProgress[idx-1].Skor_Kesejahteraan : null;
                 const delta    = prevSkor !== null
                   ? ((p.Skor_Kesejahteraan - prevSkor) * 10).toFixed(1)

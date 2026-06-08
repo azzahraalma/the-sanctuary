@@ -127,6 +127,7 @@ export default function Settings() {
   const showToast = (msg) => setToast(msg);
 
   const handleLogout = () => {
+    supabase.auth.signOut();
     localStorage.removeItem("sanctuary_user");
     navigate("/login");
   };

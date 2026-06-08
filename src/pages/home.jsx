@@ -2,12 +2,7 @@ import "../styles/home.css";
 import analisis_konselor from "../data/analisis_konselor.js";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "../lib/supabase.js";
 
 // ── Probabilitas Sukses Tim tetap dari dummy sampai tabel Supabase siap ──────
 const probSukses = analisis_konselor.find(
@@ -141,48 +136,53 @@ export default function Home() {
   // ── Ambil data dari Supabase ──────────────────────────────────────────────
   useEffect(() => {
     async function fetchAll() {
-      // Booking & konselor fetch paralel
-      const [bookingRes, konselorRes] = await Promise.all([
-        supabase.from("booking").select("id, status, kategori_masalah"),
-        supabase.from("data_konselor").select("id, nama, kategori_masalah, rating_final, success_rate, jumlah_kasus, kasus_selesai, pengalaman, image_url, foto_url").order("rating_final", { ascending: false }),
-      ]);
+      try {
+        // Booking & konselor fetch paralel
+        const [bookingRes, konselorRes] = await Promise.all([
+          supabase.from("booking").select("id, status, kategori_masalah"),
+          supabase.from("data_konselor").select("id, nama, kategori_masalah, rating_final, success_rate, jumlah_kasus, kasus_selesai, pengalaman, image_url, foto_url").order("rating_final", { ascending: false }),
+        ]);
 
-      // ── Booking stats ──
-      const bookings = (bookingRes.data ?? []).filter(b => b.id !== null);
-      const total    = bookings.length;
-      const selesai  = bookings.filter(b => b.status === "Selesai").length;
-      const rate     = total > 0 ? Math.round((selesai / total) * 100) : 0;
+        // ── Booking stats ──
+        const bookings = (bookingRes.data ?? []).filter(b => b.id !== null);
+        const total    = bookings.length;
+        const selesai  = bookings.filter(b => b.status === "Selesai").length;
+        const rate     = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
-      const katCount = bookings.reduce((acc, b) => {
-        if (b.kategori_masalah) acc[b.kategori_masalah] = (acc[b.kategori_masalah] || 0) + 1;
-        return acc;
-      }, {});
+        const katCount = bookings.reduce((acc, b) => {
+          if (b.kategori_masalah) acc[b.kategori_masalah] = (acc[b.kategori_masalah] || 0) + 1;
+          return acc;
+        }, {});
 
-      setTotalKasus(total);
-      setKasusSelesai(selesai);
-      setSuccessRate(rate);
-      setKategoriCount(katCount);
+        setTotalKasus(total);
+        setKasusSelesai(selesai);
+        setSuccessRate(rate);
+        setKategoriCount(katCount);
 
-      // ── Konselor stats ──
-      const konselorData = konselorRes.data ?? [];
-      const rataR = konselorData.length > 0
-        ? konselorData.reduce((s, k) => s + (Number(k.rating_final) || 0), 0) / konselorData.length
-        : 0;
+        // ── Konselor stats ──
+        const konselorData = konselorRes.data ?? [];
+        const rataR = konselorData.length > 0
+          ? konselorData.reduce((s, k) => s + (Number(k.rating_final) || 0), 0) / konselorData.length
+          : 0;
 
-      setRataRating(rataR);
-      setKonselor(konselorData.slice(0, 4).map(k => ({
-        ID:            k.id,
-        Nama:          k.nama,
-        Kategori_Masalah: k.kategori_masalah,
-        "Rating_(Final)": Number(k.rating_final) || 0,
-        Success_Rate:  Number(k.success_rate) || 0,
-        Jumlah_Kasus:  k.jumlah_kasus,
-        Kasus_Selesai: k.kasus_selesai,
-        Pengalaman:    k.pengalaman,
-        image:         k.image_url || k.foto_url || "",
-      })));
-
-      setLoadingStats(false);
+        setRataRating(rataR);
+        setKonselor(konselorData.slice(0, 4).map(k => ({
+          ID:            k.id,
+          Nama:          k.nama,
+          Kategori_Masalah: k.kategori_masalah,
+          "Rating_(Final)": Number(k.rating_final) || 0,
+          Success_Rate:  Number(k.success_rate) || 0,
+          Jumlah_Kasus:  k.jumlah_kasus,
+          Kasus_Selesai: k.kasus_selesai,
+          Pengalaman:    k.pengalaman,
+          image:         k.image_url || k.foto_url || "",
+        })));
+      } catch (err) {
+        console.error("Home fetchAll error:", err);
+      } finally {
+        // Selalu set false agar UI tidak stuck di loading selamanya
+        setLoadingStats(false);
+      }
     }
 
     fetchAll();
@@ -195,6 +195,7 @@ export default function Home() {
   })();
 
   const handleLogout = () => {
+    supabase.auth.signOut();
     localStorage.removeItem("sanctuary_user");
     sessionStorage.removeItem("redirect_after_login");
     navigate("/login");

@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient.js";
+import { supabase } from "../lib/supabase.js";
 import "../styles/konselor-detail.css";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -229,6 +229,25 @@ export default function KonselorDetail() {
     const user = JSON.parse(userRaw);
     setBookingLoad(true);
 
+    // [FIX] Gunakan student_id, bukan user.id (UUID auth).
+    // user.id adalah UUID dari Supabase Auth, bukan student_id seperti "M-123456".
+    // Kalau student_id belum ada di localStorage, fetch dari profil_pengguna.
+    let mhsId = user.student_id ?? null;
+    if (!mhsId) {
+      const { data: profil } = await supabase
+        .from("profil_pengguna")
+        .select("student_id")
+        .eq("email", user.email)
+        .maybeSingle();
+      mhsId = profil?.student_id ?? null;
+    }
+
+    if (!mhsId) {
+      alert("Gagal booking: data mahasiswa tidak lengkap. Coba login ulang.");
+      setBookingLoad(false);
+      return;
+    }
+
     const slotObj  = slots.find((s) => s.id === selectedSlot);
     const tanggal  = slotObj.tanggal;
 
@@ -240,10 +259,8 @@ export default function KonselorDetail() {
       return t;
     };
 
-    const cleanTime = normalizeTime(slotObj.jam_mulai);
+    const cleanTime      = normalizeTime(slotObj.jam_mulai);
     const startTimestamp = `${tanggal}T${cleanTime}+07:00`;
-
-    const mhsId = user.student_id || user.id;
     // Query jumlah booking sebelumnya untuk menghitung sesi ke-berapa
     const { count } = await supabase
       .from("booking")
@@ -274,12 +291,14 @@ export default function KonselorDetail() {
       return;
     }
 
-    // Update status slot jadi 'booked'
+    // Update status slot jadi 'booked' dan hapus dari state lokal
     await supabase
       .from("konselor_availability")
       .update({ status: "booked" })
       .eq("id", selectedSlot);
 
+    // Hapus slot yang baru di-book dari tampilan agar tidak bisa dipilih lagi
+    setSlots(prev => prev.filter(s => s.id !== selectedSlot));
     setBookingDone(true);
     setBookingLoad(false);
   }
@@ -291,7 +310,7 @@ export default function KonselorDetail() {
     else { sessionStorage.setItem("redirect_after_login", dest); navigate("/login"); }
   };
   const user = (() => { try { return JSON.parse(localStorage.getItem("sanctuary_user")); } catch { return null; } })();
-  const handleLogout = () => { localStorage.removeItem("sanctuary_user"); navigate("/login"); };
+  const handleLogout = () => { supabase.auth.signOut(); localStorage.removeItem("sanctuary_user"); navigate("/login"); };
 
   // ── Render ───────────────────────────────────────────────────────────────────
   if (loading) return (

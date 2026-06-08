@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase.js";
 import "../styles/sesi-konseling.css";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 function timeStr(dateStr) {
   return new Date(dateStr).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
@@ -134,7 +129,12 @@ export default function SesiKonseling() {
       }
 
       if (bk.status === "Berjalan" || bk.status === "berjalan") {
-        if (end && now > end) {
+        // [FIX] Cek expiry bahkan ketika end=null (tidak ada slot di availability)
+        // Fallback: anggap sesi berlangsung 2 jam dari tanggal_sesi
+        const effectiveEnd = end ?? (bk.tanggal_sesi
+          ? new Date(new Date(bk.tanggal_sesi).getTime() + 2 * 60 * 60 * 1000)
+          : null);
+        if (effectiveEnd && now > effectiveEnd) {
           alert("Jadwal sesi ini sudah berakhir.");
           navigate("/dashboard");
           return;
@@ -229,11 +229,12 @@ export default function SesiKonseling() {
     return () => supabase.removeChannel(bookingChannel);
   }, [bookingId, user, navigate]);
 
-  // ── Timer
+  // ── Timer — mulai hanya setelah booking selesai dimuat
   useEffect(() => {
+    if (isLoading) return;
     const t = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [isLoading]);
 
   // ── Auto scroll
   useEffect(() => {
@@ -270,8 +271,6 @@ export default function SesiKonseling() {
       teks: text,
       tipe: user?.role === "konselor" ? "konselor" : "mahasiswa",
     };
-
-    console.log("Inserting pesan:", payload);
 
     const { error } = await supabase.from("pesan_sesi").insert(payload);
     if (error) {

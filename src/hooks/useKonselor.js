@@ -2,7 +2,7 @@
 // Fetch data konselor + availability real dari Supabase
 
 import { useState, useEffect } from "react";
-import { supabase } from "../supabaseClient.js";
+import { supabase } from "../lib/supabase.js";
 
 // Hitung label availability dari array slot tanggal+jam
 function hitungLabel(slots) {

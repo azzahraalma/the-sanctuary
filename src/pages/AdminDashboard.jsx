@@ -182,12 +182,13 @@ function RiwayatSesiTab() {
         .from("booking").select("*").order("tanggal_sesi", { ascending: false });
       if (bookErr) throw bookErr;
 
-      const { data: profil, error: profilErr } = await supabase
-        .from("profil_pengguna").select("nama, konselor_id").not("konselor_id", "is", null);
-      if (profilErr) throw profilErr;
+      // [FIX] Ambil nama konselor dari data_konselor (lebih reliable dari profil_pengguna)
+      const { data: konselorData, error: konselorErr } = await supabase
+        .from("data_konselor").select("id, nama");
+      if (konselorErr) throw konselorErr;
 
       const konselorMap = {};
-      profil.forEach((p) => { if (p.konselor_id) konselorMap[p.konselor_id] = p.nama; });
+      (konselorData || []).forEach((k) => { konselorMap[k.id] = k.nama; });
 
       const merged = (bookings || []).map((b) => ({
         ...b, nama_konselor: konselorMap[b.id_konselor] || b.id_konselor || "—",
@@ -636,6 +637,7 @@ export default function AdminDashboard() {
         <button
           className="ad-logout-btn"
           onClick={() => {
+            supabase.auth.signOut();
             localStorage.removeItem("sanctuary_user");
             navigate("/login");
           }}

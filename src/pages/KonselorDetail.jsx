@@ -1,8 +1,18 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase.js";
+import { BOOKING_STATUS } from "../lib/bookingStatus.js";
+import { getRefleksiKategori } from "../lib/kuesionerStore.js";
+import { ensureDefaultTargets } from "../lib/defaultTargets.js";
+import {
+  fetchUlasanByKonselor,
+  getPendingUlasanBooking,
+  submitUlasan,
+  mapUlasanToDisplay,
+} from "../lib/ulasanKonselor.js";
+import { computeKonselorStats, syncKonselorStats } from "../lib/konselorStats.js";
+import UlasanForm from "../components/UlasanForm.jsx";
 import "../styles/konselor-detail.css";
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function StarRating({ rating, size = 14 }) {
   return (
@@ -116,12 +126,22 @@ function SkeletonDetail() {
 export default function KonselorDetail() {
   const { id }    = useParams();
   const navigate  = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const ulasanSectionRef = useRef(null);
 
   // ── State data ──────────────────────────────────────────────────────────────
   const [konselor,  setKonselor]  = useState(null);
-  const [slots,     setSlots]     = useState([]);   // dari konselor_availability
+  const [slots,     setSlots]     = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
+
+  const [ulasanList, setUlasanList] = useState([]);
+  const [pendingBooking, setPendingBooking] = useState(null);
+  const [showUlasanForm, setShowUlasanForm] = useState(false);
+  const [ulasanSubmitting, setUlasanSubmitting] = useState(false);
+  const [ulasanError, setUlasanError] = useState("");
+  const [ulasanSuccess, setUlasanSuccess] = useState(false);
+  const [liveStats, setLiveStats] = useState(null);
 
   // ── State kalender & booking ────────────────────────────────────────────────
   const [calMonth,     setCalMonth]     = useState(new Date().getMonth());
@@ -189,10 +209,143 @@ export default function KonselorDetail() {
       }
 
       setLoading(false);
+
+      const stats = await computeKonselorStats(id);
+      setLiveStats(stats);
+      syncKonselorStats(id).catch(() => {});
     }
 
     fetchData();
   }, [id]);
+
+  const user = (() => {
+    try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
+    catch { return null; }
+  })();
+
+  useEffect(() => {
+    if (!id || loading) return;
+
+    let active = true;
+
+    async function loadUlasanData() {
+      const list = await fetchUlasanByKonselor(id);
+      if (active) setUlasanList(list.map(mapUlasanToDisplay));
+
+      if (user?.role !== "mahasiswa") return;
+
+      let mid = user.student_id ?? null;
+      if (!mid && user.email) {
+        const { data: profil } = await supabase
+          .from("profil_pengguna")
+          .select("student_id")
+          .eq("email", user.email.toLowerCase())
+          .maybeSingle();
+        mid = profil?.student_id ?? null;
+      }
+      if (!mid || !active) return;
+
+      const pending = await getPendingUlasanBooking(id, mid);
+      if (!active) return;
+
+      if (pending) {
+        setPendingBooking(pending);
+        setShowUlasanForm(true);
+        return;
+      }
+
+      try {
+        const stored = JSON.parse(sessionStorage.getItem("sanctuary_pending_ulasan") ?? "null");
+        if (stored?.konselorId === id && stored?.bookingId) {
+          const { data: bk } = await supabase
+            .from("booking")
+            .select("id, sesi_konseling, tanggal_sesi, status")
+            .eq("id", stored.bookingId)
+            .maybeSingle();
+          if (bk && active) {
+            setPendingBooking(bk);
+            setShowUlasanForm(true);
+          }
+        }
+      } catch { /* ignore */ }
+    }
+
+    loadUlasanData();
+    return () => { active = false; };
+  }, [id, loading, user?.role, user?.student_id, user?.email]);
+
+  useEffect(() => {
+    if (searchParams.get("ulasan") !== "1" || !showUlasanForm) return;
+    const t = setTimeout(() => {
+      ulasanSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [searchParams, showUlasanForm]);
+
+  async function handleSubmitUlasan({ rating, teks }) {
+    if (!pendingBooking || !user) return;
+    setUlasanSubmitting(true);
+    setUlasanError("");
+
+    let mid = user.student_id ?? null;
+    if (!mid && user.email) {
+      const { data: profil } = await supabase
+        .from("profil_pengguna")
+        .select("student_id")
+        .eq("email", user.email.toLowerCase())
+        .maybeSingle();
+      mid = profil?.student_id ?? null;
+    }
+    if (!mid) {
+      setUlasanError("Data mahasiswa tidak ditemukan. Coba login ulang.");
+      setUlasanSubmitting(false);
+      return;
+    }
+
+    const { data, error: err } = await submitUlasan({
+      idBooking: pendingBooking.id,
+      idKonselor: id,
+      idMahasiswa: mid,
+      emailMahasiswa: user.email?.toLowerCase(),
+      namaMahasiswa: user.nama ?? user.name ?? "Mahasiswa",
+      rating,
+      teks,
+    });
+
+    if (err) {
+      setUlasanError(
+        err.message.includes("does not exist") || err.message.includes("ulasan_konselor")
+          ? "Tabel ulasan belum tersedia. Jalankan supabase/ulasan_konselor.sql di Supabase."
+          : err.message
+      );
+      setUlasanSubmitting(false);
+      return;
+    }
+
+    if (data) {
+      setUlasanList((prev) => [mapUlasanToDisplay(data), ...prev]);
+    } else {
+      const refreshed = await fetchUlasanByKonselor(id);
+      setUlasanList(refreshed.map(mapUlasanToDisplay));
+    }
+
+    const stats = await syncKonselorStats(id);
+    if (stats) setLiveStats(stats);
+
+    sessionStorage.removeItem("sanctuary_pending_ulasan");
+    setShowUlasanForm(false);
+    setPendingBooking(null);
+    setUlasanSuccess(true);
+    setUlasanSubmitting(false);
+    searchParams.delete("ulasan");
+    setSearchParams(searchParams, { replace: true });
+  }
+
+  function handleSkipUlasan() {
+    setShowUlasanForm(false);
+    searchParams.delete("ulasan");
+    setSearchParams(searchParams, { replace: true });
+  }
 
   // ── Slot yang tersedia di hari & bulan yang dipilih ─────────────────────────
   // Parse tanggal dari string "YYYY-MM-DD" tanpa konversi timezone
@@ -269,18 +422,19 @@ export default function KonselorDetail() {
       .eq("id_konselor", id);
 
     const sesiKe = (count ?? 0) + 1;
+    const userEmail = (user.email ?? "").toLowerCase();
+    const kategoriRefleksi = userEmail ? await getRefleksiKategori(userEmail) : null;
 
-    // Insert ke tabel booking
     const bookingId = `BK-${Date.now()}`;
     const { error: bErr } = await supabase.from("booking").insert({
       id:               bookingId,
       id_konselor:      id,
       id_mahasiswa:     mhsId,
       nama_mahasiswa:   user.name || user.nama,
-      kategori_masalah: konselor.Kategori_Masalah,
+      kategori_masalah: kategoriRefleksi ?? konselor.Kategori_Masalah,
       tanggal_sesi:     startTimestamp,
       sesi_konseling:   sesiKe,
-      status:           "terjadwal",
+      status:           BOOKING_STATUS.TERJADWAL,
       kondisi_awal:     0,
       kondisi_saat_ini: 0,
     });
@@ -290,6 +444,12 @@ export default function KonselorDetail() {
       setBookingLoad(false);
       return;
     }
+
+    await ensureDefaultTargets(mhsId);
+
+    syncKonselorStats(id).then((stats) => {
+      if (stats) setLiveStats(stats);
+    }).catch(() => {});
 
     // Update status slot jadi 'booked' dan hapus dari state lokal
     await supabase
@@ -309,7 +469,7 @@ export default function KonselorDetail() {
     if (user) navigate(dest);
     else { sessionStorage.setItem("redirect_after_login", dest); navigate("/login"); }
   };
-  const user = (() => { try { return JSON.parse(localStorage.getItem("sanctuary_user")); } catch { return null; } })();
+  const userForNav = user;
   const handleLogout = () => { supabase.auth.signOut(); localStorage.removeItem("sanctuary_user"); navigate("/login"); };
 
   // ── Render ───────────────────────────────────────────────────────────────────
@@ -333,8 +493,17 @@ export default function KonselorDetail() {
   const today      = new Date();
   const isToday    = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
   const spesialisasi = SPESIALISASI_MAP[konselor.Kategori_Masalah] || [];
-  const testimoni    = TESTIMONI_MAP[konselor.ID] || [];
+  const testimoniDb  = ulasanList;
+  const testimoniFallback = TESTIMONI_MAP[konselor.ID] || [];
+  const testimoni    = testimoniDb.length > 0 ? testimoniDb : testimoniFallback;
   const bio          = konselor.bio || "Konselor sebaya yang berdedikasi dalam membantu mahasiswa.";
+
+  const stats = liveStats ?? {
+    rating_final: konselor["Rating_(Final)"],
+    jumlah_kasus: konselor.Jumlah_Kasus,
+    kasus_selesai: konselor.Kasus_Selesai,
+    success_rate: konselor.Success_Rate,
+  };
 
   const ratingBar = (label, val) => (
     <div key={label} className="kd-rating-bar-row">
@@ -348,7 +517,7 @@ export default function KonselorDetail() {
 
   const avgTestimoniRating = testimoni.length
     ? (testimoni.reduce((s, t) => s + t.rating, 0) / testimoni.length).toFixed(1)
-    : konselor["Rating_(Final)"].toFixed(1);
+    : stats.rating_final.toFixed(1);
 
   return (
     <div className="sanctuary kd-page">
@@ -371,10 +540,10 @@ export default function KonselorDetail() {
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
             </button>
-            {user ? (
+            {userForNav ? (
               <div className="nav-user-wrap">
-                <div className="nav-avatar nav-avatar--active" onClick={() => goTo("/dashboard")} title={user.name}>
-                  <span className="nav-avatar-initial">{user.name?.charAt(0).toUpperCase()}</span>
+                <div className="nav-avatar nav-avatar--active" onClick={() => goTo("/dashboard")} title={userForNav.name}>
+                  <span className="nav-avatar-initial">{userForNav.name?.charAt(0).toUpperCase()}</span>
                 </div>
                 <button className="nav-logout-btn" onClick={handleLogout}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
@@ -430,23 +599,23 @@ export default function KonselorDetail() {
 
               <div className="kd-quick-stats">
                 <div className="kd-qs-item">
-                  <span className="kd-qs-val">{konselor["Rating_(Final)"].toFixed(1)}</span>
+                  <span className="kd-qs-val">{stats.rating_final.toFixed(1)}</span>
                   <span className="kd-qs-label">Rating</span>
-                  <StarRating rating={konselor["Rating_(Final)"]} size={11} />
+                  <StarRating rating={stats.rating_final} size={11} />
                 </div>
                 <div className="kd-qs-divider" />
                 <div className="kd-qs-item">
-                  <span className="kd-qs-val">{konselor.Jumlah_Kasus}</span>
+                  <span className="kd-qs-val">{stats.jumlah_kasus}</span>
                   <span className="kd-qs-label">Total Kasus</span>
                 </div>
                 <div className="kd-qs-divider" />
                 <div className="kd-qs-item">
-                  <span className="kd-qs-val">{konselor.Kasus_Selesai}</span>
+                  <span className="kd-qs-val">{stats.kasus_selesai}</span>
                   <span className="kd-qs-label">Kasus Selesai</span>
                 </div>
                 <div className="kd-qs-divider" />
                 <div className="kd-qs-item">
-                  <span className="kd-qs-val">{Math.round(konselor.Success_Rate * 100)}%</span>
+                  <span className="kd-qs-val">{Math.round(stats.success_rate * 100)}%</span>
                   <span className="kd-qs-label">Success Rate</span>
                 </div>
               </div>
@@ -481,8 +650,25 @@ export default function KonselorDetail() {
           </section>
 
           {/* ── TESTIMONI ── */}
-          <section className="kd-section">
+          <section className="kd-section" ref={ulasanSectionRef}>
             <h2 className="kd-section-h">Testimoni Klien</h2>
+
+            {ulasanSuccess && (
+              <div className="kd-ulasan-success">
+                Terima kasih! Ulasanmu sudah terkirim dan akan membantu konselor lainnya.
+              </div>
+            )}
+
+            {showUlasanForm && pendingBooking && userForNav?.role === "mahasiswa" && (
+              <UlasanForm
+                konselorNama={konselor.Nama}
+                sesiKe={pendingBooking.sesi_konseling}
+                onSubmit={handleSubmitUlasan}
+                onSkip={handleSkipUlasan}
+                submitting={ulasanSubmitting}
+                error={ulasanError}
+              />
+            )}
             <div className="kd-testi-header">
               <div className="kd-testi-score">
                 <span className="kd-testi-big">{avgTestimoniRating}</span>
@@ -513,8 +699,11 @@ export default function KonselorDetail() {
               </div>
             </div>
             <div className="kd-testi-grid">
+              {testimoni.length === 0 && (
+                <p className="kd-testi-empty">Belum ada ulasan. Jadilah yang pertama setelah sesi selesai!</p>
+              )}
               {testimoni.map((t, i) => (
-                <div key={i} className="kd-testi-card">
+                <div key={t.id ?? i} className="kd-testi-card">
                   <StarRating rating={t.rating} size={13} />
                   <p className="kd-testi-text">"{t.teks}"</p>
                   <div className="kd-testi-author">

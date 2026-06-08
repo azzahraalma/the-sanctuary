@@ -3,7 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import "../styles/riwayat-sesi-admin.css";
 
-const STATUS_OPTIONS = ["Semua", "Terjadwal", "Selesai", "Dibatalkan"];
+const STATUS_OPTIONS = ["Semua", "Terjadwal", "Berjalan", "Menunggu Evaluasi", "Selesai", "Dibatalkan"];
+
+function filterStatusValue(label) {
+  const map = {
+    Terjadwal: "terjadwal",
+    Berjalan: "berjalan",
+    "Menunggu Evaluasi": "menunggu_evaluasi",
+    Selesai: "selesai",
+    Dibatalkan: "dibatalkan",
+  };
+  return map[label] ?? label.toLowerCase();
+}
 
 export default function RiwayatSesiAdmin() {
   const navigate = useNavigate();
@@ -91,9 +102,8 @@ export default function RiwayatSesiAdmin() {
     }
 
     if (filterStatus !== "Semua") {
-      result = result.filter(
-        (s) => s.status?.toLowerCase() === filterStatus.toLowerCase()
-      );
+      const want = filterStatusValue(filterStatus);
+      result = result.filter((s) => s.status?.toLowerCase() === want);
     }
 
     if (filterKonselor !== "Semua") {
@@ -137,6 +147,8 @@ export default function RiwayatSesiAdmin() {
     const s = status.toLowerCase();
     if (s === "selesai") return "status-badge status-selesai";
     if (s === "terjadwal") return "status-badge status-terjadwal";
+    if (s === "berjalan") return "status-badge status-terjadwal";
+    if (s === "menunggu_evaluasi") return "status-badge status-terjadwal";
     if (s === "dibatalkan") return "status-badge status-dibatalkan";
     return "status-badge status-unknown";
   }

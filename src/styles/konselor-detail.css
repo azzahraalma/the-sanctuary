@@ -466,6 +466,170 @@
 .kd-testi-name  { font-size: 13px; font-weight: 700; color: #111; }
 .kd-testi-peran { font-size: 11px; color: #999; }
 
+/* ── Form ulasan setelah sesi ── */
+.kd-ulasan-form-wrap {
+  background: linear-gradient(135deg, #f0fffe 0%, #e8f8f5 100%);
+  border: 1.5px solid rgba(47, 125, 121, 0.25);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.kd-ulasan-form-badge {
+  display: inline-block;
+  background: #2f7d79;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  margin-bottom: 12px;
+}
+
+.kd-ulasan-form-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a3d3a;
+  margin: 0 0 6px;
+}
+
+.kd-ulasan-form-sub {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+.kd-ulasan-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #6b8f8c;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.kd-star-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.kd-star-picker-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #ddd;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.kd-star-picker-btn.is-on {
+  color: #f5a623;
+}
+
+.kd-star-picker-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.kd-star-picker-label {
+  font-size: 13px;
+  color: #888;
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+.kd-ulasan-textarea {
+  width: 100%;
+  border: 1px solid #d0e8e4;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  background: #fff;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.kd-ulasan-textarea:focus {
+  outline: none;
+  border-color: #2f7d79;
+  box-shadow: 0 0 0 3px rgba(47, 125, 121, 0.12);
+}
+
+.kd-ulasan-char {
+  display: block;
+  text-align: right;
+  font-size: 11px;
+  color: #aaa;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.kd-ulasan-error {
+  color: #dc2626;
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.kd-ulasan-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.kd-ulasan-submit {
+  background: linear-gradient(135deg, #2f7d79, #79d8d1);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.kd-ulasan-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.kd-ulasan-skip {
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 11px 18px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+}
+
+.kd-ulasan-success {
+  background: rgba(47, 125, 121, 0.1);
+  border: 1px solid rgba(47, 125, 121, 0.25);
+  color: #2f7d79;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.kd-testi-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+  padding: 24px;
+}
+
 /* Stars in testimoni */
 .kd-stars { display: flex; align-items: center; gap: 2px; color: #f5a623; }
 .kd-star.s-empty { color: #ddd; }

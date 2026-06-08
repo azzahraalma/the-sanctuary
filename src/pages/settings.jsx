@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import "../styles/dashboard.css";
 import "../styles/settings.css";
 import { supabase } from "../lib/supabase.js";
+import { usePushNotif } from "../hooks/usePushNotif.js";
 
 function Toggle({ checked, onChange, disabled }) {
   return (
@@ -103,7 +104,7 @@ export default function Settings() {
   }, []);
 
   const userName  = user?.nama ?? user?.name ?? "Pengguna";
-  const userEmail = user?.email ?? "";
+  const userEmail = (user?.email ?? "").toLowerCase();
 
   const [displayName, setDisplayName] = useState(userName);
   const [fotoUrl, setFotoUrl]         = useState(null);
@@ -120,8 +121,8 @@ export default function Settings() {
 
   const [pengingat, setPengingat]     = useState(true);
   const [notifLoaded, setNotifLoaded] = useState(false);
-  const [pushStatus, setPushStatus]   = useState("idle");
   const [pushLoading, setPushLoading] = useState(false);
+  const { status: pushStatus, loading: pushHookLoading, subscribe, unsubscribe } = usePushNotif(userEmail.toLowerCase());
 
   const [toast, setToast] = useState("");
   const showToast = (msg) => setToast(msg);
@@ -135,8 +136,16 @@ export default function Settings() {
   useEffect(() => {
     if (!userEmail) return;
     (async () => {
-      const { data } = await supabase.from("profil_pengguna").select("nama, foto_url").eq("email", userEmail).maybeSingle();
-      if (data?.nama) { setDisplayName(data.nama); localStorage.setItem("sanctuary_user", JSON.stringify({ ...user, nama: data.nama, name: data.nama })); }
+      const { data, error } = await supabase
+        .from("profil_pengguna")
+        .select("nama, foto_url")
+        .eq("email", userEmail)
+        .maybeSingle();
+      if (error) console.warn("Fetch profil:", error.message);
+      if (data?.nama) {
+        setDisplayName(data.nama);
+        localStorage.setItem("sanctuary_user", JSON.stringify({ ...user, nama: data.nama, name: data.nama }));
+      }
       if (data?.foto_url) setFotoUrl(data.foto_url);
     })();
   }, [userEmail]); // eslint-disable-line
@@ -145,7 +154,7 @@ export default function Settings() {
     if (!userEmail) return;
     (async () => {
       const { data } = await supabase.from("preferensi_notif").select("*").eq("email", userEmail).maybeSingle();
-      if (data) { setPengingat(data.pengingat_sesi ?? true); setPushStatus(data.push_aktif ? "subscribed" : "unsubscribed"); }
+      if (data) setPengingat(data.pengingat_sesi ?? true);
       setNotifLoaded(true);
     })();
   }, [userEmail]);
@@ -159,18 +168,25 @@ export default function Settings() {
   const handlePengingat    = (v) => { setPengingat(v); saveNotifPref("pengingat_sesi", v); };
 
   const handlePushToggle = async () => {
-    if (pushLoading) return;
+    if (pushLoading || pushHookLoading) return;
     setPushLoading(true);
     if (pushStatus === "subscribed") {
+      await unsubscribe();
       await saveNotifPref("push_aktif", false);
-      setPushStatus("unsubscribed");
       showToast("Push notifikasi dinonaktifkan");
     } else {
-      if (!("Notification" in window)) { setPushStatus("unsupported"); setPushLoading(false); return; }
-      const permission = await Notification.requestPermission();
-      if (permission === "denied") { setPushStatus("denied"); setPushLoading(false); return; }
+      if (pushStatus === "unsupported") {
+        showToast("Browser tidak mendukung push notifikasi");
+        setPushLoading(false);
+        return;
+      }
+      if (pushStatus === "denied") {
+        showToast("Izin notifikasi ditolak di browser");
+        setPushLoading(false);
+        return;
+      }
+      await subscribe();
       await saveNotifPref("push_aktif", true);
-      setPushStatus("subscribed");
       showToast("Push notifikasi diaktifkan ✓");
     }
     setPushLoading(false);
@@ -184,30 +200,103 @@ export default function Settings() {
   };
 
   const handleSaveProfile = async () => {
-    if (!userEmail) return;
+    if (!userEmail || !user?.id) {
+      showToast("Sesi tidak valid. Silakan login ulang.");
+      return;
+    }
+
+    const trimmedName = displayName.trim();
+    if (!trimmedName) {
+      showToast("Nama tidak boleh kosong");
+      return;
+    }
+
     setIsSaving(true);
-    let uploadedUrl = fotoUrl;
-    if (fotoFile) {
-      const ext  = fotoFile.name.split(".").pop();
-      const path = `${userEmail.replace("@", "_")}.${ext}`;
-      const { error: uploadErr } = await supabase.storage.from("avatars").upload(path, fotoFile, { upsert: true });
-      if (!uploadErr) {
+    try {
+      let uploadedUrl = fotoUrl;
+      if (fotoFile) {
+        const ext  = fotoFile.name.split(".").pop();
+        const path = `${userEmail.replace("@", "_")}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from("avatars")
+          .upload(path, fotoFile, { upsert: true });
+        if (uploadErr) {
+          showToast("Gagal upload foto");
+          return;
+        }
         const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
         uploadedUrl = urlData.publicUrl;
-        setFotoUrl(uploadedUrl); setFotoPreview(null); setFotoFile(null);
-      } else {
-        showToast("Gagal upload foto"); setIsSaving(false); return;
+        setFotoUrl(uploadedUrl);
+        setFotoPreview(null);
+        setFotoFile(null);
       }
-    }
-    const { error } = await supabase.from("profil_pengguna").upsert({ email: userEmail, nama: displayName, foto_url: uploadedUrl }, { onConflict: "email" });
-    if (!error) {
-      localStorage.setItem("sanctuary_user", JSON.stringify({ ...user, name: displayName, nama: displayName, foto_url: uploadedUrl }));
+
+      const updatedAt = new Date().toISOString();
+      const updatePayload = { nama: trimmedName, updated_at: updatedAt };
+      if (uploadedUrl) updatePayload.foto_url = uploadedUrl;
+
+      let saved = false;
+
+      for (const filter of [
+        { col: "email", val: userEmail },
+        { col: "id", val: user.id },
+      ]) {
+        const { data, error } = await supabase
+          .from("profil_pengguna")
+          .update(updatePayload)
+          .eq(filter.col, filter.val)
+          .select("email")
+          .maybeSingle();
+        if (error) {
+          console.warn(`Update profil via ${filter.col}:`, error.message);
+          continue;
+        }
+        if (data) {
+          saved = true;
+          break;
+        }
+      }
+
+      if (!saved) {
+        const insertPayload = {
+          email: userEmail,
+          nama: trimmedName,
+          role: user.role ?? "mahasiswa",
+          student_id: user.student_id ?? null,
+          konselor_id: user.konselorId ?? null,
+          updated_at: updatedAt,
+        };
+        if (user.id) insertPayload.id = user.id;
+        if (uploadedUrl) insertPayload.foto_url = uploadedUrl;
+
+        const { error: insertErr } = await supabase
+          .from("profil_pengguna")
+          .upsert(insertPayload, { onConflict: "email" });
+        if (insertErr) throw insertErr;
+      }
+
+      const { error: authErr } = await supabase.auth.updateUser({
+        data: { nama: trimmedName, name: trimmedName },
+      });
+      if (authErr) console.warn("Auth metadata update:", authErr.message);
+
+      const updatedUser = {
+        ...user,
+        email: userEmail,
+        name: trimmedName,
+        nama: trimmedName,
+      };
+      if (uploadedUrl) updatedUser.foto_url = uploadedUrl;
+      localStorage.setItem("sanctuary_user", JSON.stringify(updatedUser));
+
       showToast("Profil berhasil diperbarui ✓");
       setIsEditing(false);
-    } else {
-      showToast("Gagal menyimpan profil");
+    } catch (err) {
+      console.error("Save profile error:", err);
+      showToast(err?.message ? `Gagal menyimpan: ${err.message}` : "Gagal menyimpan profil");
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   const handleGantiPassword = async () => {

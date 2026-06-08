@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
+import {
+  BOOKING_STATUS,
+  isSelesai,
+  isTerjadwal,
+  isBerjalan,
+  isMenungguEvaluasi,
+} from "../lib/bookingStatus.js";
+import { syncKonselorStats } from "../lib/konselorStats.js";
 import "../styles/sesi-konseling.css";
 
 function timeStr(dateStr) {
@@ -122,13 +130,25 @@ export default function SesiKonseling() {
       const startBuffer = start;
       const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
 
-      if (bk.status === "Selesai") {
+      if (isSelesai(bk.status)) {
         alert("Sesi konseling ini sudah selesai. Terima kasih!");
         navigate("/dashboard");
         return;
       }
 
-      if (bk.status === "Berjalan" || bk.status === "berjalan") {
+      if (isMenungguEvaluasi(bk.status)) {
+        if (user?.role === "mahasiswa") {
+          sessionStorage.setItem("sanctuary_pending_ulasan", JSON.stringify({
+            bookingId: bk.id,
+            konselorId: bk.id_konselor,
+          }));
+          alert("Sesi telah diakhiri. Yuk berikan ulasan untuk konselormu!");
+          navigate(`/konselor/${bk.id_konselor}?ulasan=1`);
+          return;
+        }
+      }
+
+      if (isBerjalan(bk.status)) {
         // [FIX] Cek expiry bahkan ketika end=null (tidak ada slot di availability)
         // Fallback: anggap sesi berlangsung 2 jam dari tanggal_sesi
         const effectiveEnd = end ?? (bk.tanggal_sesi
@@ -141,14 +161,13 @@ export default function SesiKonseling() {
         }
       }
 
-      if (bk.status === "terjadwal" || bk.status === "Terjadwal") {
+      if (isTerjadwal(bk.status)) {
         if (isTimeRange) {
-          // Auto-start the session
           await supabase
             .from("booking")
-            .update({ status: "Berjalan" })
+            .update({ status: BOOKING_STATUS.BERJALAN })
             .eq("id", bookingId);
-          bk.status = "Berjalan";
+          bk.status = BOOKING_STATUS.BERJALAN;
         } else {
           // If not in time range
           if (startBuffer && now < startBuffer) {
@@ -216,11 +235,24 @@ export default function SesiKonseling() {
         table: "booking",
         filter: `id=eq.${bookingId}`,
       }, payload => {
-        if (payload.new.status === "Selesai") {
-          setBooking(payload.new);
-          if (user?.role === "mahasiswa") {
+        const st = payload.new.status;
+        setBooking(payload.new);
+        if (user?.role === "mahasiswa") {
+          const konselorId = payload.new.id_konselor;
+          if (isMenungguEvaluasi(st)) {
+            sessionStorage.setItem("sanctuary_pending_ulasan", JSON.stringify({
+              bookingId: payload.new.id,
+              konselorId,
+            }));
+            alert("Sesi telah diakhiri. Yuk berikan ulasan untuk konselormu!");
+            navigate(`/konselor/${konselorId}?ulasan=1`);
+          } else if (isSelesai(st)) {
+            sessionStorage.setItem("sanctuary_pending_ulasan", JSON.stringify({
+              bookingId: payload.new.id,
+              konselorId,
+            }));
             alert("Sesi konseling telah selesai. Terima kasih telah bercerita!");
-            navigate("/dashboard");
+            navigate(`/konselor/${konselorId}?ulasan=1`);
           }
         }
       })
@@ -287,12 +319,16 @@ export default function SesiKonseling() {
   const endSession = async () => {
     const { error } = await supabase
       .from("booking")
-      .update({ status: "Selesai" })
+      .update({ status: BOOKING_STATUS.MENUNGGU_EVALUASI })
       .eq("id", bookingId);
 
     if (error) {
       console.error("Gagal mengakhiri sesi:", error);
       return;
+    }
+
+    if (booking?.id_konselor) {
+      syncKonselorStats(booking.id_konselor).catch(() => {});
     }
 
     navigate(`/evaluasi/${bookingId}`);

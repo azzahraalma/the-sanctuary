@@ -1,6 +1,14 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import {
+  BOOKING_STATUS,
+  normalizeStatus,
+  isMenungguEvaluasi,
+  isBerjalan,
+  isSelesai,
+} from "../lib/bookingStatus.js";
+import { syncKonselorStats } from "../lib/konselorStats.js";
 import "../styles/evaluasi-sesi.css";
 
 // [FIX 1] Hapus duplikasi createClient — gunakan instance supabase yang sudah ada
@@ -101,6 +109,15 @@ export default function EvaluasiSesi() {
         if (bkErr) throw bkErr;
         if (!bk) { navigate("/konselor-dashboard"); return; }
 
+        if (isSelesai(bk.status)) {
+          navigate("/konselor-dashboard");
+          return;
+        }
+        if (!isMenungguEvaluasi(bk.status) && !isBerjalan(bk.status)) {
+          navigate("/konselor-dashboard");
+          return;
+        }
+
         if (cancelled) return;
         setBooking(bk);
 
@@ -179,7 +196,7 @@ export default function EvaluasiSesi() {
         tanggal:            new Date().toISOString(),
         kondisi_terkini:    avgScore,
         kategori_masalah:   booking.kategori_masalah,
-        status:             "Berjalan",
+        status:             BOOKING_STATUS.BERJALAN,
         suasana_hati:       answers.suasana_hati,
         mindfulness:        answers.mindfulness,
         manajemen_stres:    answers.manajemen_stres,
@@ -199,9 +216,9 @@ export default function EvaluasiSesi() {
       // Update data_target
       if (targets && targets.length > 0) {
         for (const t of targets) {
-          if (t.status === "Berjalan") {
+          if (normalizeStatus(t.status) === BOOKING_STATUS.BERJALAN) {
             const nextTerlalui = (t.sesi_terlalui ?? 0) + 1;
-            const nextStatus   = nextTerlalui >= t.target_sesi ? "Selesai" : "Berjalan";
+            const nextStatus   = nextTerlalui >= t.target_sesi ? BOOKING_STATUS.SELESAI : BOOKING_STATUS.BERJALAN;
             const { error: tErr } = await supabase
               .from("data_target")
               .update({ sesi_terlalui: nextTerlalui, status: nextStatus })
@@ -217,10 +234,12 @@ export default function EvaluasiSesi() {
       // Update booking jadi Selesai
       const { error: bkUpdateErr } = await supabase
         .from("booking")
-        .update({ status: "Selesai", kondisi_saat_ini: avgScore })
+        .update({ status: BOOKING_STATUS.SELESAI, kondisi_saat_ini: avgScore })
         .eq("id", bookingId);
 
       if (bkUpdateErr) throw bkUpdateErr;
+
+      await syncKonselorStats(booking.id_konselor);
 
       navigate("/konselor-dashboard");
     } catch (err) {

@@ -8,7 +8,18 @@ function getMetrik(rows, nama) {
   return rows.find(d => d.metrik_statistik === nama) || {};
 }
 
-const STATUS_OPTIONS = ["Semua", "Terjadwal", "Selesai", "Dibatalkan"];
+const STATUS_OPTIONS = ["Semua", "Terjadwal", "Berjalan", "Menunggu Evaluasi", "Selesai", "Dibatalkan"];
+
+function filterStatusValue(label) {
+  const map = {
+    Terjadwal: "terjadwal",
+    Berjalan: "berjalan",
+    "Menunggu Evaluasi": "menunggu_evaluasi",
+    Selesai: "selesai",
+    Dibatalkan: "dibatalkan",
+  };
+  return map[label] ?? label.toLowerCase();
+}
 
 function DonutChart({ parts, total }) {
   const r = 70, cx = 90, cy = 90;
@@ -211,7 +222,10 @@ function RiwayatSesiTab() {
         s.id_mahasiswa?.toLowerCase().includes(q)
       );
     }
-    if (filterStatus !== "Semua") result = result.filter(s => s.status?.toLowerCase() === filterStatus.toLowerCase());
+    if (filterStatus !== "Semua") {
+      const want = filterStatusValue(filterStatus);
+      result = result.filter(s => s.status?.toLowerCase() === want);
+    }
     if (filterKonselor !== "Semua") result = result.filter(s => s.nama_konselor === filterKonselor);
     switch (sortBy) {
       case "tanggal_asc": result.sort((a, b) => new Date(a.tanggal_sesi) - new Date(b.tanggal_sesi)); break;
@@ -230,6 +244,8 @@ function RiwayatSesiTab() {
     const s = status.toLowerCase();
     if (s === "selesai") return "status-badge status-selesai";
     if (s === "terjadwal") return "status-badge status-terjadwal";
+    if (s === "berjalan") return "status-badge status-terjadwal";
+    if (s === "menunggu_evaluasi") return "status-badge status-terjadwal";
     if (s === "dibatalkan") return "status-badge status-dibatalkan";
     return "status-badge status-unknown";
   }
@@ -252,6 +268,7 @@ function RiwayatSesiTab() {
   const totalSesi = sesi.length;
   const totalSelesai = sesi.filter(s => s.status?.toLowerCase() === "selesai").length;
   const totalTerjadwal = sesi.filter(s => s.status?.toLowerCase() === "terjadwal").length;
+  const totalBerjalan = sesi.filter(s => ["berjalan", "menunggu_evaluasi"].includes(s.status?.toLowerCase())).length;
   const totalDibatalkan = sesi.filter(s => s.status?.toLowerCase() === "dibatalkan").length;
 
   return (

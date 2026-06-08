@@ -1,13 +1,9 @@
 import "../styles/home.css";
-import analisis_konselor from "../data/analisis_konselor.js";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../lib/supabase.js";
-
-// ── Probabilitas Sukses Tim tetap dari dummy sampai tabel Supabase siap ──────
-const probSukses = analisis_konselor.find(
-  (a) => a.Metrik_Tim === "Probabilitas Sukses Tim"
-)?.Rumus_Excel ?? 0;
+import { isSelesai } from "../lib/bookingStatus.js";
+import { fetchTeamStats } from "../lib/teamStats.js";
 
 // ── Helper: cek session & arahkan ke tujuan atau login ───────────────────────
 function useAuthNav() {
@@ -131,6 +127,7 @@ export default function Home() {
   const [successRate, setSuccessRate] = useState(0);
   const [rataRating, setRataRating]   = useState(0);
   const [kategoriCount, setKategoriCount] = useState({});
+  const [probSukses, setProbSukses] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
 
   // ── Ambil data dari Supabase ──────────────────────────────────────────────
@@ -146,7 +143,7 @@ export default function Home() {
         // ── Booking stats ──
         const bookings = (bookingRes.data ?? []).filter(b => b.id !== null);
         const total    = bookings.length;
-        const selesai  = bookings.filter(b => b.status === "Selesai").length;
+        const selesai  = bookings.filter(b => isSelesai(b.status)).length;
         const rate     = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
         const katCount = bookings.reduce((acc, b) => {
@@ -166,6 +163,10 @@ export default function Home() {
           : 0;
 
         setRataRating(rataR);
+
+        const team = await fetchTeamStats();
+        setProbSukses(team.probSukses);
+
         setKonselor(konselorData.slice(0, 4).map(k => ({
           ID:            k.id,
           Nama:          k.nama,

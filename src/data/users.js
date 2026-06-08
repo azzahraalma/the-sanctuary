@@ -15,7 +15,7 @@ export const DUMMY_USERS = [
     name: "Demo User",
     email: "demo@sanctuary.com",
     password: "demo123",
-    role: "user",
+    role: "mahasiswa",
   },
   // ─── AKUN KONSELOR ─────────────────────────────────────────────
   // konselorId harus cocok dengan ID di data_konselor.js (K-001 dst)
@@ -97,7 +97,7 @@ export function registerUser(name, email, password) {
     name,
     email,
     password,
-    role: "user",
+    role: "mahasiswa",
   };
   DUMMY_USERS.push(newUser);
 

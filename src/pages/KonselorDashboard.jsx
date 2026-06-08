@@ -1,9 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect, useCallback } from "react";
-import analisis_konselor from "../data/analisis_konselor.js";
 import "../styles/konselor-dashboard.css";
 import EditProfilModal from "./EditProfilModal.jsx";
 import { supabase } from "../lib/supabase.js";
+import { fetchTeamStats } from "../lib/teamStats.js";
+import {
+  BOOKING_STATUS,
+  isSelesai,
+  isAktif,
+  isBerjalan,
+  isTerjadwal,
+  statusLabel,
+} from "../lib/bookingStatus.js";
 
 function kondisiLabel(val) {
     if (val >= 1.0) return "Pulih";
@@ -64,8 +72,6 @@ function ProgressBar({ value, max, color = "var(--grad-teal)" }) {
     );
 }
 
-const STATUS_AKTIF = ["berjalan", "terjadwal", "Berjalan", "Terjadwal", "aktif", "Aktif"];
-
 export default function KonselorDashboard() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("overview");
@@ -78,12 +84,17 @@ export default function KonselorDashboard() {
     const [newSlot, setNewSlot] = useState({ tanggal: "", jam_mulai: "", jam_selesai: "" });
     const [addingSlot, setAddingSlot] = useState(false);
     const [now, setNow] = useState(new Date());
+    const [teamStats, setTeamStats] = useState({ ratingTim: 0, kasusTim: 0, probSukses: 0, avgKasusSelesai: 0 });
 
     useEffect(() => {
         const timer = setInterval(() => {
             setNow(new Date());
         }, 1000);
         return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        fetchTeamStats().then(setTeamStats);
     }, []);
 
     const user = useMemo(() => {
@@ -205,14 +216,15 @@ export default function KonselorDashboard() {
         }
     }, [kid, konselor]);
 
-    const selesai = myBookings.filter((b) => b.Status === "Selesai").length;
-    const berjalan = myBookings.filter((b) => STATUS_AKTIF.includes(b.Status)).length;
+    const selesai = myBookings.filter((b) => isSelesai(b.Status)).length;
+    const berjalan = myBookings.filter((b) => isAktif(b.Status)).length;
     const total = myBookings.length;
     const successRate = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
-    const ratingTim = analisis_konselor.find((a) => a.Metrik_Tim === "Rata-rata Rating Konselor")?.Rumus_Excel ?? 0;
-    const kasusTim = analisis_konselor.find((a) => a.Metrik_Tim === "Total Kasus Teratasi")?.Rumus_Excel ?? 0;
-    const probTim = analisis_konselor.find((a) => a.Metrik_Tim === "Probabilitas Sukses Tim")?.Rumus_Excel ?? 0;
+    const ratingTim = teamStats.ratingTim;
+    const kasusTim = teamStats.kasusTim;
+    const probTim = teamStats.probSukses;
+    const avgKasusSelesai = teamStats.avgKasusSelesai ?? 0;
 
     const kategoriMap = useMemo(() => {
         const map = {};
@@ -226,8 +238,8 @@ export default function KonselorDashboard() {
     const filteredBookings = useMemo(() => {
         let result;
         if (filterKlien === "Semua") result = myBookings;
-        else if (filterKlien === "Berjalan") result = myBookings.filter((b) => STATUS_AKTIF.includes(b.Status));
-        else if (filterKlien === "Selesai") result = myBookings.filter((b) => b.Status === "Selesai");
+        else if (filterKlien === "Berjalan") result = myBookings.filter((b) => isAktif(b.Status));
+        else if (filterKlien === "Selesai") result = myBookings.filter((b) => isSelesai(b.Status));
         else result = myBookings;
         return [...result].sort((a, b) => new Date(b.Tanggal_Sesi) - new Date(a.Tanggal_Sesi));
     }, [myBookings, filterKlien]);
@@ -434,7 +446,7 @@ export default function KonselorDashboard() {
                                                     <div className="kd-sesi-kat">{b.Kategori_Masalah} · Sesi ke-{b.Sesi_Konseling}</div>
                                                 </div>
                                                 <div className="kd-sesi-right">
-                                                    <span className={`kd-badge ${b.Status === "Selesai" ? "kd-badge--done" : "kd-badge--run"}`}>{b.Status}</span>
+                                                    <span className={`kd-badge ${isSelesai(b.Status) ? "kd-badge--done" : "kd-badge--run"}`}>{statusLabel(b.Status)}</span>
                                                     <div className="kd-sesi-date">{new Date(b.Tanggal_Sesi).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}</div>
                                                 </div>
                                             </div>
@@ -567,7 +579,7 @@ export default function KonselorDashboard() {
                                     const isDateOnly = b.Tanggal_Sesi && (b.Tanggal_Sesi.includes("T00:00:00") || !b.Tanggal_Sesi.includes("T"));
                                     const bkDateStr = b.Tanggal_Sesi ? getWIBDateStr(b.Tanggal_Sesi) : "";
                                     const bkTimeStr = b.Tanggal_Sesi ? getWIBTimeStr(b.Tanggal_Sesi) : "00:00:00";
-                                    const isBerjalan = ["Berjalan", "berjalan", "aktif", "Aktif"].includes(b.Status);
+                                    const isBerjalanSesi = isBerjalan(b.Status);
 
                                     const matchedSlot = slots.find(s =>
                                         s.tanggal === bkDateStr &&
@@ -587,12 +599,12 @@ export default function KonselorDashboard() {
 
                                     const startBuffer = start;
                                     const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
-                                    const bisaMulai = ["Terjadwal", "terjadwal"].includes(b.Status) && isTimeRange;
-                                    const bisaMasuk = isBerjalan && (end ? now <= end : true);
+                                    const bisaMulai = isTerjadwal(b.Status) && isTimeRange;
+                                    const bisaMasuk = isBerjalanSesi && (end ? now <= end : true);
 
                                     let statusHelperText = null;
                                     if (b.Status !== "Selesai") {
-                                        if (["Terjadwal", "terjadwal"].includes(b.Status) && startBuffer && now < startBuffer) {
+                                        if (isTerjadwal(b.Status) && startBuffer && now < startBuffer) {
                                             const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
                                             statusHelperText = `Mulai pukul ${jamStr}`;
                                         } else if (end && now > end) {
@@ -627,7 +639,7 @@ export default function KonselorDashboard() {
                                                 </div>
                                             </div>
                                             <div className="kd-table-cell">
-                                                <span className={`kd-badge ${b.Status === "Selesai" ? "kd-badge--done" : "kd-badge--run"}`}>{b.Status}</span>
+                                                <span className={`kd-badge ${isSelesai(b.Status) ? "kd-badge--done" : "kd-badge--run"}`}>{statusLabel(b.Status)}</span>
                                             </div>
                                             <div className="kd-table-cell" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                                                 {bisaMulai || bisaMasuk ? (
@@ -636,7 +648,7 @@ export default function KonselorDashboard() {
                                                         onClick={async () => {
                                                             await supabase
                                                                 .from("booking")
-                                                                .update({ status: "Berjalan" })
+                                                                .update({ status: BOOKING_STATUS.BERJALAN })
                                                                 .eq("id", b.ID_Booking);
                                                             navigate(`/sesi/${b.ID_Booking}`);
                                                         }}
@@ -819,7 +831,7 @@ export default function KonselorDashboard() {
                                         </div>
                                     </div>
                                     <div className="kd-progress-list">
-                                        {myBookings.filter((b) => STATUS_AKTIF.includes(b.Status)).map((b) => {
+                                        {myBookings.filter((b) => isAktif(b.Status)).map((b) => {
                                             const nowPct = Math.round((b.Kondisi_Saat_Ini ?? 0) * 100);
                                             const awal = Math.round((b.Kondisi_Awal ?? 0) * 100);
                                             return (
@@ -839,7 +851,7 @@ export default function KonselorDashboard() {
                                                 </div>
                                             );
                                         })}
-                                        {myBookings.filter((b) => STATUS_AKTIF.includes(b.Status)).length === 0 && <p className="kd-empty">Tidak ada klien aktif.</p>}
+                                        {myBookings.filter((b) => isAktif(b.Status)).length === 0 && <p className="kd-empty">Tidak ada klien aktif.</p>}
                                     </div>
                                 </div>
                                 <div className="kd-card">
@@ -847,7 +859,7 @@ export default function KonselorDashboard() {
                                     {[
                                         { lbl: "Rating", saya: ratingFinal, tim: ratingTim, max: 5, fmt: (v) => v.toFixed(1) },
                                         { lbl: "Success Rate", saya: successRate / 100, tim: probTim, max: 1, fmt: (v) => `${Math.round(v * 100)}%` },
-                                        { lbl: "Kasus Selesai", saya: selesai, tim: kasusTim / (analisis_konselor.length || 1), max: Math.max(selesai, kasusTim / (analisis_konselor.length || 1), 1), fmt: (v) => Math.round(v) },
+                                        { lbl: "Kasus Selesai", saya: selesai, tim: avgKasusSelesai, max: Math.max(selesai, avgKasusSelesai, 1), fmt: (v) => Math.round(v) },
                                     ].map((c) => (
                                         <div key={c.lbl} className="kd-compare-row">
                                             <div className="kd-compare-lbl">{c.lbl}</div>

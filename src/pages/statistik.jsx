@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
 import { supabase } from "../lib/supabase.js";
+import { useMid } from "../hooks/useMid.js";
+import { isSelesai, statusLabel } from "../lib/bookingStatus.js";
 import "../styles/statistik.css";
 
 function mapKonselor(k) {
@@ -103,47 +105,21 @@ export default function Statistik() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
-  const [mid, setMid]               = useState(() => {
-    if (!userEmail) return null;
-    try {
-      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) return saved.student_id;
-    } catch { /* ignore */ }
-    return null;
-  });
+  const { mid, loading: midLoading } = useMid(userEmail);
   const [myProgress, setMyProgress] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [myTargets, setMyTargets]   = useState([]);
   const [myKonselor, setMyKonselor] = useState([]);
   const [finalReko, setFinalReko]   = useState([]);
-  const [loading, setLoading]       = useState(() => {
-    if (!userEmail) return false;
-    return true;
-  });
+  const [loading, setLoading]       = useState(() => Boolean(userEmail));
 
   useEffect(() => {
-    if (!userEmail) return;
-    try {
-      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) return;
-    } catch { /* ignore */ }
-
-    let active = true;
-    (async () => {
-      const { data } = await supabase
-        .from("profil_pengguna")
-        .select("student_id")
-        .eq("email", userEmail)
-        .maybeSingle();
-      if (active) {
-        setMid(data?.student_id ?? null);
-        if (!data?.student_id) {
-          setLoading(false);
-        }
-      }
-    })();
-    return () => { active = false; };
-  }, [userEmail]);
+    if (!userEmail) {
+      setLoading(false);
+      return;
+    }
+    if (!midLoading && !mid) setLoading(false);
+  }, [userEmail, mid, midLoading]);
 
   useEffect(() => {
     if (!mid) return;
@@ -209,40 +185,18 @@ export default function Statistik() {
         }
       }
 
-      // [FIX] Filter NOT IN menggunakan sintaks Supabase yang benar.
-      // Sebelumnya: .not("id", "in", `(${ids.map(id => `"${id}"`).join(",")})`)
-      // Format string itu salah — Supabase .not() dengan operator "in" membutuhkan array,
-      // bukan string literal SQL. Kondisi sebelumnya selalu gagal diam-diam dan
-      // mengembalikan semua konselor tanpa filter.
-      let rekoQuery = supabase
+      const { data: rekoData } = await supabase
         .from("data_konselor")
         .select("*")
         .order("rating_final", { ascending: false })
-        .limit(6);
+        .limit(12);
 
-      if (konselorIDs.length > 0) {
-        rekoQuery = rekoQuery.not("id", "in", `(${konselorIDs.join(",")})`);
-      }
+      const reko = (rekoData ?? [])
+        .filter((k) => !konselorIDs.includes(k.id))
+        .slice(0, 3)
+        .map(mapKonselor);
 
-      const { data: rekoData } = await rekoQuery;
-      const reko = (rekoData ?? []).map(mapKonselor).slice(0, 3);
-
-      if (active) {
-        if (reko.length === 0) {
-          // [FIX] Fallback tetap filter konselor yang sudah pernah sesi
-          const { data: fallbackData } = await supabase
-            .from("data_konselor")
-            .select("*")
-            .order("rating_final", { ascending: false })
-            .limit(3 + konselorIDs.length);
-          const filtered = (fallbackData ?? [])
-            .filter(k => !konselorIDs.includes(k.id))
-            .slice(0, 3);
-          setFinalReko(filtered.map(mapKonselor));
-        } else {
-          setFinalReko(reko);
-        }
-      }
+      if (active) setFinalReko(reko);
 
       if (active) {
         setLoading(false);
@@ -298,7 +252,7 @@ export default function Statistik() {
     ? new Date(lastBooking.Tanggal_Sesi).toLocaleDateString("id-ID", { day: "2-digit", month: "2-digit", year: "numeric" })
     : "-";
   const skorKesejahteraan = latest?.Skor_Kesejahteraan?.toFixed(1) ?? "-";
-  const targetSelesai     = myTargets.filter((t) => t.Status === "Selesai").length;
+  const targetSelesai     = myTargets.filter((t) => isSelesai(t.Status)).length;
   const targetTotal       = myTargets.length;
   const skorAwal          = myProgress[0]?.Skor_Kesejahteraan ?? 0;
   const skorAkhir         = latest?.Skor_Kesejahteraan ?? 0;
@@ -516,8 +470,8 @@ export default function Statistik() {
                     )}
                     {targetRows.map((t, i) => (
                       <div key={i} className="sk-target-row">
-                        <div className={`sk-target-icon ${t.status === "Selesai" ? "ti-done" : "ti-run"}`}>
-                          {t.status === "Selesai" ? "✓" : "○"}
+                        <div className={`sk-target-icon ${isSelesai(t.status) ? "ti-done" : "ti-run"}`}>
+                          {isSelesai(t.status) ? "✓" : "○"}
                         </div>
                         <div className="sk-target-info">
                           <span className="sk-target-name">{t.label}</span>
@@ -595,8 +549,8 @@ export default function Statistik() {
                           )}
                         </div>
                       </div>
-                      <span className={`sk-riwayat-badge ${bk?.Status === "Selesai" ? "rb-done" : "rb-run"}`}>
-                        {bk?.Status === "Selesai" ? "Sesi Selesai ✓" : "Masih Berjalan"}
+                      <span className={`sk-riwayat-badge ${isSelesai(bk?.Status) ? "rb-done" : "rb-run"}`}>
+                        {isSelesai(bk?.Status) ? "Sesi Selesai ✓" : statusLabel(bk?.Status)}
                       </span>
                     </div>
                   );

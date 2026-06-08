@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
+import { saveRefleksiKuesioner } from "../lib/kuesionerStore.js";
 import "../styles/kuesioner.css";
 
 // [FIX] Hapus import data_konselor.js lokal — konselor sekarang diambil dari Supabase.
@@ -432,19 +433,13 @@ export default function Kuesioner() {
     // Gunakan upsert agar tidak crash jika user mengisi ulang.
     if (userEmail) {
       setSaveError(null);
-      const { error } = await supabase
-        .from("hasil_kuesioner")
-        .upsert(
-          {
-            email:       userEmail,
-            nama:        namaUser,
-            ux_score:    skor,
-            jawaban:     finalJawaban,
-            // simpan juga kategori yang ditentukan agar bisa dipakai nanti
-            kategori_masalah: kategori,
-          },
-          { onConflict: "email" }
-        );
+      const { error } = await saveRefleksiKuesioner({
+        email: userEmail,
+        nama: namaUser,
+        jawaban: finalJawaban,
+        skor,
+        kategori,
+      });
 
       if (error) {
         console.error("Gagal simpan hasil kuesioner:", error.message);

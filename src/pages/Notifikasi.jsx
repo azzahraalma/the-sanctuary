@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import "../styles/dashboard.css";
 import { supabase } from "../lib/supabase.js";
+import { seedPesan } from "../lib/seedPesan.js";
+import { useMid } from "../hooks/useMid.js";
 
 function timeAgo(dateStr) {
   const diff  = Date.now() - new Date(dateStr).getTime();
@@ -37,6 +39,8 @@ export default function Notifikasi() {
 
   const userEmail = user?.email?.toLowerCase() ?? "";
   const userName  = user?.nama ?? user?.name ?? "Kamu";
+  const firstName = userName.split(" ")[0];
+  const { mid } = useMid(userEmail);
 
   const [notifikasi, setNotifikasi] = useState([]);
   const [dibacaSet, setDibacaSet]   = useState(new Set());
@@ -48,6 +52,20 @@ export default function Notifikasi() {
 
     let active = true;
     async function fetchData() {
+      if (mid) {
+        const { data: bookings } = await supabase
+          .from("booking")
+          .select("*")
+          .eq("id_mahasiswa", mid);
+        const konselorIds = [...new Set((bookings ?? []).map((b) => b.id_konselor).filter(Boolean))];
+        let konselorData = [];
+        if (konselorIds.length > 0) {
+          const { data: kData } = await supabase.from("data_konselor").select("*").in("id", konselorIds);
+          konselorData = kData ?? [];
+        }
+        await seedPesan(userEmail, firstName, bookings ?? [], konselorData).catch(() => {});
+      }
+
       const { data: pesanData } = await supabase
         .from("pesan")
         .select("*")
@@ -113,7 +131,7 @@ export default function Notifikasi() {
       active = false;
       supabase.removeChannel(pesanChannel);
     };
-  }, [userEmail]);
+  }, [userEmail, mid, firstName]);
 
   const tandaiBaca = async (item) => {
     if (item.dibaca || dibacaSet.has(item.id)) return;

@@ -1,18 +1,22 @@
-// hooks/useMid.js
-// Ambil student_id: coba dari localStorage dulu, fallback ke Supabase.
-// Dipakai di Dashboard, Statistik, dan Riwayat agar konsisten.
-
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase.js";
+
+function syncStudentIdToStorage(studentId) {
+  if (!studentId) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
+    if (saved && saved.student_id !== studentId) {
+      localStorage.setItem("sanctuary_user", JSON.stringify({ ...saved, student_id: studentId }));
+    }
+  } catch { /* ignore */ }
+}
 
 export function useMid(userEmail) {
   const [mid, setMid] = useState(() => {
     if (!userEmail) return null;
     try {
       const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) {
-        return saved.student_id;
-      }
+      if (saved?.student_id) return saved.student_id;
     } catch { /* ignore */ }
     return null;
   });
@@ -21,9 +25,7 @@ export function useMid(userEmail) {
     if (!userEmail) return false;
     try {
       const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) {
-        return false;
-      }
+      if (saved?.student_id) return false;
     } catch { /* ignore */ }
     return true;
   });
@@ -31,10 +33,13 @@ export function useMid(userEmail) {
   useEffect(() => {
     if (!userEmail) return;
 
-    // Jika mid sudah terisi dari localStorage, tidak perlu memanggil Supabase
     try {
       const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) return;
+      if (saved?.student_id) {
+        setMid(saved.student_id);
+        setLoading(false);
+        return;
+      }
     } catch { /* ignore */ }
 
     let active = true;
@@ -44,15 +49,16 @@ export function useMid(userEmail) {
         .select("student_id")
         .eq("email", userEmail)
         .maybeSingle();
-      if (active) {
-        setMid(data?.student_id ?? null);
-        setLoading(false);
-      }
+
+      if (!active) return;
+
+      const sid = data?.student_id ?? null;
+      setMid(sid);
+      syncStudentIdToStorage(sid);
+      setLoading(false);
     })();
 
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, [userEmail]);
 
   return { mid, loading };

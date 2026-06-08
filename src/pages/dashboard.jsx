@@ -2,6 +2,16 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import "../styles/dashboard.css";
 import { supabase } from "../lib/supabase.js";
+import { useMid } from "../hooks/useMid.js";
+import { seedPesan } from "../lib/seedPesan.js";
+import {
+  BOOKING_STATUS,
+  isSelesai,
+  isTerjadwal,
+  isBerjalan,
+  statusLabel,
+} from "../lib/bookingStatus.js";
+import { loadHasilKuesioner, saveUxKuesioner, extractUxJawaban } from "../lib/kuesionerStore.js";
 
 function Donut({ pct, size = 88, stroke = 10, color = "#79d8d1", label }) {
   const r = (size - stroke) / 2;
@@ -178,23 +188,15 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
   useEffect(() => {
     if (!userKey) { setIsLoading(false); return; }
     async function checkSudahIsi() {
-      const { data, error } = await supabase
-        .from("hasil_kuesioner")
-        .select("*")
-        .eq("email", userKey)
-        .maybeSingle();
+      const data = await loadHasilKuesioner(userKey);
       if (data) {
-      const j = data.jawaban ?? {};
-      const isUXFormat =
-        j && typeof j === "object" &&
-        ("kemudahan" in j || "kejelasan" in j || "daya_tarik" in j);
-
-      if (isUXFormat && data.ux_score > 0) {
-        setSubmitted(true);
-        setAnswers(j);
+        const uxAnswers = extractUxJawaban(data.jawaban);
+        const hasUx = TAB_KEYS.some((t) => Object.keys(uxAnswers[t] ?? {}).length > 0);
+        if (hasUx && data.ux_score > 0) {
+          setSubmitted(true);
+          setAnswers(uxAnswers);
+        }
       }
-    }
-      if (error) console.error(error);
       setIsLoading(false);
     }
     checkSudahIsi();
@@ -215,12 +217,12 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
   const handleSubmit = async () => {
     if (!allDone || submitted) return;
     // [FIX] Pakai upsert agar tidak crash duplicate key kalau user isi ulang
-    const { error } = await supabase
-      .from("hasil_kuesioner")
-      .upsert(
-        [{ email: userKey, nama: userName, ux_score: uxIdx, jawaban: answers }],
-        { onConflict: "email" }
-      );
+    const { error } = await saveUxKuesioner({
+      email: userKey,
+      nama: userName,
+      uxScore: uxIdx,
+      uxAnswers: answers,
+    });
     if (error) {
       console.error(error);
       return;
@@ -374,92 +376,6 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-async function seedPesan(email, firstName, bookings, konselorData) {
-  const { data: existing } = await supabase
-    .from("pesan")
-    .select("tipe")
-    .eq("id_penerima", email);
-
-  const tipeYangAda = new Set((existing ?? []).map(p => p.tipe));
-  const toInsert = [];
-
-  if (!tipeYangAda.has("welcome")) {
-    toInsert.push({
-      id_penerima: email,
-      id_pengirim: "sanctuary-team",
-      nama_pengirim: "The Sanctuary Team",
-      foto_pengirim: null,
-      teks: `Halo ${firstName}! Senang kamu bergabung di Sanctuary. Gimana kabarmu hari ini? Kami selalu ada buat mendengarkan`,
-      dibaca: false,
-      tipe: "welcome",
-    });
-  }
-
-  for (const k of (konselorData ?? [])) {
-    // Ambil booking TERBARU untuk konselor ini (sorted by tanggal desc)
-    const bksForKonselor = bookings
-      .filter(b => b.id_konselor === k.id)
-      .sort((a, b) => new Date(b.tanggal_sesi) - new Date(a.tanggal_sesi));
-    const bk = bksForKonselor[0];
-    if (!bk) continue;
-
-    if (bk.status === "Selesai") {
-      // Tipe unik per booking ID agar setiap sesi selesai dapat notifikasi sendiri
-      const tipe = `pasca_sesi_${bk.id ?? k.id}`;
-      if (!tipeYangAda.has(tipe)) {
-        toInsert.push({
-          id_penerima:  email,
-          id_pengirim:  k.id,
-          nama_pengirim: k.nama,
-          foto_pengirim: k.foto_url ?? null,
-          teks:   `Sesi ${bk.sesi_konseling} kita udah selesai ya ${firstName}! Gimana perasaanmu sekarang? Semangat terus, kamu udah berani cerita`,
-          dibaca: false,
-          tipe,
-        });
-      }
-    } else if (
-      // [FIX] Tangkap semua status aktif: terjadwal, berjalan, aktif
-      ["terjadwal", "Terjadwal", "Berjalan", "berjalan", "aktif", "Aktif"].includes(bk.status)
-    ) {
-      // Tipe unik per booking ID agar setiap jadwal baru dapat notifikasi sendiri
-      const tipe = `pengingat_sesi_${bk.id ?? k.id}`;
-      if (!tipeYangAda.has(tipe)) {
-        const tglSesi = new Date(bk.tanggal_sesi).toLocaleDateString("id-ID", {
-          timeZone: "Asia/Jakarta", weekday: "long", day: "numeric", month: "long",
-        });
-        toInsert.push({
-          id_penerima:  email,
-          id_pengirim:  k.id,
-          nama_pengirim: k.nama,
-          foto_pengirim: k.foto_url ?? null,
-          teks:   `Hai ${firstName}! Jangan lupa sesi kita ${tglSesi} ya Siapkan dirimu, aku siap mendengarkan`,
-          dibaca: false,
-          tipe,
-        });
-      }
-    }
-  }
-
-  if (!tipeYangAda.has("motivasi")) {
-    toInsert.push({
-      id_penerima: email,
-      id_pengirim: "sanctuary-team",
-      nama_pengirim: "The Sanctuary Team",
-      foto_pengirim: null,
-      teks: "Makasih udah jadi bagian dari Sanctuary, Semoga hari-harimu terasa lebih ringan.",
-      dibaca: false,
-      tipe: "motivasi",
-    });
-  }
-
-  if (toInsert.length > 0) {
-    await supabase.from("pesan").insert(toInsert);
-  }
-}
-
-// ─── Status yang dianggap "aktif" untuk tombol Mulai Sesi ─────────────────────
-const STATUS_AKTIF = ["berjalan", "terjadwal", "Berjalan", "Terjadwal", "aktif", "Aktif"];
-
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -471,22 +387,12 @@ export default function Dashboard() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
-  const [mid, setMid]                   = useState(() => {
-    if (!userEmail) return null;
-    try {
-      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) return saved.student_id;
-    } catch { /* ignore */ }
-    return null;
-  });
+  const { mid, loading: midLoading } = useMid(userEmail);
   const [bookings, setBookings]         = useState([]);
   const [konselor, setKonselor]         = useState([]);
   const [progress, setProgress]         = useState([]);
   const [pesan, setPesan]               = useState([]);
-  const [isLoading, setIsLoading]       = useState(() => {
-    if (!userEmail) return false;
-    return true;
-  });
+  const [isLoading, setIsLoading]       = useState(() => Boolean(userEmail));
   const [selectedPesan, setSelectedPesan] = useState(null);
   const [slots, setSlots]                 = useState([]);
   const [now, setNow]                     = useState(new Date());
@@ -498,32 +404,14 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
-  // ── Step 1: Fetch student_id dari profil_pengguna ──
   useEffect(() => {
-    if (!userEmail) return;
-    try {
-      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) return;
-    } catch { /* ignore */ }
+    if (!userEmail) {
+      setIsLoading(false);
+      return;
+    }
+    if (!midLoading && !mid) setIsLoading(false);
+  }, [userEmail, mid, midLoading]);
 
-    let active = true;
-    (async () => {
-      const { data } = await supabase
-        .from("profil_pengguna")
-        .select("student_id")
-        .eq("email", userEmail)
-        .maybeSingle();
-      if (active) {
-        setMid(data?.student_id ?? null);
-        if (!data?.student_id) {
-          setIsLoading(false);
-        }
-      }
-    })();
-    return () => { active = false; };
-  }, [userEmail]);
-
-  // ── Step 2: Fetch semua data dashboard pakai mid ──
   useEffect(() => {
     if (!mid) return;
 
@@ -834,7 +722,7 @@ export default function Dashboard() {
                     ? new Date(bk.tanggal_sesi).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", weekday: "long" })
                     : "-";
 
-                  const isBerjalan = bk && ["Berjalan", "berjalan", "aktif", "Aktif"].includes(bk.status);
+                  const isBerjalanSesi = bk && isBerjalan(bk.status);
 
                   const normalizeTime = (t) => {
                     if (!t) return "00:00:00";
@@ -886,12 +774,12 @@ export default function Dashboard() {
                   const startBuffer = start;
                   const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
 
-                  const showMulaiSesiButton = bk && ["Terjadwal", "terjadwal"].includes(bk.status) && isTimeRange;
-                  const showMasukSesiButton = isBerjalan && (end ? now <= end : true);
+                  const showMulaiSesiButton = bk && isTerjadwal(bk.status) && isTimeRange;
+                  const showMasukSesiButton = isBerjalanSesi && (end ? now <= end : true);
 
                   let statusHelperText = null;
-                  if (bk && bk.status !== "Selesai") {
-                    if (["Terjadwal", "terjadwal"].includes(bk.status) && startBuffer && now < startBuffer) {
+                  if (bk && !isSelesai(bk.status)) {
+                    if (isTerjadwal(bk.status) && startBuffer && now < startBuffer) {
                       const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
                       statusHelperText = `Mulai pukul ${jamStr}`;
                     } else if (end && now > end) {
@@ -913,8 +801,8 @@ export default function Dashboard() {
                       </div>
                       <div className="db-konsul-tgl" style={{ alignItems: "flex-end", gap: 6 }}>
                         <span className="db-konsul-day">{tgl}</span>
-                        <span className={`db-konsul-status ${bk?.status === "Selesai" ? "s-done" : "s-run"}`}>
-                          {bk?.status ?? "-"}
+                        <span className={`db-konsul-status ${isSelesai(bk?.status) ? "s-done" : "s-run"}`}>
+                          {statusLabel(bk?.status)}
                         </span>
                         {statusHelperText && (
                           <span className="db-status-helper" style={{ fontSize: "0.75rem", color: "#666", marginTop: 4, fontWeight: "500" }}>
@@ -941,7 +829,7 @@ export default function Dashboard() {
                               // Update status ke "Berjalan" agar aktif bagi kedua pihak
                               await supabase
                                 .from("booking")
-                                .update({ status: "Berjalan" })
+                                .update({ status: BOOKING_STATUS.BERJALAN })
                                 .eq("id", bk.id);
                               navigate(`/sesi/${bk.id}`);
                             }}

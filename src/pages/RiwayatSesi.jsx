@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect } from "react";
 import { supabase } from "../lib/supabase.js";
+import { useMid } from "../hooks/useMid.js";
+import { isSelesai, statusLabel } from "../lib/bookingStatus.js";
 import "../styles/riwayat.css";
 
 function mapKonselor(k) {
@@ -88,46 +90,20 @@ export default function RiwayatSesi() {
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
-  const [mid, setMid]               = useState(() => {
-    if (!userEmail) return null;
-    try {
-      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) return saved.student_id;
-    } catch { /* ignore */ }
-    return null;
-  });
+  const { mid, loading: midLoading } = useMid(userEmail);
   const [myProgress, setMyProgress] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [myKonselor, setMyKonselor] = useState([]);
-  const [loading, setLoading]       = useState(() => {
-    if (!userEmail) return false;
-    return true;
-  });
+  const [loading, setLoading]       = useState(() => Boolean(userEmail));
   const [expanded, setExpanded]     = useState(null);
 
   useEffect(() => {
-    if (!userEmail) return;
-    try {
-      const saved = JSON.parse(localStorage.getItem("sanctuary_user"));
-      if (saved?.student_id) return;
-    } catch { /* ignore */ }
-
-    let active = true;
-    (async () => {
-      const { data } = await supabase
-        .from("profil_pengguna")
-        .select("student_id")
-        .eq("email", userEmail)
-        .maybeSingle();
-      if (active) {
-        setMid(data?.student_id ?? null);
-        if (!data?.student_id) {
-          setLoading(false);
-        }
-      }
-    })();
-    return () => { active = false; };
-  }, [userEmail]);
+    if (!userEmail) {
+      setLoading(false);
+      return;
+    }
+    if (!midLoading && !mid) setLoading(false);
+  }, [userEmail, mid, midLoading]);
 
   useEffect(() => {
     if (!mid) return;
@@ -252,7 +228,7 @@ export default function RiwayatSesi() {
   const deltaSkor   = firstP && lastP && totalSesi > 1
     ? `+${((lastP.Skor_Kesejahteraan - firstP.Skor_Kesejahteraan) * 10).toFixed(1)}`
     : "—";
-  const selesai     = myBookings.filter(b => b.Status === "Selesai").length;
+  const selesai     = myBookings.filter(b => isSelesai(b.Status)).length;
 
   return (
     <div className="sk-shell">
@@ -471,8 +447,8 @@ export default function RiwayatSesi() {
                                 <div className="rw-panel-title">Konselor Kamu</div>
                                 <KonselorAvatar konselor={konselor} />
                                 {booking && (
-                                  <span className={`rw-k-status ${booking.Status === "Selesai" ? "ks-done" : "ks-run"}`}>
-                                    {booking.Status === "Selesai" ? "✓ Sesi Selesai" : "● Masih Berjalan"}
+                                  <span className={`rw-k-status ${isSelesai(booking.Status) ? "ks-done" : "ks-run"}`}>
+                                    {isSelesai(booking.Status) ? "✓ Sesi Selesai" : `● ${statusLabel(booking.Status)}`}
                                   </span>
                                 )}
                               </div>

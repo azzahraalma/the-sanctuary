@@ -5,12 +5,12 @@ import EditProfilModal from "./EditProfilModal.jsx";
 import { supabase } from "../lib/supabase.js";
 import { fetchTeamStats } from "../lib/teamStats.js";
 import {
-  BOOKING_STATUS,
-  isSelesai,
-  isAktif,
-  isBerjalan,
-  isTerjadwal,
-  statusLabel,
+    BOOKING_STATUS,
+    isSelesai,
+    isAktif,
+    isBerjalan,
+    isTerjadwal,
+    statusLabel,
 } from "../lib/bookingStatus.js";
 
 function kondisiLabel(val) {
@@ -85,6 +85,8 @@ export default function KonselorDashboard() {
     const [addingSlot, setAddingSlot] = useState(false);
     const [now, setNow] = useState(new Date());
     const [teamStats, setTeamStats] = useState({ ratingTim: 0, kasusTim: 0, probSukses: 0, avgKasusSelesai: 0 });
+    const [ulasanList, setUlasanList] = useState([]);
+
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -97,12 +99,12 @@ export default function KonselorDashboard() {
         fetchTeamStats().then(setTeamStats);
     }, []);
 
-    const user = useMemo(() => {
+    const user = (() => {
         try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
         catch { return null; }
-    }, []);
+    })();
 
-    const kid = user?.konselorId ?? null;
+    const kid = user?.konselorId ?? user?.konselor_id ?? null;
 
     useEffect(() => {
         if (!kid) {
@@ -154,11 +156,22 @@ export default function KonselorDashboard() {
                         Kondisi_Saat_Ini: b.kondisi_saat_ini,
                     })));
                 }
+
+                const { data: ulasanData, error: ulasanErr } = await supabase
+                    .from("ulasan_konselor")
+                    .select("*")
+                    .eq("id_konselor", kid)
+                    .order("created_at", { ascending: false });
+
+                console.log("ulasan fetch:", { ulasanData, ulasanErr });
+                if (ulasanData) setUlasanList(ulasanData);
+
             } catch (err) {
                 console.error("KonselorDashboard fetchData error:", err);
             } finally {
                 setLoadingData(false);
             }
+
         }
         fetchData();
     }, [kid]);
@@ -306,7 +319,7 @@ export default function KonselorDashboard() {
 
     const ratingDist = [5, 4, 3, 2, 1].map((bintang) => ({
         bintang,
-        count: 0,
+        count: ulasanList.filter(u => Math.round(Number(u.rating)) === bintang).length,
     }));
 
     if (loadingData) {
@@ -1004,9 +1017,12 @@ export default function KonselorDashboard() {
                                                     <div key={r.bintang} className="kd-testi-dist-row">
                                                         <span className="kd-testi-dist-bintang">{r.bintang} ★</span>
                                                         <div className="kd-bar-track" style={{ flex: 1, height: 6 }}>
-                                                            <div className="kd-bar-fill" style={{ width: "0%", background: "#f5c842" }} />
+                                                            <div className="kd-bar-fill" style={{
+                                                                width: `${ulasanList.length > 0 ? (r.count / ulasanList.length) * 100 : 0}%`,
+                                                                background: "#f5c842"
+                                                            }} />
                                                         </div>
-                                                        <span className="kd-testi-dist-count">0</span>
+                                                        <span className="kd-testi-dist-count">{r.count}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1020,10 +1036,42 @@ export default function KonselorDashboard() {
                                             </div>
                                         </div>
                                         {/* Belum ada tabel testimoni di database — tampilkan placeholder */}
-                                        <div className="kd-testi-cards" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                            <p style={{ color: "#aaa", fontSize: 13, textAlign: "center", padding: "20px 0" }}>
-                                                Belum ada testimoni. Fitur ini akan aktif setelah mahasiswa dapat memberikan ulasan sesi.
-                                            </p>
+                                        <div className="kd-testi-cards">
+                                            {ulasanList.length === 0 ? (
+                                                <p style={{ color: "#aaa", fontSize: 13, textAlign: "center", padding: "20px 0" }}>
+                                                    Belum ada testimoni. Fitur ini akan aktif setelah mahasiswa dapat memberikan ulasan sesi.
+                                                </p>
+                                            ) : (
+                                                ulasanList.map((u, i) => (
+                                                    <div key={u.id ?? i} className="kd-testi-card">
+                                                        <div className="kd-stars" style={{ marginBottom: 8 }}>
+                                                            {[1, 2, 3, 4, 5].map(n => (
+                                                                <span key={n} className={`kd-star kd-star--sm ${n <= Math.round(Number(u.rating)) ? "kd-star--on" : ""}`}>★</span>
+                                                            ))}
+                                                        </div>
+                                                        <p style={{ fontSize: 13, color: "#444", lineHeight: 1.6, marginBottom: 12 }}>
+                                                            "{u.teks}"
+                                                        </p>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                            <div className="kd-mini-avatar" style={{ width: 32, height: 32, fontSize: 12 }}>
+                                                                {(u.nama_mahasiswa ?? "M").charAt(0).toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e" }}>
+                                                                    {u.nama_mahasiswa ?? "Mahasiswa"}
+                                                                </div>
+                                                                <div style={{ fontSize: 11, color: "#999" }}>
+                                                                    {u.booking?.sesi_konseling
+                                                                        ? `Sesi ke-${u.booking.sesi_konseling}`
+                                                                        : u.created_at
+                                                                            ? new Date(u.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+                                                                            : "—"}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
                                         </div>
                                     </div>
                                 </div>

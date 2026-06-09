@@ -3,13 +3,13 @@ import { supabase } from "../lib/supabase.js";
 
 function buildUserData(session, profil) {
   return {
-    id:         session.user.id,
-    email:      session.user.email,
-    nama:       profil?.nama        ?? session.user.user_metadata?.nama        ?? session.user.email.split("@")[0],
-    name:       profil?.nama        ?? session.user.user_metadata?.nama        ?? session.user.email.split("@")[0],
-    role:       profil?.role        ?? session.user.user_metadata?.role        ?? "mahasiswa",
+    id: session.user.id,
+    email: session.user.email,
+    nama: profil?.nama ?? session.user.user_metadata?.nama ?? session.user.email.split("@")[0],
+    name: profil?.nama ?? session.user.user_metadata?.nama ?? session.user.email.split("@")[0],
+    role: profil?.role ?? session.user.user_metadata?.role ?? "mahasiswa",
     konselorId: profil?.konselor_id ?? session.user.user_metadata?.konselor_id ?? null,
-    student_id: profil?.student_id  ?? session.user.user_metadata?.student_id  ?? null,
+    student_id: profil?.student_id ?? session.user.user_metadata?.student_id ?? null,
   };
 }
 
@@ -33,7 +33,16 @@ export function useAuth() {
         return;
       }
 
+      // Kalau sudah ada data valid di localStorage, pakai langsung tanpa re-fetch
+      const cached = JSON.parse(localStorage.getItem("sanctuary_user") || "null");
+      if (cached?.email === session.user.email && cached?.role) {
+        setUser(cached);
+        setIsReady(true);
+        return;
+      }
+
       try {
+        // ... sisa kode fetch profil tetap sama
         const { data: profil } = await supabase
           .from("profil_pengguna")
           .select("*")
@@ -44,11 +53,16 @@ export function useAuth() {
         localStorage.setItem("sanctuary_user", JSON.stringify(userData));
         setUser(userData);
       } catch {
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          role: "mahasiswa",
-        });
+        const cachedFallback = JSON.parse(localStorage.getItem("sanctuary_user") || "null");
+        if (cachedFallback?.email === session.user.email && cachedFallback?.role) {
+          setUser(cachedFallback);
+        } else {
+          setUser({
+            id: session.user.id,
+            email: session.user.email,
+            role: "mahasiswa",
+          });
+        }
       } finally {
         if (active) setIsReady(true);
       }

@@ -130,6 +130,16 @@ export default function Home() {
   const [probSukses, setProbSukses] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
 
+  // Redirect user yang sudah login ke dashboard yang sesuai
+  useEffect(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem("sanctuary_user") || "null");
+      if (cached?.role === "konselor") navigate("/konselor-dashboard", { replace: true });
+      else if (cached?.role === "admin") navigate("/admin-dashboard", { replace: true });
+      else if (cached?.role === "mahasiswa") navigate("/dashboard", { replace: true });
+    } catch { }
+  }, []);
+
   // ── Ambil data dari Supabase ──────────────────────────────────────────────
   useEffect(() => {
     async function fetchAll() {
@@ -165,7 +175,6 @@ export default function Home() {
         setRataRating(rataR);
 
         const team = await fetchTeamStats();
-        console.log("team stats:", team);
         setProbSukses(team.probSukses);
 
         setKonselor(konselorData.slice(0, 4).map(k => ({
@@ -563,7 +572,12 @@ export default function Home() {
             yang siap mendengarkan dan membantu Anda.
           </p>
           <div className="cta-btns">
-            <button className="cta-btn-solid" onClick={() => user ? navigate("/dashboard") : navigate("/register")}>
+            <button className="cta-btn-solid" onClick={() => {
+              if (!user) { navigate("/register"); return; }
+              if (user.role === "konselor") navigate("/konselor-dashboard");
+              else if (user.role === "admin") navigate("/admin-dashboard");
+              else navigate("/dashboard");
+            }}>
               {user ? "Buka Dashboard" : "Buat Akun Gratis"}
             </button>
             <button className="cta-btn-ghost" onClick={() => goTo("/konselor")}>

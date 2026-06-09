@@ -80,7 +80,31 @@ export async function saveUxKuesioner({ email, nama, uxScore, uxAnswers }) {
     }],
     { onConflict: "email" }
   );
-  return { error };
+  if (error) return { error };
+
+  // ── Hitung mean per dimensi dari jawaban ──
+  const calcMean = (obj) => {
+    const vals = Object.values(obj || {}).filter(Boolean).map(Number);
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+  };
+
+  const meanK  = calcMean(uxAnswers.kemudahan);
+  const meanJ  = calcMean(uxAnswers.kejelasan);
+  const meanDT = calcMean(uxAnswers.daya_tarik);
+
+  // ── Insert ke data_responden (upsert by email) ──
+  const { error: respErr } = await supabase.from("data_responden").upsert(
+    [{
+      email,           // pastikan kolom ini ada di tabel data_responden
+      nama,
+      mean_kemudahan:  meanK,
+      mean_kejelasan:  meanJ,
+      mean_daya_tarik: meanDT,
+    }],
+    { onConflict: "email" }  // 1 row per user
+  );
+
+  return { error: respErr };
 }
 
 export async function saveRefleksiKuesioner({ email, nama, jawaban, skor, kategori }) {

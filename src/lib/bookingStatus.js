@@ -28,7 +28,7 @@ export function normalizeStatus(status) {
 }
 
 export function isSelesai(status) {
-  return normalizeStatus(status) === BOOKING_STATUS.SELESAI;
+  return status?.toLowerCase() === "selesai";
 }
 
 export function isBerjalan(status) {

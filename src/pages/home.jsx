@@ -117,15 +117,15 @@ const steps = [
 // ── Home ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   const navigate = useNavigate();
-  const goTo     = useAuthNav();
+  const goTo = useAuthNav();
   const statsRef = useRef(null);
 
   // ── State data dari Supabase ──────────────────────────────────────────────
-  const [konselor, setKonselor]       = useState([]);
-  const [totalKasus, setTotalKasus]   = useState(0);
+  const [konselor, setKonselor] = useState([]);
+  const [totalKasus, setTotalKasus] = useState(0);
   const [kasusSelesai, setKasusSelesai] = useState(0);
   const [successRate, setSuccessRate] = useState(0);
-  const [rataRating, setRataRating]   = useState(0);
+  const [rataRating, setRataRating] = useState(0);
   const [kategoriCount, setKategoriCount] = useState({});
   const [probSukses, setProbSukses] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
@@ -142,9 +142,9 @@ export default function Home() {
 
         // ── Booking stats ──
         const bookings = (bookingRes.data ?? []).filter(b => b.id !== null);
-        const total    = bookings.length;
-        const selesai  = bookings.filter(b => isSelesai(b.status)).length;
-        const rate     = total > 0 ? Math.round((selesai / total) * 100) : 0;
+        const total = bookings.length;
+        const selesai = bookings.filter(b => isSelesai(b.status)).length;
+        const rate = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
         const katCount = bookings.reduce((acc, b) => {
           if (b.kategori_masalah) acc[b.kategori_masalah] = (acc[b.kategori_masalah] || 0) + 1;
@@ -165,18 +165,19 @@ export default function Home() {
         setRataRating(rataR);
 
         const team = await fetchTeamStats();
+        console.log("team stats:", team);
         setProbSukses(team.probSukses);
 
         setKonselor(konselorData.slice(0, 4).map(k => ({
-          ID:            k.id,
-          Nama:          k.nama,
+          ID: k.id,
+          Nama: k.nama,
           Kategori_Masalah: k.kategori_masalah,
           "Rating_(Final)": Number(k.rating_final) || 0,
-          Success_Rate:  Number(k.success_rate) || 0,
-          Jumlah_Kasus:  k.jumlah_kasus,
+          Success_Rate: Number(k.success_rate) || 0,
+          Jumlah_Kasus: k.jumlah_kasus,
           Kasus_Selesai: k.kasus_selesai,
-          Pengalaman:    k.pengalaman,
-          image:         k.image_url || k.foto_url || "",
+          Pengalaman: k.pengalaman,
+          image: k.image_url || k.foto_url || "",
         })));
       } catch (err) {
         console.error("Home fetchAll error:", err);
@@ -276,7 +277,7 @@ export default function Home() {
           </h1>
           <p className="hero-body">
             Hadapi lika-liku kehidupan bersama pandangan terpercaya. Platform kami
-            Nggak perlu hadapi semua sendiri. Di sini kamu bisa cerita dan ngobrol dengan 
+            Nggak perlu hadapi semua sendiri. Di sini kamu bisa cerita dan ngobrol dengan
             teman sebaya di kampus yang siap mendengarkan dan bantu kamu cari jalan keluar bareng-bareng.
           </p>
           <div className="hero-btns">
@@ -296,7 +297,7 @@ export default function Home() {
             <div>
               <p className="hero-badge-title">Penasihat Terpercaya</p>
               <p className="hero-badge-sub">
-                Bersama konselor sebaya dari lingkungan kampus yang berpengalaman, 
+                Bersama konselor sebaya dari lingkungan kampus yang berpengalaman,
                 Anda dapat berdiskusi dan menemukan solusi untuk setiap masalah
               </p>
             </div>
@@ -308,7 +309,7 @@ export default function Home() {
       <section className="stats" ref={statsRef}>
         <h2 className="stats-h2">Ruang Aman Buat Kamu</h2>
         <p className="stats-sub">
-          Platform ini dibuat untuk jadi tempat cerita antar teman sebaya di kampus Polimedia 
+          Platform ini dibuat untuk jadi tempat cerita antar teman sebaya di kampus Polimedia
           dengan hangat, nyaman, dan tanpa rasa di-judge.
         </p>
 
@@ -337,7 +338,8 @@ export default function Home() {
           </div>
           <div className="stat-card">
             <span className="stat-big">
-              <AnimatedCounter target={Math.round(probSukses * 100)} suffix="%" />
+              {!loadingStats && <AnimatedCounter target={Math.round(probSukses * 100)} suffix="%" />}
+              {loadingStats && <span>—</span>}
             </span>
             <span className="stat-label">Probabilitas Sukses Tim</span>
           </div>
@@ -418,7 +420,7 @@ export default function Home() {
           </div>
           <h3 className="feat-h3">Pendengar yang baik</h3>
           <p className="feat-p">
-            Di sini kamu ketemu teman sebaya yang ngerti rasanya jadi mahasiswa yang bukan 
+            Di sini kamu ketemu teman sebaya yang ngerti rasanya jadi mahasiswa yang bukan
             sekadar denger, tapi benar-benar memahami.
           </p>
         </div>
@@ -427,7 +429,7 @@ export default function Home() {
           <div className="feat-shield">️</div>
           <h3 className="feat-h3">Cerita Kamu Aman</h3>
           <p className="feat-p">
-            Setiap percakapan bersifat pribadi dan hanya diketahui oleh Anda dan konselor sebaya 
+            Setiap percakapan bersifat pribadi dan hanya diketahui oleh Anda dan konselor sebaya
             yang mendampingi. Pesan dilindungi dengan enkripsi end-to-end.
           </p>
         </div>
@@ -441,7 +443,7 @@ export default function Home() {
           </div>
           <h3 className="feat-h3">Dukungan yang Mudah Diakses</h3>
           <p className="feat-p">
-            Kami menyediakan ruang bagi mahasiswa untuk mendapatkan dukungan 
+            Kami menyediakan ruang bagi mahasiswa untuk mendapatkan dukungan
             kapan pun dibutuhkan dalam lingkungan kampus yang aman dan mendukung.
           </p>
         </div>
@@ -449,7 +451,7 @@ export default function Home() {
         <div className="feat feat-light">
           <h3 className="feat-h3">Komunitas Konseling Sebaya</h3>
           <p className="feat-p">
-            Mahasiswa dapat bergabung dalam kelompok diskusi yang dipandu oleh 
+            Mahasiswa dapat bergabung dalam kelompok diskusi yang dipandu oleh
             konselor sebaya untuk saling berbagi pengalaman dan dukungan dalam lingkungan yang positif.
           </p>
           <div className="feat-avatars">
@@ -485,8 +487,8 @@ export default function Home() {
             Setiap Langkah Dirancang untuk Membantu Anda
           </h2>
           <p className="journey-p">
-            Kami menyederhanakan proses agar mahasiswa dapat dengan mudah mengakses dukungan 
-            tanpa proses yang rumit, sehingga percakapan dapat dimulai dengan lebih nyaman 
+            Kami menyederhanakan proses agar mahasiswa dapat dengan mudah mengakses dukungan
+            tanpa proses yang rumit, sehingga percakapan dapat dimulai dengan lebih nyaman
             dan langsung.
           </p>
           <div className="journey-img-box">
@@ -537,8 +539,8 @@ export default function Home() {
                         width: `${Math.round(m.Success_Rate * 100)}%`,
                         background:
                           m.Success_Rate >= 0.6 ? "#2f7d79"
-                          : m.Success_Rate >= 0.3 ? "#79d8d1"
-                          : "#e8c4a0",
+                            : m.Success_Rate >= 0.3 ? "#79d8d1"
+                              : "#e8c4a0",
                       }}
                     />
                   </div>
@@ -557,7 +559,7 @@ export default function Home() {
         <div className="cta-box">
           <h2 className="cta-h2">Mulai Langkah Anda Bersama Konselor Sebaya Sanctuary Polimedia</h2>
           <p className="cta-p">
-            Mulai satu percakapan sederhana bersama konselor sebaya 
+            Mulai satu percakapan sederhana bersama konselor sebaya
             yang siap mendengarkan dan membantu Anda.
           </p>
           <div className="cta-btns">
@@ -585,7 +587,7 @@ export default function Home() {
         </div>
         {[
           { heading: "Platform", links: ["Layanan", "Komunitas", "Artikel", "Panduan Konseling"] },
-          { heading: "Legal",    links: ["Kebijakan Privasi", "Syarat dan Ketentuan", "Bantuan"] },
+          { heading: "Legal", links: ["Kebijakan Privasi", "Syarat dan Ketentuan", "Bantuan"] },
         ].map((col) => (
           <div key={col.heading} className="footer-col">
             <h4 className="footer-col-h">{col.heading}</h4>

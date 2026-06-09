@@ -413,7 +413,7 @@ function RiwayatSesiTab() {
 
 /* ─── DASHBOARD TAB ──────────────────────────────── */
 function DashboardTab() {
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState(null);
   const [totalResponden, setTotalResponden] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -421,23 +421,62 @@ function DashboardTab() {
   useEffect(() => { fetchData(); }, []);
 
   async function fetchData() {
-    setLoading(true); setError(null);
-    try {
-      const [{ data: statsData, error: statsErr }, { count, error: countErr }] = await Promise.all([
-        supabase.from("analisis_statistik").select("*"),
-        supabase.from("data_responden").select("*", { count: "exact", head: true }),
-      ]);
-      if (statsErr) throw statsErr;
-      if (countErr) throw countErr;
-      setStats(statsData || []);
-      setTotalResponden(count || 0);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+  setLoading(true); setError(null);
+  try {
+    const { data: rows, error: rowsErr } = await supabase
+      .from("data_responden").select("*");
+    if (rowsErr) throw rowsErr;
 
+    if (!rows || rows.length === 0) {
+      setStats(null);
+      setTotalResponden(0);
+      return;
+    }
+
+    const n = rows.length;
+    const dims = {
+      kemudahan:  rows.map(r => Number(r.mean_kemudahan)  || 0),
+      kejelasan:  rows.map(r => Number(r.mean_kejelasan)  || 0),
+      daya_tarik: rows.map(r => Number(r.mean_daya_tarik) || 0),
+    };
+
+    const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
+    const med = arr => {
+      const s = [...arr].sort((a, b) => a - b);
+      return s.length % 2 === 0
+        ? (s[s.length/2 - 1] + s[s.length/2]) / 2
+        : s[Math.floor(s.length/2)];
+    };
+    const std = arr => {
+      const m = avg(arr);
+      return Math.sqrt(arr.reduce((s, v) => s + Math.pow(v - m, 2), 0) / arr.length);
+    };
+
+    setStats({
+      mean:   { kemudahan: avg(dims.kemudahan),  kejelasan: avg(dims.kejelasan),  daya_tarik: avg(dims.daya_tarik) },
+      median: { kemudahan: med(dims.kemudahan),  kejelasan: med(dims.kejelasan),  daya_tarik: med(dims.daya_tarik) },
+      stddev: { kemudahan: std(dims.kemudahan),  kejelasan: std(dims.kejelasan),  daya_tarik: std(dims.daya_tarik) },
+      min:    { kemudahan: Math.min(...dims.kemudahan), kejelasan: Math.min(...dims.kejelasan), daya_tarik: Math.min(...dims.daya_tarik) },
+      max:    { kemudahan: Math.max(...dims.kemudahan), kejelasan: Math.max(...dims.kejelasan), daya_tarik: Math.max(...dims.daya_tarik) },
+      skorIdx: {
+        kemudahan:  avg(dims.kemudahan)  / 5 * 100,
+        kejelasan:  avg(dims.kejelasan)  / 5 * 100,
+        daya_tarik: avg(dims.daya_tarik) / 5 * 100,
+      },
+      likert: [1,2,3,4,5].map(skor => ({
+        metrik_statistik: `Likert ${skor}`,
+        kemudahan:  rows.filter(r => Math.round(r.mean_kemudahan)  === skor).length,
+        kejelasan:  rows.filter(r => Math.round(r.mean_kejelasan)  === skor).length,
+        daya_tarik: rows.filter(r => Math.round(r.mean_daya_tarik) === skor).length,
+      })),
+    });
+    setTotalResponden(n);
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+}
   if (loading) return (
     <div className="rsa-loading" style={{ marginTop: "4rem" }}>
       <div className="rsa-spinner" />
@@ -451,18 +490,20 @@ function DashboardTab() {
       <button onClick={fetchData}>Coba lagi</button>
     </div>
   );
-
+  
+if (!stats) return (
+  <div className="rsa-empty" style={{ marginTop: "4rem" }}>
+    <span>Belum ada data responden.</span>
+  </div>
+);
   // Parse dari Supabase rows
-  const mean = getMetrik(stats, "Mean (Rata-rata)");
-  const median = getMetrik(stats, "Median");
-  const stddev = getMetrik(stats, "Standar Deviasi");
-  const minK = getMetrik(stats, "Nilai Minimum");
-  const maxK = getMetrik(stats, "Nilai Maksimum");
-  const skorIdx = getMetrik(stats, "Skor Indeks");
-
-  const likertRows = stats.filter(d =>
-    ["Likert 1", "Likert 2", "Likert 3", "Likert 4", "Likert 5"].includes(d.metrik_statistik)
-  );
+  const mean     = stats?.mean    || {};
+const median   = stats?.median  || {};
+const stddev   = stats?.stddev  || {};
+const minK     = stats?.min     || {};
+const maxK     = stats?.max     || {};
+const skorIdx  = stats?.skorIdx || {};
+const likertRows = stats?.likert || [];
 
   const meanK = Number(mean.kemudahan) || 0;
   const meanJ = Number(mean.kejelasan) || 0;
@@ -537,48 +578,48 @@ function DashboardTab() {
       </section>
 
       {/* CHART SECTION */}
-      <section className="ad-chart-row">
-        <div className="ad-chart-card">
-          <div className="ad-chart-head">
-            <span className="ad-chart-title">Rata-rata Skor UX</span>
+<section className="ad-chart-row">
+  <div className="ad-chart-card">
+    <div className="ad-chart-head">
+      <span className="ad-chart-title">Rata-rata Skor UX</span>
+    </div>
+    <div className="ad-bar-chart">
+      <BarGroup label="KEMUDAHAN"  values={[meanK]} />
+      <BarGroup label="KEJELASAN"  values={[meanJ]} />
+      <BarGroup label="DAYA TARIK" values={[meanDT]} />
+    </div>
+  </div>
+  <div className="ad-chart-card">
+    <div className="ad-chart-head">
+      <span className="ad-chart-title">Nilai Tengah Skor UX</span>
+    </div>
+    <div className="ad-bar-chart">
+      <BarGroup label="KEMUDAHAN"  values={[Number(median.kemudahan)  || 0]} />
+      <BarGroup label="KEJELASAN"  values={[Number(median.kejelasan)  || 0]} />
+      <BarGroup label="DAYA TARIK" values={[Number(median.daya_tarik) || 0]} />
+    </div>
+  </div>
+  <div className="ad-chart-card">
+    <div className="ad-chart-head">
+      <span className="ad-chart-title">Standar Deviasi UX</span>
+    </div>
+    <div className="ad-std-list">
+      {[
+        { label: "KEMUDAHAN", val: Number(stddev.kemudahan)  || 0 },
+        { label: "KEJELASAN", val: Number(stddev.kejelasan)  || 0 },
+        { label: "DAYA TARIK", val: Number(stddev.daya_tarik) || 0 },
+      ].map((s) => (
+        <div key={s.label} className="ad-std-item">
+          <span className="ad-std-label">{s.label}</span>
+          <div className="ad-std-track">
+            <div className="ad-std-fill" style={{ width: `${(s.val / 2) * 100}%` }} />
           </div>
-          <div className="ad-bar-chart">
-            <BarGroup label="KEMUDAHAN" values={[meanK, 0, 0]} />
-            <BarGroup label="KEJELASAN" values={[0, meanJ, 0]} />
-            <BarGroup label="DAYA TARIK" values={[0, 0, meanDT]} />
-          </div>
+          <span className="ad-std-val">{s.val.toFixed(2)}</span>
         </div>
-        <div className="ad-chart-card">
-          <div className="ad-chart-head">
-            <span className="ad-chart-title">Nilai Tengah Skor UX</span>
-          </div>
-          <div className="ad-bar-chart">
-            <BarGroup label="KEMUDAHAN" values={[Number(median.kemudahan), 0, 0]} />
-            <BarGroup label="KEJELASAN" values={[0, Number(median.kejelasan), 0]} />
-            <BarGroup label="DAYA TARIK" values={[0, 0, Number(median.daya_tarik)]} />
-          </div>
-        </div>
-        <div className="ad-chart-card">
-          <div className="ad-chart-head">
-            <span className="ad-chart-title">Standar Deviasi UX</span>
-          </div>
-          <div className="ad-std-list">
-            {[
-              { label: "KEMUDAHAN", val: Number(stddev.kemudahan) },
-              { label: "KEJELASAN", val: Number(stddev.kejelasan) },
-              { label: "DAYA TARIK", val: Number(stddev.daya_tarik) },
-            ].map((s) => (
-              <div key={s.label} className="ad-std-item">
-                <span className="ad-std-label">{s.label}</span>
-                <div className="ad-std-track">
-                  <div className="ad-std-fill" style={{ width: `${(s.val / 2) * 100}%` }} />
-                </div>
-                <span className="ad-std-val">{s.val?.toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* DISTRIBUSI */}
       <section className="ad-section">

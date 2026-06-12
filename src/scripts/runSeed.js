@@ -1,10 +1,6 @@
-/**
- * Jalankan: npm run seed
- * Butuh VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY di .env
- */
-import { readFileSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const envPath = resolve(__dirname, "../../.env");

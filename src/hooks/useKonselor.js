@@ -1,10 +1,6 @@
-// src/hooks/useKonselor.js
-// Fetch data konselor + availability real dari Supabase
-
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase.js";
 
-// Hitung label availability dari array slot tanggal+jam
 function hitungLabel(slots) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -20,7 +16,6 @@ function hitungLabel(slots) {
     if (diffHari === 0) labels.add("Hari ini");
     if (diffHari >= 0 && diffHari <= 6) labels.add("Minggu ini");
 
-    // Sesi malam: jam mulai >= 18:00
     const [jam] = jam_mulai.split(":").map(Number);
     if (jam >= 18) labels.add("Sesi Malam");
   });
@@ -38,7 +33,6 @@ export function useKonselor() {
       setLoading(true);
       setError(null);
 
-      // ── 1. Fetch data konselor ──────────────────────────────────────────────
       const { data: konselor, error: errK } = await supabase
         .from("data_konselor")
         .select(`
@@ -55,7 +49,6 @@ export function useKonselor() {
         return;
       }
 
-      // ── 2. Fetch availability (hanya slot yang belum lewat) ────────────────
       const todayStr = new Date().toISOString().split("T")[0];
       const { data: avSlots, error: errA } = await supabase
         .from("konselor_availability")
@@ -64,18 +57,15 @@ export function useKonselor() {
         .gte("tanggal", todayStr);
 
       if (errA) {
-        // Availability gagal fetch — tetap tampilkan konselor, tanpa label
         console.warn("Availability fetch gagal:", errA.message);
       }
 
-      // ── 3. Kelompokkan slot per konselor_id ───────────────────────────────
       const slotMap = {};
       (avSlots || []).forEach((s) => {
         if (!slotMap[s.konselor_id]) slotMap[s.konselor_id] = [];
         slotMap[s.konselor_id].push(s);
       });
 
-      // ── 4. Normalize + gabungkan ──────────────────────────────────────────
       const normalized = konselor.map((k) => ({
         ID: k.id,
         Nama: k.nama,
@@ -91,9 +81,7 @@ export function useKonselor() {
         image: k.image_url || k.foto_url || "/placeholder-avatar.png",
         bio: k.bio ?? "",
         spesialisasi: k.spesialisasi ?? [],
-        // Label availability yang dihitung dari slot nyata
         availability: hitungLabel(slotMap[k.id] || []),
-        // Slot mentah kalau halaman detail butuh tampilkan jadwal lengkap
         slots: slotMap[k.id] || [],
       }));
 

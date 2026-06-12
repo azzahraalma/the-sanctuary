@@ -1,5 +1,3 @@
-/** Status booking — selalu lowercase di DB baru; helper mendukung data legacy. */
-
 export const BOOKING_STATUS = {
   TERJADWAL: "terjadwal",
   BERJALAN: "berjalan",

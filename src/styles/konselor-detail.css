@@ -1,8 +1,5 @@
-/* ===== KONSELOR DETAIL PAGE — The Sanctuary ===== */
-
 .kd-page { background: var(--cream); }
 
-/* ── Breadcrumb ─────────────────────────────────────────────────── */
 .kd-breadcrumb-wrap {
   width: 92%;
   margin: 0 auto;
@@ -21,7 +18,6 @@
 .kd-bc-sep { color: #ccc; }
 .kd-bc-active { color: #111; font-weight: 700; cursor: default; }
 
-/* ── Layout ─────────────────────────────────────────────────────── */
 .kd-layout {
   width: 92%;
   margin: 28px auto 0;
@@ -32,7 +28,6 @@
   padding-bottom: 60px;
 }
 
-/* ── Section base ───────────────────────────────────────────────── */
 .kd-section {
   background: white;
   border: 1px solid rgba(47,125,121,0.08);
@@ -56,7 +51,6 @@
   margin-bottom: 20px;
 }
 
-/* ── Hero card ──────────────────────────────────────────────────── */
 .kd-hero-card {
   background: white;
   border: 1px solid rgba(47,125,121,0.08);
@@ -72,7 +66,6 @@
   animation: kdFadeUp .45s cubic-bezier(.22,1,.36,1) both;
 }
 
-/* subtle background decoration */
 .kd-hero-card::before {
   content: '';
   position: absolute;
@@ -167,7 +160,6 @@
   max-width: 480px;
 }
 
-/* Quick stats */
 .kd-quick-stats {
   display: flex;
   align-items: center;
@@ -215,7 +207,6 @@
   flex-shrink: 0;
 }
 
-/* ── Tentang Saya ───────────────────────────────────────────────── */
 .kd-bio-p {
   font-size: 14px;
   color: #555;
@@ -271,7 +262,6 @@
   text-align: right;
 }
 
-/* ── Spesialisasi ───────────────────────────────────────────────── */
 .kd-spesial-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -299,7 +289,6 @@
 .kd-spesial-judul { font-size: 14px; font-weight: 800; color: #111; }
 .kd-spesial-desc  { font-size: 12px; color: #777; line-height: 1.6; }
 
-/* ── Testimoni ──────────────────────────────────────────────────── */
 .kd-testi-header {
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -466,7 +455,6 @@
 .kd-testi-name  { font-size: 13px; font-weight: 700; color: #111; }
 .kd-testi-peran { font-size: 11px; color: #999; }
 
-/* ── Form ulasan setelah sesi ── */
 .kd-ulasan-form-wrap {
   background: linear-gradient(135deg, #f0fffe 0%, #e8f8f5 100%);
   border: 1.5px solid rgba(47, 125, 121, 0.25);
@@ -630,11 +618,9 @@
   padding: 24px;
 }
 
-/* Stars in testimoni */
 .kd-stars { display: flex; align-items: center; gap: 2px; color: #f5a623; }
 .kd-star.s-empty { color: #ddd; }
 
-/* ── RIGHT — BOOKING ────────────────────────────────────────────── */
 .kd-right {
   position: sticky;
   top: 80px;
@@ -670,7 +656,6 @@
   line-height: 1.5;
 }
 
-/* Calendar */
 .kd-cal { padding: 16px 20px; border-bottom: 1px solid #f0ede6; }
 
 .kd-cal-nav {
@@ -747,7 +732,6 @@
 }
 .kd-cal-day:disabled { color: #ddd; cursor: not-allowed; }
 
-/* Slots */
 .kd-slots { padding: 14px 20px; border-bottom: 1px solid #f0ede6; }
 
 .kd-slots-label {
@@ -786,7 +770,6 @@
   box-shadow: 0 0 0 3px rgba(47,125,121,0.10);
 }
 
-/* Confirm */
 .kd-confirm-btn {
   display: block;
   width: calc(100% - 40px);
@@ -837,7 +820,6 @@
 }
 .kd-booking-note svg { flex-shrink: 0; margin-top: 2px; color: #ccc; }
 
-/* ── Other konselor card ────────────────────────────────────────── */
 .kd-other-card {
   background: white;
   border: 1px solid rgba(47,125,121,0.08);
@@ -885,7 +867,6 @@
 
 .kd-other-arrow { color: #ccc; }
 
-/* ── Not found ──────────────────────────────────────────────────── */
 .kd-notfound {
   min-height: 100vh;
   display: flex;
@@ -909,7 +890,151 @@
   cursor: pointer;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────── */
+.footer-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.footer-modal-container {
+  background: #fff;
+  border-radius: 20px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.footer-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid #e8f5f3;
+  flex-shrink: 0;
+}
+
+.footer-modal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-modal-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.footer-modal-title {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.footer-modal-close {
+  background: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.footer-modal-close:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.footer-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer-modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.footer-modal-body::-webkit-scrollbar-thumb {
+  background: #c5e8e6;
+  border-radius: 4px;
+}
+
+.footer-modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.footer-modal-section-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #2f7d79;
+  margin: 0;
+}
+
+.footer-modal-section-body {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.7;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.footer-modal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px 20px;
+  border-top: 1px solid #e8f5f3;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.footer-modal-foot-note {
+  font-size: 11px;
+  color: #aaa;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.footer-modal-close-btn {
+  background: linear-gradient(135deg, #2f7d79, #1a5e5a);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+
+.footer-modal-close-btn:hover {
+  opacity: 0.88;
+}
+
 @media (max-width: 1024px) {
   .kd-layout { grid-template-columns: 1fr; }
   .kd-right  { position: static; }

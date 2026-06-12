@@ -33,7 +33,6 @@ export function useAuth() {
         return;
       }
 
-      // Kalau sudah ada data valid di localStorage, pakai langsung tanpa re-fetch
       const cached = JSON.parse(localStorage.getItem("sanctuary_user") || "null");
       if (cached?.email === session.user.email && cached?.role) {
         setUser(cached);
@@ -42,7 +41,6 @@ export function useAuth() {
       }
 
       try {
-        // ... sisa kode fetch profil tetap sama
         const { data: profil } = await supabase
           .from("profil_pengguna")
           .select("*")

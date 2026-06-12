@@ -9,11 +9,11 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Burnout ringan, energi naik-turun",
     jawaban: {
-      1: "b", // energi naik-turun
-      2: 68,  // agak butuh waktu sendiri
-      3: "b", // pikiran rame
-      4: 38,  // belum terlalu siap cerita
-      5: "c", // sering kebangun
+      1: "b", 
+      2: 68, 
+      3: "b", 
+      4: 38, 
+      5: "c", 
     },
   },
 
@@ -63,16 +63,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Cemas & pengelolaan emosi",
     jawaban: {
-      1: "c", // lebih pengen menyendiri
-      2: 72,  // butuh ketenangan
-      3: "d", // cemas dan nggak tenang
-      4: 30,  // belum siap terbuka
-      5: "c", // sering kebangun
+      1: "c", 
+      2: 72,  
+      3: "d", 
+      4: 30,  
+      5: "c", 
     },
   },
 
-  // ─── M-006 · Dewi Lestari · Angkatan 2024 ────────────────────────────────
-  // K=4, J=2, DT=3 → kejelasan rendah, kondisi agak burnout
   {
     ID_Mahasiswa: "M-006",
     Nama: "Dewi Lestari",
@@ -83,16 +81,14 @@ const data_dummy_jawaban = [
     DayaTarik: 3,
     Keterangan: "Kelelahan akademik awal",
     jawaban: {
-      1: "c", // lebih pengen menyendiri
-      2: 60,  // butuh waktu sendiri
-      3: "c", // kosong dan hampa
-      4: 42,  // ragu-ragu mau cerita
-      5: "c", // sering kebangun
+      1: "c",
+      2: 60,  
+      3: "c",
+      4: 42,  
+      5: "c", 
     },
   },
 
-  // ─── M-007 · Hendra Gunawan · Angkatan 2023 ──────────────────────────────
-  // K=3, J=2, DT=4 → kondisi karier, cukup stabil
   {
     ID_Mahasiswa: "M-007",
     Nama: "Hendra Gunawan",
@@ -103,16 +99,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Perencanaan karier, cukup stabil",
     jawaban: {
-      1: "a", // oke dan stabil
-      2: 35,  // masih mau ngobrol
-      3: "a", // adem dan jernih
-      4: 65,  // cukup siap cerita
-      5: "b", // tidur lumayan
+      1: "a", 
+      2: 35,  
+      3: "a", 
+      4: 65,  
+      5: "b", 
     },
   },
 
-  // ─── M-008 · Maya Indah Sari · Angkatan 2022 ─────────────────────────────
-  // K=2, J=3, DT=4 → ada masalah emosi/hubungan
   {
     ID_Mahasiswa: "M-008",
     Nama: "Maya Indah Sari",
@@ -123,16 +117,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Pengelolaan emosi & hubungan",
     jawaban: {
-      1: "b", // naik-turun
-      2: 55,  // agak butuh sendiri
-      3: "d", // cemas
-      4: 40,  // belum terlalu siap
-      5: "b", // lumayan
+      1: "b",
+      2: 55, 
+      3: "d", 
+      4: 40,  
+      5: "b",
     },
   },
 
-  // ─── M-009 · Rizky Ramadhan · Angkatan 2023 ──────────────────────────────
-  // K=2, J=2, DT=4 → tekanan keuangan
   {
     ID_Mahasiswa: "M-009",
     Nama: "Rizky Ramadhan",
@@ -143,16 +135,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Stres finansial, kondisi tertekan",
     jawaban: {
-      1: "d", // berat
-      2: 75,  // butuh ruang sendiri
-      3: "b", // rame di kepala
-      4: 25,  // belum siap cerita
-      5: "d", // tidur buruk
+      1: "d", 
+      2: 75,  
+      3: "b", 
+      4: 25, 
+      5: "d", 
     },
   },
 
-  // ─── M-010 · Laila Fitriani · Angkatan 2022 ──────────────────────────────
-  // K=1, J=5, DT=3 → kejelasan tinggi (self-aware) tapi kemudahan rendah (susah gerak)
   {
     ID_Mahasiswa: "M-010",
     Nama: "Laila Fitriani",
@@ -163,16 +153,14 @@ const data_dummy_jawaban = [
     DayaTarik: 3,
     Keterangan: "Self-aware tinggi, galau karier",
     jawaban: {
-      1: "b", // naik-turun
-      2: 50,  // tengah-tengah
-      3: "b", // rame di kepala
-      4: 60,  // lumayan siap cerita
-      5: "c", // sering kebangun
+      1: "b",
+      2: 50, 
+      3: "b",
+      4: 60, 
+      5: "c", 
     },
   },
 
-  // ─── M-011 · Andi Wijaya Kusuma · Angkatan 2024 ──────────────────────────
-  // K=2, J=3, DT=4 → burnout akademik
   {
     ID_Mahasiswa: "M-011",
     Nama: "Andi Wijaya Kusuma",
@@ -183,16 +171,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Burnout akademik, perlu dukungan",
     jawaban: {
-      1: "d", // berat dan sulit bergerak
-      2: 70,  // butuh sendiri
-      3: "c", // kosong dan hampa
-      4: 35,  // belum siap
-      5: "d", // tidur buruk
+      1: "d",
+      2: 70, 
+      3: "c",
+      4: 35, 
+      5: "d", 
     },
   },
 
-  // ─── M-012 · Siska Olivia · Angkatan 2023 ────────────────────────────────
-  // K=4, J=3, DT=4 → baru mulai konseling, awal perjalanan
   {
     ID_Mahasiswa: "M-012",
     Nama: "Siska Olivia",
@@ -203,16 +189,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Baru mulai, burnout ringan",
     jawaban: {
-      1: "c", // lebih pengen menyendiri
-      2: 62,  // butuh ketenangan
-      3: "b", // rame di kepala
-      4: 45,  // agak ragu
-      5: "c", // sering kebangun
+      1: "c",
+      2: 62, 
+      3: "b",
+      4: 45, 
+      5: "c", 
     },
   },
 
-  // ─── M-013 · Bambang Hermawan · Angkatan 2024 ────────────────────────────
-  // K=2, J=2, DT=4 → burnout + masalah hubungan
   {
     ID_Mahasiswa: "M-013",
     Nama: "Bambang Hermawan",
@@ -223,16 +207,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Burnout + konflik hubungan",
     jawaban: {
-      1: "d", // berat
-      2: 78,  // sangat butuh ruang
-      3: "d", // cemas
-      4: 22,  // belum siap
-      5: "d", // tidur buruk banget
+      1: "d",
+      2: 78, 
+      3: "d", 
+      4: 22, 
+      5: "d",
     },
   },
 
-  // ─── M-014 · Putri Ayu Lestari · Angkatan 2022 ───────────────────────────
-  // K=3, J=3, DT=3 → kondisi biasa, stabil
   {
     ID_Mahasiswa: "M-014",
     Nama: "Putri Ayu Lestari",
@@ -243,16 +225,14 @@ const data_dummy_jawaban = [
     DayaTarik: 3,
     Keterangan: "Kondisi stabil, masalah keuangan",
     jawaban: {
-      1: "a", // oke dan stabil
-      2: 40,  // masih mau terhubung
-      3: "a", // adem dan jernih
-      4: 70,  // cukup siap cerita
-      5: "b", // lumayan
+      1: "a", 
+      2: 40, 
+      3: "a",
+      4: 70, 
+      5: "b",
     },
   },
 
-  // ─── M-015 · Guntur Saputra · Angkatan 2022 ──────────────────────────────
-  // K=4, J=4, DT=4 → kondisi baik, masalah relasi ringan
   {
     ID_Mahasiswa: "M-015",
     Nama: "Guntur Saputra",
@@ -263,16 +243,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Kondisi baik, relasi perlu diperhatikan",
     jawaban: {
-      1: "b", // naik-turun
-      2: 42,  // antara sendiri dan ngobrol
-      3: "b", // rame di kepala
-      4: 58,  // agak siap
-      5: "b", // lumayan
+      1: "b", 
+      2: 42,  
+      3: "b", 
+      4: 58, 
+      5: "b",
     },
   },
 
-  // ─── M-016 · Nanda Ardiansyah · Angkatan 2024 ────────────────────────────
-  // K=4, J=4, DT=3 → stabil, keuangan jadi pikiran
   {
     ID_Mahasiswa: "M-016",
     Nama: "Nanda Ardiansyah",
@@ -283,16 +261,14 @@ const data_dummy_jawaban = [
     DayaTarik: 3,
     Keterangan: "Stabil tapi kepikiran finansial",
     jawaban: {
-      1: "b", // naik-turun
-      2: 48,  // tengah-tengah
-      3: "b", // rame di kepala
-      4: 62,  // lumayan siap
-      5: "b", // lumayan
+      1: "b",
+      2: 48,
+      3: "b", 
+      4: 62,  
+      5: "b",
     },
   },
 
-  // ─── M-017 · Eka Nurhaliza · Angkatan 2023 ───────────────────────────────
-  // K=4, J=5, DT=3 → kejelasan tinggi, ada beban akademik-keluarga
   {
     ID_Mahasiswa: "M-017",
     Nama: "Eka Nurhaliza",
@@ -303,16 +279,14 @@ const data_dummy_jawaban = [
     DayaTarik: 3,
     Keterangan: "Beban akademik + dinamika keluarga",
     jawaban: {
-      1: "c", // lebih pengen menyendiri
-      2: 65,  // butuh sendiri
-      3: "c", // kosong dan hampa
-      4: 50,  // tengah-tengah
-      5: "c", // sering kebangun
+      1: "c", 
+      2: 65, 
+      3: "c",
+      4: 50, 
+      5: "c",
     },
   },
 
-  // ─── M-018 · Doni Tata Pradana · Angkatan 2022 ───────────────────────────
-  // K=2, J=2, DT=4 → kondisi berat, ada masalah keluarga
   {
     ID_Mahasiswa: "M-018",
     Nama: "Doni Tata Pradana",
@@ -323,16 +297,14 @@ const data_dummy_jawaban = [
     DayaTarik: 4,
     Keterangan: "Masalah keluarga, kondisi berat",
     jawaban: {
-      1: "d", // berat
-      2: 76,  // butuh ruang
-      3: "d", // cemas
-      4: 28,  // belum siap
-      5: "d", // tidur buruk
+      1: "d", 
+      2: 76, 
+      3: "d",
+      4: 28, 
+      5: "d", 
     },
   },
 
-  // ─── M-019 · Tiara Andini · Angkatan 2024 ────────────────────────────────
-  // K=4, J=5, DT=3 → banyak pikiran akademik, tapi progres bagus
   {
     ID_Mahasiswa: "M-019",
     Nama: "Tiara Andini",
@@ -343,16 +315,14 @@ const data_dummy_jawaban = [
     DayaTarik: 3,
     Keterangan: "Tekanan akademik, progres bagus",
     jawaban: {
-      1: "b", // naik-turun
-      2: 58,  // agak butuh sendiri
-      3: "b", // rame di kepala
-      4: 70,  // cukup siap
-      5: "b", // lumayan
+      1: "b",
+      2: 58,  
+      3: "b",
+      4: 70, 
+      5: "b", 
     },
   },
 
-  // ─── M-020 · Yusuf Mansyur Ali · Angkatan 2022 ───────────────────────────
-  // K=4, J=5, DT=3 → kondisi akademik, masih berjalan
   {
     ID_Mahasiswa: "M-020",
     Nama: "Yusuf Mansyur Ali",
@@ -363,11 +333,11 @@ const data_dummy_jawaban = [
     DayaTarik: 3,
     Keterangan: "Akademik naik-turun",
     jawaban: {
-      1: "b", // naik-turun
-      2: 55,  // tengah-tengah
-      3: "b", // rame
-      4: 65,  // lumayan siap
-      5: "a", // tidur nyenyak
+      1: "b", 
+      2: 55,
+      3: "b",
+      4: 65, 
+      5: "a", 
     },
   },
 ];

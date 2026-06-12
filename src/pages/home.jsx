@@ -5,7 +5,6 @@ import { supabase } from "../lib/supabase.js";
 import { isSelesai } from "../lib/bookingStatus.js";
 import { fetchTeamStats } from "../lib/teamStats.js";
 
-// ── Helper: cek session & arahkan ke tujuan atau login ───────────────────────
 function useAuthNav() {
   const navigate = useNavigate();
   const goTo = (destination) => {
@@ -20,7 +19,6 @@ function useAuthNav() {
   return goTo;
 }
 
-// ── StarRating ───────────────────────────────────────────────────────────────
 function StarRating({ rating }) {
   return (
     <div className="stars">
@@ -57,7 +55,6 @@ function StarRating({ rating }) {
   );
 }
 
-// ── AnimatedCounter ──────────────────────────────────────────────────────────
 function AnimatedCounter({ target, suffix = "", decimals = 0 }) {
   const ref = useRef(null);
   const hasRun = useRef(false);
@@ -89,9 +86,148 @@ function AnimatedCounter({ target, suffix = "", decimals = 0 }) {
   return <span ref={ref}>0{suffix}</span>;
 }
 
+function FooterModal({ type, onClose }) {
+  if (!type) return null;
 
+  const content = {
+    privasi: {
+      title: "Kebijakan Privasi",
+      sections: [
+        {
+          heading: "Informasi yang Kami Kumpulkan",
+          body: "Kami mengumpulkan informasi yang kamu berikan secara langsung, seperti nama, alamat email, dan data profil saat mendaftar. Kami juga mengumpulkan data penggunaan layanan secara anonim untuk meningkatkan pengalaman pengguna."
+        },
+        {
+          heading: "Bagaimana Kami Menggunakan Informasimu",
+          body: "Informasi yang kami kumpulkan digunakan untuk menyediakan layanan konseling sebaya, menghubungkan kamu dengan konselor yang tepat, serta mengirimkan notifikasi terkait jadwal dan sesi konselingmu."
+        },
+        {
+          heading: "Kerahasiaan Sesi Konseling",
+          body: "Semua percakapan dalam sesi konseling bersifat rahasia. Kami tidak membagikan konten sesi kepada pihak ketiga tanpa persetujuan eksplisit darimu, kecuali diwajibkan oleh hukum yang berlaku."
+        },
+        {
+          heading: "Keamanan Data",
+          body: "Kami menggunakan enkripsi standar industri untuk melindungi data pribadimu. Akses ke data dibatasi hanya untuk personel yang berwenang dan diperlukan untuk operasional layanan."
+        },
+        {
+          heading: "Hubungi Kami",
+          body: "Jika kamu memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui email: privacy@thesanctuary.id"
+        }
+      ]
+    },
+    syarat: {
+      title: "Syarat dan Ketentuan",
+      sections: [
+        {
+          heading: "Penerimaan Syarat",
+          body: "Dengan menggunakan layanan The Sanctuary, kamu menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan kami."
+        },
+        {
+          heading: "Penggunaan Layanan",
+          body: "The Sanctuary adalah platform konseling sebaya yang ditujukan untuk mahasiswa Polimedia. Layanan ini bukan pengganti konseling profesional atau layanan kesehatan mental klinis. Untuk kondisi darurat, segera hubungi tenaga profesional."
+        },
+        {
+          heading: "Kewajiban Pengguna",
+          body: "Kamu bertanggung jawab untuk menjaga kerahasiaan akun dan tidak membagikan informasi login kepada orang lain. Segala aktivitas yang terjadi melalui akunmu adalah tanggung jawabmu."
+        },
+        {
+          heading: "Kode Etik",
+          body: "Semua pengguna diharapkan berinteraksi dengan saling menghormati. Perilaku yang merendahkan, melecehkan, atau merugikan pengguna lain akan mengakibatkan penangguhan akun."
+        },
+        {
+          heading: "Perubahan Layanan",
+          body: "Kami berhak mengubah, menangguhkan, atau menghentikan layanan kapan saja dengan pemberitahuan sebelumnya. Perubahan syarat dan ketentuan akan diberitahukan melalui email atau notifikasi aplikasi."
+        }
+      ]
+    },
+    bantuan: {
+      title: "Pusat Bantuan",
+      sections: [
+        {
+          heading: "Cara Booking Sesi",
+          body: "Kunjungi halaman Konselor, pilih konselor yang sesuai kebutuhanmu, lalu pilih jadwal yang tersedia. Konfirmasi booking dan kamu akan mendapat notifikasi setelah konselor menyetujui sesi."
+        },
+        {
+          heading: "Bergabung ke Sesi",
+          body: "Saat waktu sesi tiba, tombol 'Mulai Sesi' akan muncul di dashboard. Klik tombol tersebut untuk masuk ke ruang konseling online bersama konselormu."
+        },
+        {
+          heading: "Membatalkan Sesi",
+          body: "Pembatalan sesi dapat dilakukan melalui halaman Riwayat Sesi minimal 1 jam sebelum waktu sesi dimulai. Pembatalan mendadak kurang dari 1 jam akan dicatat sebagai ketidakhadiran."
+        },
+        {
+          heading: "Masalah Teknis",
+          body: "Jika kamu mengalami masalah teknis saat menggunakan platform, coba refresh halaman atau hapus cache browser. Jika masalah berlanjut, hubungi tim support kami."
+        },
+        {
+          heading: "Hubungi Support",
+          body: "📧 support@thesanctuary.id\n📱 WhatsApp: 0812-3456-7890 (Senin–Jumat, 08.00–17.00 WIB)\n🏢 Gedung Polimedia, Ruang Kemahasiswaan Lt. 2"
+        }
+      ]
+    },
+    panduan: {
+      title: "Panduan Konseling Sebaya",
+      sections: [
+        {
+          heading: "Sebelum Memulai Konseling",
+          body: "Pastikan kamu sudah menentukan topik atau permasalahan yang ingin dibahas. Siapkan koneksi internet yang stabil dan pilih tempat yang nyaman agar sesi konseling berjalan lebih efektif."
+        },
+        {
+          heading: "Memilih Konselor",
+          body: "Masuk ke halaman daftar konselor, lihat profil serta bidang pendampingan yang tersedia. Pilih konselor yang paling sesuai dengan kebutuhanmu, kemudian lanjutkan ke proses pemilihan jadwal."
+        },
+        {
+          heading: "Mengajukan Permintaan Sesi",
+          body: "Pilih waktu konseling yang tersedia lalu kirim permintaan sesi. Tunggu persetujuan dari konselor. Setelah disetujui, detail sesi akan tersedia pada menu jadwal konseling."
+        },
+        {
+          heading: "Saat Konseling Berlangsung",
+          body: "Gunakan fitur ruang konseling untuk memulai percakapan dengan konselor. Sampaikan cerita dan perasaanmu secara terbuka agar konselor dapat memberikan pendampingan yang tepat."
+        },
+        {
+          heading: "Aturan Selama Sesi",
+          body: "Jaga komunikasi yang sopan, hargai privasi, dan hindari membagikan informasi pribadi orang lain. Seluruh percakapan selama sesi bersifat rahasia dan digunakan hanya untuk kebutuhan pendampingan."
+        },
+        {
+          heading: "Setelah Sesi Selesai",
+          body: "Kamu dapat memberikan evaluasi atau feedback mengenai pengalaman konseling. Feedback tersebut membantu meningkatkan kualitas layanan konseling sebaya."
+        }
+      ]
+    }
+  };
 
-// ── Journey steps ────────────────────────────────────────────────────────────
+  const c = content[type];
+  if (!c) return null;
+
+  return (
+    <div className="footer-modal-overlay" onClick={onClose}>
+      <div className="footer-modal-container" onClick={e => e.stopPropagation()}>
+        <div className="footer-modal-header">
+          <div className="footer-modal-title-wrap">
+            <span className="footer-modal-icon">{c.icon}</span>
+            <h2 className="footer-modal-title">{c.title}</h2>
+          </div>
+          <button className="footer-modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="footer-modal-body">
+          {c.sections.map((s, i) => (
+            <div key={i} className="footer-modal-section">
+              <h3 className="footer-modal-section-title">{s.heading}</h3>
+              <p className="footer-modal-section-body">{s.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="footer-modal-foot">
+          <p className="footer-modal-foot-note">© 2026 The Sanctuary Polimedia · Tempat aman untuk saling mendengar</p>
+          <button className="footer-modal-close-btn" onClick={onClose}>Tutup</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const steps = [
   {
     n: "01",
@@ -114,13 +250,11 @@ const steps = [
   },
 ];
 
-// ── Home ─────────────────────────────────────────────────────────────────────
 export default function Home() {
   const navigate = useNavigate();
   const goTo = useAuthNav();
   const statsRef = useRef(null);
 
-  // ── State data dari Supabase ──────────────────────────────────────────────
   const [konselor, setKonselor] = useState([]);
   const [totalKasus, setTotalKasus] = useState(0);
   const [kasusSelesai, setKasusSelesai] = useState(0);
@@ -130,27 +264,28 @@ export default function Home() {
   const [probSukses, setProbSukses] = useState(0);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  // Redirect user yang sudah login ke dashboard yang sesuai
-  useEffect(() => {
-    try {
-      const cached = JSON.parse(localStorage.getItem("sanctuary_user") || "null");
-      if (cached?.role === "konselor") navigate("/konselor-dashboard", { replace: true });
-      else if (cached?.role === "admin") navigate("/admin-dashboard", { replace: true });
-      else if (cached?.role === "mahasiswa") navigate("/dashboard", { replace: true });
-    } catch { }
-  }, []);
+  const [footerModal, setFooterModal] = useState(null);
 
-  // ── Ambil data dari Supabase ──────────────────────────────────────────────
+  useEffect(() => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("home") === "1") return; 
+    
+    const cached = JSON.parse(localStorage.getItem("sanctuary_user") || "null");
+    if (cached?.role === "konselor") navigate("/konselor-dashboard", { replace: true });
+    else if (cached?.role === "admin") navigate("/admin-dashboard", { replace: true });
+    else if (cached?.role === "mahasiswa") navigate("/dashboard", { replace: true });
+  } catch { }
+}, []);
+
   useEffect(() => {
     async function fetchAll() {
       try {
-        // Booking & konselor fetch paralel
         const [bookingRes, konselorRes] = await Promise.all([
           supabase.from("booking").select("id, status, kategori_masalah"),
           supabase.from("data_konselor").select("id, nama, kategori_masalah, rating_final, success_rate, jumlah_kasus, kasus_selesai, pengalaman, image_url, foto_url").order("rating_final", { ascending: false }),
         ]);
 
-        // ── Booking stats ──
         const bookings = (bookingRes.data ?? []).filter(b => b.id !== null);
         const total = bookings.length;
         const selesai = bookings.filter(b => isSelesai(b.status)).length;
@@ -166,7 +301,6 @@ export default function Home() {
         setSuccessRate(rate);
         setKategoriCount(katCount);
 
-        // ── Konselor stats ──
         const konselorData = konselorRes.data ?? [];
         const rataR = konselorData.length > 0
           ? konselorData.reduce((s, k) => s + (Number(k.rating_final) || 0), 0) / konselorData.length
@@ -191,7 +325,6 @@ export default function Home() {
       } catch (err) {
         console.error("Home fetchAll error:", err);
       } finally {
-        // Selalu set false agar UI tidak stuck di loading selamanya
         setLoadingStats(false);
       }
     }
@@ -199,7 +332,6 @@ export default function Home() {
     fetchAll();
   }, []);
 
-  // ── User session ──────────────────────────────────────────────────────────
   const user = (() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
     catch { return null; }
@@ -219,19 +351,20 @@ export default function Home() {
   return (
     <div className="sanctuary">
 
-      {/* ── NAVBAR ── */}
+      <FooterModal type={footerModal} onClose={() => setFooterModal(null)} />
+
       <header className="nav-shell">
         <nav className="nav">
           <div className="nav-l">
             <span className="nav-logo">The Sanctuary</span>
             <ul className="nav-menu">
               <li className="nav-item is-active">Beranda</li>
-              <li className="nav-item" onClick={() => goTo("/konselor")}>Konselor</li>
+              <li className="nav-item" onClick={() => navigate("/konselor")}>Konselor</li>
               <li className="nav-item" onClick={() => goTo("/dashboard")}>Dashboard</li>
             </ul>
           </div>
           <div className="nav-r">
-            <button className="nav-cta" onClick={() => goTo("/konselor")}>
+            <button className="nav-cta" onClick={() => navigate("/konselor")}>
               Temukan Konselor
             </button>
             <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/notifikasi")}>
@@ -278,7 +411,6 @@ export default function Home() {
         </nav>
       </header>
 
-      {/* ── HERO ── */}
       <section className="hero">
         <div className="hero-copy">
           <h1 className="hero-h1">
@@ -314,7 +446,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── STATS ── */}
       <section className="stats" ref={statsRef}>
         <h2 className="stats-h2">Ruang Aman Buat Kamu</h2>
         <p className="stats-sub">
@@ -355,8 +486,6 @@ export default function Home() {
         </div>
 
         <div className="stats-detail-row">
-
-          {/* Distribusi kategori */}
           <div className="stats-detail-card">
             <h4 className="sdc-title">Distribusi Kasus per Kategori</h4>
             <div className="kategori-bars">
@@ -381,7 +510,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Donut status */}
           <div className="stats-detail-card">
             <h4 className="sdc-title">Status Sesi Konseling</h4>
             <div className="status-donut-wrap">
@@ -413,11 +541,9 @@ export default function Home() {
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* ── FEATURES ── */}
       <section className="features">
         <div className="feat feat-light">
           <div className="feat-icon-ring">
@@ -472,7 +598,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── JOURNEY ── */}
       <section className="journey">
         <div className="journey-left">
           {steps.map((s, i) => (
@@ -506,7 +631,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── MENTORS ── */}
       <section className="mentors">
         <div className="mentors-hd">
           <div>
@@ -563,7 +687,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
       <section className="cta">
         <div className="cta-box">
           <h2 className="cta-h2">Mulai Langkah Anda Bersama Konselor Sebaya Sanctuary Polimedia</h2>
@@ -580,14 +703,13 @@ export default function Home() {
             }}>
               {user ? "Buka Dashboard" : "Buat Akun Gratis"}
             </button>
-            <button className="cta-btn-ghost" onClick={() => goTo("/konselor")}>
+            <button className="cta-btn-ghost" onClick={() => navigate("/konselor")}>
               Hubungi Konselor
             </button>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
       <footer className="footer">
         <div className="footer-brand">
           <h3 className="footer-name">The Sanctuary Polimedia</h3>
@@ -599,17 +721,23 @@ export default function Home() {
             © 2026 TheSanctuary. Politeknik Negeri Media Kreatif.
           </small>
         </div>
-        {[
-          { heading: "Platform", links: ["Layanan", "Komunitas", "Artikel", "Panduan Konseling"] },
-          { heading: "Legal", links: ["Kebijakan Privasi", "Syarat dan Ketentuan", "Bantuan"] },
-        ].map((col) => (
-          <div key={col.heading} className="footer-col">
-            <h4 className="footer-col-h">{col.heading}</h4>
-            <ul className="footer-links">
-              {col.links.map((l) => <li key={l}>{l}</li>)}
-            </ul>
-          </div>
-        ))}
+
+        <div className="footer-col">
+          <h4 className="footer-col-h">Platform</h4>
+          <ul className="footer-links">
+            <li onClick={() => navigate("/konselor")}>Layanan</li>
+            <li onClick={() => setFooterModal("panduan")}>Panduan Konseling</li>
+          </ul>
+        </div>
+
+        <div className="footer-col">
+          <h4 className="footer-col-h">Legal</h4>
+          <ul className="footer-links">
+            <li onClick={() => setFooterModal("privasi")}>Kebijakan Privasi</li>
+            <li onClick={() => setFooterModal("syarat")}>Syarat dan Ketentuan</li>
+            <li onClick={() => setFooterModal("bantuan")}>Bantuan</li>
+          </ul>
+        </div>
       </footer>
 
     </div>

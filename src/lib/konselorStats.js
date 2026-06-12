@@ -5,12 +5,10 @@ function isDibatalkan(status) {
   return normalizeStatus(status) === BOOKING_STATUS.DIBATALKAN;
 }
 
-/** Sesi sudah dilaksanakan (menunggu evaluasi konselor atau fully selesai). */
 function isKasusSelesai(status) {
   return isSelesai(status) || isMenungguEvaluasi(status);
 }
 
-/** Hitung statistik konselor dari booking & ulasan live. */
 export async function computeKonselorStats(idKonselor) {
   const [{ data: bookings, error: bErr }, { data: ulasan, error: uErr }, { data: konselor }] = await Promise.all([
     supabase.from("booking").select("status").eq("id_konselor", idKonselor),
@@ -44,7 +42,6 @@ export async function computeKonselorStats(idKonselor) {
   };
 }
 
-/** Sinkronkan statistik live ke tabel data_konselor agar konsisten di seluruh app. */
 export async function syncKonselorStats(idKonselor) {
   if (!idKonselor) return null;
 

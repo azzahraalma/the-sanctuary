@@ -1,7 +1,3 @@
-// ─── DATABASE DUMMY USERS ─────────────────────────────────────────
-// File ini berfungsi sebagai "database" lokal sementara.
-// Dalam pengembangan nyata, data ini akan digantikan oleh API backend.
-
 export const DUMMY_USERS = [
   {
     id: 1,
@@ -17,8 +13,7 @@ export const DUMMY_USERS = [
     password: "demo123",
     role: "mahasiswa",
   },
-  // ─── AKUN KONSELOR ─────────────────────────────────────────────
-  // konselorId harus cocok dengan ID di data_konselor.js (K-001 dst)
+
   {
     id: 3,
     name: "Alma",
@@ -54,10 +49,9 @@ export const DUMMY_USERS = [
 ];
 
 /**
- * Cari user berdasarkan email dan password.
  * @param {string} email
  * @param {string} password
- * @returns {object|null} user tanpa field password, atau null jika tidak ditemukan
+ * @returns {object|null} 
  */
 export function findUser(email, password) {
   const user = DUMMY_USERS.find(
@@ -67,14 +61,12 @@ export function findUser(email, password) {
   );
   if (!user) return null;
 
-  // Jangan pernah simpan password ke localStorage
   const safeUser = { ...user };
   delete safeUser.password;
   return safeUser;
 }
 
 /**
- * Cek apakah email sudah terdaftar.
  * @param {string} email
  * @returns {boolean}
  */
@@ -85,11 +77,10 @@ export function isEmailTaken(email) {
 }
 
 /**
- * Tambahkan user baru ke DUMMY_USERS (hanya berlaku selama sesi browser).
  * @param {string} name
  * @param {string} email
  * @param {string} password
- * @returns {object} user baru tanpa field password
+ * @returns {object} 
  */
 export function registerUser(name, email, password) {
   const newUser = {

@@ -4,9 +4,6 @@ import { supabase } from "../lib/supabase.js";
 import { saveRefleksiKuesioner } from "../lib/kuesionerStore.js";
 import "../styles/kuesioner.css";
 
-// [FIX] Hapus import data_konselor.js lokal — konselor sekarang diambil dari Supabase.
-// [FIX] Hapus ACTIVE_USER hardcoded — identitas diambil dari localStorage (user yang login).
-
 const soalList = [
   {
     id: 1,
@@ -62,10 +59,6 @@ const soalList = [
   },
 ];
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// UTILS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 function hitungSkor(jawaban) {
   let total = 0, count = 0;
   soalList.forEach((s) => {
@@ -97,7 +90,6 @@ function tentukanKategori(jawaban, skor) {
   return KATEGORI.KARIER;
 }
 
-// [FIX] hitungMatch sekarang menggunakan field dari Supabase (snake_case)
 function hitungMatch(konselor, kategoriUser, skor) {
   let match = 60;
   if (konselor.kategori_masalah === kategoriUser) match += 25;
@@ -143,9 +135,115 @@ function generateInsight(jawaban, namaUser) {
   return parts.join(". ") + ".";
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// COMPONENTS
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function FooterModal({ type, onClose }) {
+  if (!type) return null;
+
+  const content = {
+    privasi: {
+      title: "Kebijakan Privasi",
+      sections: [
+        {
+          heading: "Informasi yang Kami Kumpulkan",
+          body: "Kami mengumpulkan informasi yang kamu berikan secara langsung, seperti nama, alamat email, dan data profil saat mendaftar. Kami juga mengumpulkan data penggunaan layanan secara anonim untuk meningkatkan pengalaman pengguna."
+        },
+        {
+          heading: "Bagaimana Kami Menggunakan Informasimu",
+          body: "Informasi yang kami kumpulkan digunakan untuk menyediakan layanan konseling sebaya, menghubungkan kamu dengan konselor yang tepat, serta mengirimkan notifikasi terkait jadwal dan sesi konselingmu."
+        },
+        {
+          heading: "Kerahasiaan Sesi Konseling",
+          body: "Semua percakapan dalam sesi konseling bersifat rahasia. Kami tidak membagikan konten sesi kepada pihak ketiga tanpa persetujuan eksplisit darimu, kecuali diwajibkan oleh hukum yang berlaku."
+        },
+        {
+          heading: "Keamanan Data",
+          body: "Kami menggunakan enkripsi standar industri untuk melindungi data pribadimu. Akses ke data dibatasi hanya untuk personel yang berwenang dan diperlukan untuk operasional layanan."
+        },
+        {
+          heading: "Hubungi Kami",
+          body: "Jika kamu memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui email: privacy@thesanctuary.id"
+        }
+      ]
+    },
+    syarat: {
+      title: "Syarat dan Ketentuan",
+      sections: [
+        {
+          heading: "Penerimaan Syarat",
+          body: "Dengan menggunakan layanan The Sanctuary, kamu menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan kami."
+        },
+        {
+          heading: "Penggunaan Layanan",
+          body: "The Sanctuary adalah platform konseling sebaya yang ditujukan untuk mahasiswa Polimedia. Layanan ini bukan pengganti konseling profesional atau layanan kesehatan mental klinis. Untuk kondisi darurat, segera hubungi tenaga profesional."
+        },
+        {
+          heading: "Kewajiban Pengguna",
+          body: "Kamu bertanggung jawab untuk menjaga kerahasiaan akun dan tidak membagikan informasi login kepada orang lain. Segala aktivitas yang terjadi melalui akunmu adalah tanggung jawabmu."
+        },
+        {
+          heading: "Kode Etik",
+          body: "Semua pengguna diharapkan berinteraksi dengan saling menghormati. Perilaku yang merendahkan, melecehkan, atau merugikan pengguna lain akan mengakibatkan penangguhan akun."
+        },
+        {
+          heading: "Perubahan Layanan",
+          body: "Kami berhak mengubah, menangguhkan, atau menghentikan layanan kapan saja dengan pemberitahuan sebelumnya. Perubahan syarat dan ketentuan akan diberitahukan melalui email atau notifikasi aplikasi."
+        }
+      ]
+    },
+    bantuan: {
+      title: "Pusat Bantuan",
+      sections: [
+        {
+          heading: "Cara Booking Sesi",
+          body: "Kunjungi halaman Konselor, pilih konselor yang sesuai kebutuhanmu, lalu pilih jadwal yang tersedia. Konfirmasi booking dan kamu akan mendapat notifikasi setelah konselor menyetujui sesi."
+        },
+        {
+          heading: "Bergabung ke Sesi",
+          body: "Saat waktu sesi tiba, tombol 'Mulai Sesi' akan muncul di dashboard. Klik tombol tersebut untuk masuk ke ruang konseling online bersama konselormu."
+        },
+        {
+          heading: "Membatalkan Sesi",
+          body: "Pembatalan sesi dapat dilakukan melalui halaman Riwayat Sesi minimal 1 jam sebelum waktu sesi dimulai. Pembatalan mendadak kurang dari 1 jam akan dicatat sebagai ketidakhadiran."
+        },
+        {
+          heading: "Masalah Teknis",
+          body: "Jika kamu mengalami masalah teknis saat menggunakan platform, coba refresh halaman atau hapus cache browser. Jika masalah berlanjut, hubungi tim support kami."
+        },
+        {
+          heading: "Hubungi Support",
+          body: "📧 support@thesanctuary.id\n📱 WhatsApp: 0812-3456-7890 (Senin–Jumat, 08.00–17.00 WIB)\n🏢 Gedung Polimedia, Ruang Kemahasiswaan Lt. 2"
+        }
+      ]
+    }
+  };
+
+  const c = content[type];
+  if (!c) return null;
+
+  return (
+    <div className="footer-modal-overlay" onClick={onClose}>
+      <div className="footer-modal-container" onClick={e => e.stopPropagation()}>
+        <div className="footer-modal-header">
+          <div className="footer-modal-title-wrap">
+            <h2 className="footer-modal-title">{c.title}</h2>
+          </div>
+          <button className="footer-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="footer-modal-body">
+          {c.sections.map((s, i) => (
+            <div key={i} className="footer-modal-section">
+              <h3 className="footer-modal-section-title">{s.heading}</h3>
+              <p className="footer-modal-section-body">{s.body}</p>
+            </div>
+          ))}
+        </div>
+        <div className="footer-modal-foot">
+          <p className="footer-modal-foot-note">© 2026 The Sanctuary Polimedia · Tempat aman untuk saling mendengar</p>
+          <button className="footer-modal-close-btn" onClick={onClose}>Tutup</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function KuisNav({ navigate }) {
   return (
@@ -161,18 +259,23 @@ function KuisNav({ navigate }) {
   );
 }
 
-function KuisFooter() {
+function KuisFooter({ setFooterModal }) {
   return (
     <footer className="kuis-footer">
       <div className="kuis-footer-left">
         <strong>The Sanctuary</strong>
-        <p>© 2026 The Sanctuary. A space for healing &amp; hope.</p>
+        <p>© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
       </div>
       <div className="kuis-footer-links">
-        <span>Privacy Policy</span>
-        <span>Terms of Service</span>
-        <span>Contact Support</span>
-        <span>Our Methodology</span>
+        <span style={{ cursor: "pointer" }} onClick={() => setFooterModal("privasi")}>
+          Kebijakan Privasi
+        </span>
+        <span style={{ cursor: "pointer" }} onClick={() => setFooterModal("syarat")}>
+          Syarat dan Ketentuan
+        </span>
+        <span style={{ cursor: "pointer" }} onClick={() => setFooterModal("bantuan")}>
+          Bantuan
+        </span>
       </div>
     </footer>
   );
@@ -197,14 +300,9 @@ function SkorLabel({ skor }) {
   return <span style={{ color: warna, fontWeight: 600 }}>{label}</span>;
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// HALAMAN HASIL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-function HalamanHasil({ skor, jawaban, navigate, onUlang, namaUser, konselorList, isSaved }) {
+function HalamanHasil({ skor, jawaban, navigate, onUlang, namaUser, konselorList, isSaved, footerModal, setFooterModal }) {
   const kategoriUser = tentukanKategori(jawaban, skor);
 
-  // [FIX] Gunakan data konselor dari Supabase (konselorList prop), bukan file lokal
   const konselorRanked = useMemo(() =>
     [...konselorList]
       .map((k) => ({ ...k, match: hitungMatch(k, kategoriUser, skor) }))
@@ -227,6 +325,7 @@ function HalamanHasil({ skor, jawaban, navigate, onUlang, namaUser, konselorList
   if (!utama) {
     return (
       <div className="kuis-shell">
+        <FooterModal type={footerModal} onClose={() => setFooterModal(null)} />
         <KuisNav navigate={navigate} />
         <main className="hasil-main">
           <div className="hasil-header">
@@ -238,7 +337,7 @@ function HalamanHasil({ skor, jawaban, navigate, onUlang, namaUser, konselorList
             <button className="hasil-btn-ulang" onClick={onUlang}>Isi Ulang Refleksi</button>
           </div>
         </main>
-        <KuisFooter />
+        <KuisFooter setFooterModal={setFooterModal} />
       </div>
     );
   }
@@ -247,6 +346,7 @@ function HalamanHasil({ skor, jawaban, navigate, onUlang, namaUser, konselorList
 
   return (
     <div className="kuis-shell">
+      <FooterModal type={footerModal} onClose={() => setFooterModal(null)} />
       <KuisNav navigate={navigate} />
       <main className="hasil-main">
 
@@ -353,19 +453,14 @@ function HalamanHasil({ skor, jawaban, navigate, onUlang, namaUser, konselorList
           <button className="hasil-btn-ulang" onClick={onUlang}>Isi Ulang Refleksi</button>
         </div>
       </main>
-      <KuisFooter />
+      <KuisFooter setFooterModal={setFooterModal} />
     </div>
   );
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// MAIN COMPONENT
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 export default function Kuesioner() {
   const navigate = useNavigate();
 
-  // [FIX] Baca user dari localStorage — gunakan user yang sedang login
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
     catch { return null; }
@@ -375,7 +470,6 @@ export default function Kuesioner() {
   const userEmail = user?.email ?? null;
   const firstName = namaUser.split(" ")[1] || namaUser.split(" ")[0];
 
-  // [FIX] Fetch konselor dari Supabase, bukan dari file lokal
   const [konselorList, setKonselorList] = useState([]);
   const [loadingKonselor, setLoadingKonselor] = useState(true);
 
@@ -394,22 +488,23 @@ export default function Kuesioner() {
     return () => { active = false; };
   }, []);
 
-  const [langkah, setLangkah]           = useState("soal");
-  const [soalIdx, setSoalIdx]           = useState(0);
-  const [jawaban, setJawaban]           = useState({});
-  const [isSaved, setIsSaved]           = useState(false);
-  const [saveError, setSaveError]       = useState(null);
+  const [langkah, setLangkah]         = useState("soal");
+  const [soalIdx, setSoalIdx]         = useState(0);
+  const [jawaban, setJawaban]         = useState({});
+  const [isSaved, setIsSaved]         = useState(false);
+  const [saveError, setSaveError]     = useState(null);
 
-  const soal          = soalList[soalIdx];
-  const totalSoal     = soalList.length;
-  const progres       = Math.round((soalIdx / totalSoal) * 100);
+  const [footerModal, setFooterModal] = useState(null);
+
+  const soal           = soalList[soalIdx];
+  const totalSoal      = soalList.length;
+  const progres        = Math.round((soalIdx / totalSoal) * 100);
   const jawabanSaatIni = jawaban[soal?.id];
 
   const handlePilih  = (id) => setJawaban((prev) => ({ ...prev, [soal.id]: id }));
   const handleSlider = (val) => setJawaban((prev) => ({ ...prev, [soal.id]: Number(val) }));
 
   const handleLanjut = async () => {
-    // Default slider ke 50 jika belum diisi
     if (soal.tipe === "slider" && jawaban[soal.id] === undefined) {
       setJawaban((prev) => ({ ...prev, [soal.id]: 50 }));
     }
@@ -419,7 +514,6 @@ export default function Kuesioner() {
       return;
     }
 
-    // Soal terakhir — hitung hasil dan simpan
     const finalJawaban = { ...jawaban };
     if (soal.tipe === "slider" && finalJawaban[soal.id] === undefined) {
       finalJawaban[soal.id] = 50;
@@ -428,9 +522,6 @@ export default function Kuesioner() {
     const skor     = hitungSkor(finalJawaban);
     const kategori = tentukanKategori(finalJawaban, skor);
 
-    // [FIX] Simpan jawaban ke Supabase (tabel hasil_kuesioner) menggunakan
-    // email user yang sedang login, bukan hardcoded "M-001".
-    // Gunakan upsert agar tidak crash jika user mengisi ulang.
     if (userEmail) {
       setSaveError(null);
       const { error } = await saveRefleksiKuesioner({
@@ -444,7 +535,6 @@ export default function Kuesioner() {
       if (error) {
         console.error("Gagal simpan hasil kuesioner:", error.message);
         setSaveError(error.message);
-        // Tetap lanjut ke halaman hasil meski simpan gagal
       } else {
         setIsSaved(true);
       }
@@ -466,12 +556,16 @@ export default function Kuesioner() {
         namaUser={namaUser}
         konselorList={konselorList}
         isSaved={isSaved}
+        footerModal={footerModal}
+        setFooterModal={setFooterModal}
       />
     );
   }
 
   return (
     <div className="kuis-shell">
+      <FooterModal type={footerModal} onClose={() => setFooterModal(null)} />
+
       <KuisNav navigate={navigate} />
 
       <main className="kuis-main">
@@ -566,7 +660,7 @@ export default function Kuesioner() {
         </p>
       </main>
 
-      <KuisFooter />
+      <KuisFooter setFooterModal={setFooterModal} />
     </div>
   );
 }

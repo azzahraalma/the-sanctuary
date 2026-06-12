@@ -18,7 +18,6 @@ body {
   flex-direction: column;
 }
 
-/* TOPBAR */
 .ev-topbar {
   height: 56px;
   background: #fff;
@@ -59,7 +58,6 @@ body {
   border-radius: 20px;
 }
 
-/* MAIN */
 .ev-main {
   flex: 1;
   display: flex;
@@ -71,7 +69,6 @@ body {
   max-width: 640px;
 }
 
-/* HEADER */
 .ev-header {
   margin-bottom: 32px;
 }
@@ -103,7 +100,6 @@ body {
   line-height: 1.6;
 }
 
-/* KLIEN CARD */
 .ev-klien-card {
   background: #fff;
   border-radius: 16px;
@@ -155,7 +151,6 @@ body {
   border-radius: 20px;
 }
 
-/* PROGRESS STEPS */
 .ev-steps {
   display: flex;
   align-items: center;
@@ -176,7 +171,6 @@ body {
   background: #79d8d1;
 }
 
-/* CARD */
 .ev-card {
   background: #fff;
   border-radius: 20px;
@@ -198,7 +192,6 @@ body {
   margin-bottom: 24px;
 }
 
-/* SUASANA HATI */
 .ev-mood-grid {
   display: flex;
   flex-wrap: wrap;
@@ -238,7 +231,6 @@ body {
   color: #2f7d79;
 }
 
-/* SLIDER */
 .ev-slider-item {
   margin-bottom: 24px;
 }
@@ -302,7 +294,6 @@ body {
   padding: 0 2px;
 }
 
-/* ERROR BANNER */
 .ev-error-banner {
   background: #fff5f5;
   border: 1.5px solid #fcc;
@@ -315,7 +306,6 @@ body {
   line-height: 1.5;
 }
 
-/* SUMMARY */
 .ev-summary {
   background: linear-gradient(135deg, #2f7d79, #1a5e5a);
   border-radius: 16px;
@@ -347,7 +337,6 @@ body {
   margin-top: 4px;
 }
 
-/* BTN */
 .ev-btn-row {
   display: flex;
   gap: 10px;

@@ -86,7 +86,6 @@ function SmallDonut({ pct, color, label }) {
   );
 }
 
-// ─── Modal Pesan ─────────────────────────────────────────────────────────────
 function PesanModal({ pesan, onClose }) {
   if (!pesan) return null;
   return (
@@ -157,6 +156,116 @@ function PesanModal({ pesan, onClose }) {
   );
 }
 
+function FooterModal({ type, onClose }) {
+  if (!type) return null;
+
+  const content = {
+    privasi: {
+      title: "Kebijakan Privasi",
+      sections: [
+        {
+          heading: "Informasi yang Kami Kumpulkan",
+          body: "Kami mengumpulkan informasi yang kamu berikan secara langsung, seperti nama, alamat email, dan data profil saat mendaftar. Kami juga mengumpulkan data penggunaan layanan secara anonim untuk meningkatkan pengalaman pengguna."
+        },
+        {
+          heading: "Bagaimana Kami Menggunakan Informasimu",
+          body: "Informasi yang kami kumpulkan digunakan untuk menyediakan layanan konseling sebaya, menghubungkan kamu dengan konselor yang tepat, serta mengirimkan notifikasi terkait jadwal dan sesi konselingmu."
+        },
+        {
+          heading: "Kerahasiaan Sesi Konseling",
+          body: "Semua percakapan dalam sesi konseling bersifat rahasia. Kami tidak membagikan konten sesi kepada pihak ketiga tanpa persetujuan eksplisit darimu, kecuali diwajibkan oleh hukum yang berlaku."
+        },
+        {
+          heading: "Keamanan Data",
+          body: "Kami menggunakan enkripsi standar industri untuk melindungi data pribadimu. Akses ke data dibatasi hanya untuk personel yang berwenang dan diperlukan untuk operasional layanan."
+        },
+        {
+          heading: "Hubungi Kami",
+          body: "Jika kamu memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui email: privacy@thesanctuary.id"
+        }
+      ]
+    },
+    syarat: {
+      title: "Syarat dan Ketentuan",
+      sections: [
+        {
+          heading: "Penerimaan Syarat",
+          body: "Dengan menggunakan layanan The Sanctuary, kamu menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan kami."
+        },
+        {
+          heading: "Penggunaan Layanan",
+          body: "The Sanctuary adalah platform konseling sebaya yang ditujukan untuk mahasiswa Polimedia. Layanan ini bukan pengganti konseling profesional atau layanan kesehatan mental klinis. Untuk kondisi darurat, segera hubungi tenaga profesional."
+        },
+        {
+          heading: "Kewajiban Pengguna",
+          body: "Kamu bertanggung jawab untuk menjaga kerahasiaan akun dan tidak membagikan informasi login kepada orang lain. Segala aktivitas yang terjadi melalui akunmu adalah tanggung jawabmu."
+        },
+        {
+          heading: "Kode Etik",
+          body: "Semua pengguna diharapkan berinteraksi dengan saling menghormati. Perilaku yang merendahkan, melecehkan, atau merugikan pengguna lain akan mengakibatkan penangguhan akun."
+        },
+        {
+          heading: "Perubahan Layanan",
+          body: "Kami berhak mengubah, menangguhkan, atau menghentikan layanan kapan saja dengan pemberitahuan sebelumnya. Perubahan syarat dan ketentuan akan diberitahukan melalui email atau notifikasi aplikasi."
+        }
+      ]
+    },
+    bantuan: {
+      title: "Pusat Bantuan",
+      sections: [
+        {
+          heading: "Cara Booking Sesi",
+          body: "Kunjungi halaman Konselor, pilih konselor yang sesuai kebutuhanmu, lalu pilih jadwal yang tersedia. Konfirmasi booking dan kamu akan mendapat notifikasi setelah konselor menyetujui sesi."
+        },
+        {
+          heading: "Bergabung ke Sesi",
+          body: "Saat waktu sesi tiba, tombol 'Mulai Sesi' akan muncul di dashboard. Klik tombol tersebut untuk masuk ke ruang konseling online bersama konselormu."
+        },
+        {
+          heading: "Membatalkan Sesi",
+          body: "Pembatalan sesi dapat dilakukan melalui halaman Riwayat Sesi minimal 1 jam sebelum waktu sesi dimulai. Pembatalan mendadak kurang dari 1 jam akan dicatat sebagai ketidakhadiran."
+        },
+        {
+          heading: "Masalah Teknis",
+          body: "Jika kamu mengalami masalah teknis saat menggunakan platform, coba refresh halaman atau hapus cache browser. Jika masalah berlanjut, hubungi tim support kami."
+        },
+        {
+          heading: "Hubungi Support",
+          body: "📧 support@thesanctuary.id\n📱 WhatsApp: 0812-3456-7890 (Senin–Jumat, 08.00–17.00 WIB)\n🏢 Gedung Polimedia, Ruang Kemahasiswaan Lt. 2"
+        }
+      ]
+    }
+  };
+
+  const c = content[type];
+  if (!c) return null;
+
+  return (
+    <div className="footer-modal-overlay" onClick={onClose}>
+      <div className="footer-modal-container" onClick={e => e.stopPropagation()}>
+        <div className="footer-modal-header">
+          <div className="footer-modal-title-wrap">
+            <h2 className="footer-modal-title">{c.title}</h2>
+          </div>
+          <button className="footer-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="footer-modal-body">
+          {c.sections.map((s, i) => (
+            <div key={i} className="footer-modal-section">
+              <h3 className="footer-modal-section-title">{s.heading}</h3>
+              <p className="footer-modal-section-body">{s.body}</p>
+            </div>
+          ))}
+        </div>
+        <div className="footer-modal-foot">
+          <p className="footer-modal-foot-note">© 2026 The Sanctuary Polimedia · Tempat aman untuk saling mendengar</p>
+          <button className="footer-modal-close-btn" onClick={onClose}>Tutup</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function KuesionerUX({ userName, onScoreChange, userKey }) {
   const [tab, setTab] = useState("kemudahan");
   const [pertanyaan, setPertanyaan] = useState({ kemudahan: [], kejelasan: [], daya_tarik: [] });
@@ -170,7 +279,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
 
   useEffect(() => {
     onScoreChange?.(submitted ? uxIdx : 0);
-  }, [submitted, uxIdx]); // eslint-disable-line
+  }, [submitted, uxIdx]); 
 
   useEffect(() => {
     async function fetchPertanyaan() {
@@ -216,17 +325,13 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
 
   const handleSubmit = async () => {
     if (!allDone || submitted) return;
-    // [FIX] Pakai upsert agar tidak crash duplicate key kalau user isi ulang
     const { error } = await saveUxKuesioner({
       email: userKey,
       nama: userName,
       uxScore: uxIdx,
       uxAnswers: answers,
     });
-    if (error) {
-      console.error(error);
-      return;
-    }
+    if (error) { console.error(error); return; }
     setSubmitted(true);
   };
 
@@ -376,6 +481,25 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function IconHamburger() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+function IconClose() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
 
@@ -388,27 +512,24 @@ export default function Dashboard() {
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
   const { mid, loading: midLoading } = useMid(userEmail);
-  const [bookings, setBookings]         = useState([]);
-  const [konselor, setKonselor]         = useState([]);
-  const [progress, setProgress]         = useState([]);
-  const [pesan, setPesan]               = useState([]);
-  const [isLoading, setIsLoading]       = useState(() => Boolean(userEmail));
+  const [bookings, setBookings]           = useState([]);
+  const [konselor, setKonselor]           = useState([]);
+  const [progress, setProgress]           = useState([]);
+  const [pesan, setPesan]                 = useState([]);
+  const [isLoading, setIsLoading]         = useState(() => Boolean(userEmail));
   const [selectedPesan, setSelectedPesan] = useState(null);
   const [slots, setSlots]                 = useState([]);
   const [now, setNow]                     = useState(new Date());
+  const [footerModal, setFooterModal]     = useState(null);
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
+    const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
-    if (!userEmail) {
-      setIsLoading(false);
-      return;
-    }
+    if (!userEmail) { setIsLoading(false); return; }
     if (!midLoading && !mid) setIsLoading(false);
   }, [userEmail, mid, midLoading]);
 
@@ -419,16 +540,8 @@ export default function Dashboard() {
     async function fetchDashboardData() {
       try {
         const [bookingRes, progressRes] = await Promise.all([
-          supabase
-            .from("booking")
-            .select("*")
-            .eq("id_mahasiswa", mid)
-            .order("tanggal_sesi", { ascending: false }),
-          supabase
-            .from("progress_konseling")
-            .select("*")
-            .eq("id_mahasiswa", mid)
-            .order("sesi_konseling", { ascending: false }),
+          supabase.from("booking").select("*").eq("id_mahasiswa", mid).order("tanggal_sesi", { ascending: false }),
+          supabase.from("progress_konseling").select("*").eq("id_mahasiswa", mid).order("sesi_konseling", { ascending: false }),
         ]);
 
         if (!active) return;
@@ -448,15 +561,8 @@ export default function Dashboard() {
 
         if (konselorIds.length > 0) {
           const [kRes, sRes] = await Promise.all([
-            supabase
-              .from("data_konselor")
-              .select("*")
-              .in("id", konselorIds),
-            supabase
-              .from("konselor_availability")
-              .select("*")
-              .in("konselor_id", konselorIds)
-              .eq("status", "booked")
+            supabase.from("data_konselor").select("*").in("id", konselorIds),
+            supabase.from("konselor_availability").select("*").in("konselor_id", konselorIds).eq("status", "booked"),
           ]);
           konselorData = kRes.data ?? [];
           slotsData = sRes.data ?? [];
@@ -466,16 +572,12 @@ export default function Dashboard() {
           }
         }
 
-        // [FIX] seedPesan tidak diawait langsung — error tidak memblokir loading
         await seedPesan(userEmail, firstName, myBookings, konselorData).catch(err => {
           console.warn("seedPesan error (non-fatal):", err);
         });
 
         const { data: pesanData } = await supabase
-          .from("pesan")
-          .select("*")
-          .eq("id_penerima", userEmail)
-          .order("created_at", { ascending: false });
+          .from("pesan").select("*").eq("id_penerima", userEmail).order("created_at", { ascending: false });
 
         if (active) {
           setPesan((pesanData ?? []).map(p => ({
@@ -491,25 +593,16 @@ export default function Dashboard() {
       } catch (err) {
         console.error("fetchDashboardData error:", err);
       } finally {
-        // [FIX] Selalu matikan loading, bahkan jika ada error
         if (active) setIsLoading(false);
       }
     }
 
     fetchDashboardData();
 
-    // Subscribe ke perubahan booking secara realtime agar status terupdate
     const bookingChannel = supabase
       .channel(`student-bookings-${mid}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "booking",
-        filter: `id_mahasiswa=eq.${mid}`,
-      }, () => {
-        if (active) {
-          fetchDashboardData();
-        }
+      .on("postgres_changes", { event: "*", schema: "public", table: "booking", filter: `id_mahasiswa=eq.${mid}` }, () => {
+        if (active) fetchDashboardData();
       })
       .subscribe();
 
@@ -517,18 +610,13 @@ export default function Dashboard() {
       active = false;
       supabase.removeChannel(bookingChannel);
     };
-  }, [mid]); // eslint-disable-line
+  }, [mid]); 
 
   const handlePesanClick = async (p) => {
     setSelectedPesan(p);
     if (p.unread) {
-      await supabase
-        .from("pesan")
-        .update({ dibaca: true })
-        .eq("id", p.id);
-      setPesan(prev => prev.map(item =>
-        item.id === p.id ? { ...item, unread: false } : item
-      ));
+      await supabase.from("pesan").update({ dibaca: true }).eq("id", p.id);
+      setPesan(prev => prev.map(item => item.id === p.id ? { ...item, unread: false } : item));
     }
   };
 
@@ -552,13 +640,15 @@ export default function Dashboard() {
 
   return (
     <div className="db-shell">
-      <PesanModal
-        pesan={selectedPesan}
-        onClose={() => setSelectedPesan(null)}
-      />
 
-      {/* ── SIDEBAR ── */}
-      <aside className="db-sidebar">
+      <PesanModal pesan={selectedPesan} onClose={() => setSelectedPesan(null)} />
+      <FooterModal type={footerModal} onClose={() => setFooterModal(null)} />
+
+      {sidebarOpen && (
+        <div className="db-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <aside className={`db-sidebar ${sidebarOpen ? "db-sidebar--open" : ""}`}>
         <div className="db-sidebar-top">
           <span className="db-logo" onClick={() => navigate("/")}>The Sanctuary</span>
           <nav className="db-nav">
@@ -569,13 +659,13 @@ export default function Dashboard() {
               </svg>
               Beranda
             </div>
-            <div className="db-nav-item" onClick={() => navigate("/statistik")}>
+            <div className="db-nav-item" onClick={() => { navigate("/statistik"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
               Statistik
             </div>
-            <div className="db-nav-item" onClick={() => navigate("/riwayat")}>
+            <div className="db-nav-item" onClick={() => { navigate("/riwayat"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
@@ -585,7 +675,7 @@ export default function Dashboard() {
               </svg>
               Riwayat Sesi
             </div>
-            <div className="db-nav-item" onClick={() => navigate("/settings")}>
+            <div className="db-nav-item" onClick={() => { navigate("/settings"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
@@ -605,23 +695,27 @@ export default function Dashboard() {
       </aside>
 
       <main className="db-main">
-        {/* ── TOPBAR ── */}
+
         <header className="db-topbar">
           <div className="db-topbar-l">
+            <button
+              className="db-sidebar-toggle"
+              onClick={() => setSidebarOpen(o => !o)}
+              title={sidebarOpen ? "Tutup menu" : "Buka menu"}
+            >
+              {sidebarOpen ? <IconClose /> : <IconHamburger />}
+            </button>
+
             <span className="db-topbar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
             <nav className="db-topbar-nav">
-              <span onClick={() => navigate("/")}>Beranda</span>
+              <span onClick={() => navigate("/?home=1")}>Beranda</span>
               <span onClick={() => navigate("/konselor")}>Konselor</span>
               <span className="db-topbar-active">Dashboard</span>
             </nav>
           </div>
           <div className="db-topbar-r">
             <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
-            <button
-              className="db-icon-btn"
-              onClick={() => navigate("/notifikasi")}
-              style={{ position: "relative" }}
-            >
+            <button className="db-icon-btn" onClick={() => navigate("/notifikasi")} style={{ position: "relative" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -697,12 +791,8 @@ export default function Dashboard() {
           </div>
 
           <div className="db-grid">
-            <KuesionerUX
-              userName={firstName}
-              userKey={userKey}
-            />
+            <KuesionerUX userName={firstName} userKey={userKey} />
 
-            {/* ── Sesi Konseling ── */}
             <div className="db-card">
               <div className="db-card-hd">
                 <div>
@@ -733,53 +823,43 @@ export default function Dashboard() {
 
                   const getWIBDateStr = (dateStr) => {
                     if (!dateStr) return "";
-                    const date = new Date(dateStr);
-                    return date.toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+                    return new Date(dateStr).toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
                   };
 
                   const getWIBTimeStr = (dateStr) => {
                     if (!dateStr) return "00:00:00";
-                    const date = new Date(dateStr);
-                    return date.toLocaleTimeString("id-ID", {
+                    return new Date(dateStr).toLocaleTimeString("id-ID", {
                       timeZone: "Asia/Jakarta",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hour12: false
+                      hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
                     }).replace(/\./g, ":");
                   };
 
                   const isDateOnly = bk && bk.tanggal_sesi && (bk.tanggal_sesi.includes("T00:00:00") || !bk.tanggal_sesi.includes("T"));
-
                   const bkDateStr = bk && bk.tanggal_sesi ? getWIBDateStr(bk.tanggal_sesi) : "";
                   const bkTimeStr = bk && bk.tanggal_sesi ? getWIBTimeStr(bk.tanggal_sesi) : "00:00:00";
 
-                  const matchedSlot = slots.find(s => 
+                  const matchedSlot = slots.find(s =>
                     s.konselor_id === bk?.id_konselor &&
                     s.tanggal === bkDateStr &&
                     (isDateOnly || normalizeTime(s.jam_mulai) === bkTimeStr)
                   );
 
-                  let start = null;
-                  let end = null;
-
+                  let start = null, end = null;
                   if (matchedSlot) {
                     start = new Date(`${matchedSlot.tanggal}T${normalizeTime(matchedSlot.jam_mulai)}+07:00`);
-                    end = new Date(`${matchedSlot.tanggal}T${normalizeTime(matchedSlot.jam_selesai)}+07:00`);
+                    end   = new Date(`${matchedSlot.tanggal}T${normalizeTime(matchedSlot.jam_selesai)}+07:00`);
                   } else if (bk && bk.tanggal_sesi) {
                     start = new Date(bk.tanggal_sesi);
-                    end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour fallback
+                    end   = new Date(start.getTime() + 60 * 60 * 1000);
                   }
 
-                  const startBuffer = start;
-                  const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
-
+                  const isTimeRange         = start && end && now >= start && now <= end;
                   const showMulaiSesiButton = bk && isTerjadwal(bk.status) && isTimeRange;
                   const showMasukSesiButton = isBerjalanSesi && (end ? now <= end : true);
 
                   let statusHelperText = null;
                   if (bk && !isSelesai(bk.status)) {
-                    if (isTerjadwal(bk.status) && startBuffer && now < startBuffer) {
+                    if (isTerjadwal(bk.status) && start && now < start) {
                       const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
                       statusHelperText = `Mulai pukul ${jamStr}`;
                     } else if (end && now > end) {
@@ -788,12 +868,7 @@ export default function Dashboard() {
                   }
 
                   return (
-                    <div
-                      key={k.id}
-                      className="db-konsul-item"
-                      style={{ cursor: "pointer" }}
-                      onClick={() => navigate("/riwayat")}
-                    >
+                    <div key={k.id} className="db-konsul-item" style={{ cursor: "pointer" }} onClick={() => navigate("/riwayat")}>
                       <img src={k.image_url ?? k.foto_url} alt={k.nama} className="db-konsul-img" />
                       <div className="db-konsul-info">
                         <p className="db-konsul-name">{k.nama}</p>
@@ -809,31 +884,17 @@ export default function Dashboard() {
                             {statusHelperText}
                           </span>
                         )}
-                        {/* ── Tombol Mulai Sesi ── */}
                         {showMasukSesiButton && (
-                          <button
-                            className="db-btn-mulai-sesi"
-                            onClick={e => {
-                              e.stopPropagation(); // jangan trigger navigate ke /riwayat
-                              navigate(`/sesi/${bk.id}`);
-                            }}
-                          >
+                          <button className="db-btn-mulai-sesi" onClick={e => { e.stopPropagation(); navigate(`/sesi/${bk.id}`); }}>
                             Masuk Sesi →
                           </button>
                         )}
                         {showMulaiSesiButton && (
-                          <button
-                            className="db-btn-mulai-sesi"
-                            onClick={async e => {
-                              e.stopPropagation(); // jangan trigger navigate ke /riwayat
-                              // Update status ke "Berjalan" agar aktif bagi kedua pihak
-                              await supabase
-                                .from("booking")
-                                .update({ status: BOOKING_STATUS.BERJALAN })
-                                .eq("id", bk.id);
-                              navigate(`/sesi/${bk.id}`);
-                            }}
-                          >
+                          <button className="db-btn-mulai-sesi" onClick={async e => {
+                            e.stopPropagation();
+                            await supabase.from("booking").update({ status: BOOKING_STATUS.BERJALAN }).eq("id", bk.id);
+                            navigate(`/sesi/${bk.id}`);
+                          }}>
                             Mulai Sesi →
                           </button>
                         )}
@@ -844,7 +905,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* ── Pesan Masuk ── */}
             <div className="db-card">
               <div className="db-card-hd">
                 <div>
@@ -881,10 +941,7 @@ export default function Dashboard() {
                       <p className="db-pesan-text">"{p.teks.length > 60 ? p.teks.slice(0, 60) + "..." : p.teks}"</p>
                     </div>
                     {p.unread && (
-                      <div style={{
-                        width: 8, height: 8, borderRadius: "50%",
-                        background: "#79d8d1", flexShrink: 0, alignSelf: "center",
-                      }} />
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#79d8d1", flexShrink: 0, alignSelf: "center" }} />
                     )}
                   </div>
                 ))}
@@ -899,11 +956,12 @@ export default function Dashboard() {
             <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
           </div>
           <div className="db-footer-links">
-            <span>Kebijakan Privasi</span>
-            <span>Syarat dan Ketentuan</span>
-            <span>Bantuan</span>
+            <span onClick={() => setFooterModal("privasi")}>Kebijakan Privasi</span>
+            <span onClick={() => setFooterModal("syarat")}>Syarat dan Ketentuan</span>
+            <span onClick={() => setFooterModal("bantuan")}>Bantuan</span>
           </div>
         </footer>
+
       </main>
     </div>
   );

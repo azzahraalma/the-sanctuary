@@ -174,7 +174,6 @@ export default function RiwayatSesi() {
 
     fetchAll();
 
-    // Realtime: dengarkan INSERT/UPDATE di progress_konseling milik user ini
     const progressChannel = supabase
       .channel(`riwayat-progress-${mid}`)
       .on(
@@ -184,7 +183,6 @@ export default function RiwayatSesi() {
       )
       .subscribe();
 
-    // Realtime: dengarkan UPDATE di booking (perubahan status, kondisi_saat_ini)
     const bookingChannel = supabase
       .channel(`riwayat-booking-${mid}`)
       .on(
@@ -233,7 +231,6 @@ export default function RiwayatSesi() {
   return (
     <div className="sk-shell">
 
-      {/* ── SIDEBAR ── */}
       <aside className="sk-sidebar">
         <div className="sk-sidebar-top">
           <span className="sk-sidebar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -280,10 +277,8 @@ export default function RiwayatSesi() {
         </button>
       </aside>
 
-      {/* ── MAIN ── */}
       <main className="sk-main">
 
-        {/* ── TOPBAR ── */}
         <header className="sk-topbar">
           <div className="sk-topbar-l">
             <span className="sk-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -295,7 +290,6 @@ export default function RiwayatSesi() {
           </div>
           <div className="sk-topbar-r">
             <button className="sk-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
-            {/* ── FIXED: navigate ke /notifikasi ── */}
             <button className="sk-icon-btn" onClick={() => navigate("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -308,10 +302,9 @@ export default function RiwayatSesi() {
           </div>
         </header>
 
-        {/* ── GREETING ── */}
         <div className="sk-greeting">
           <button
-            onClick={() => navigate("/statistik")}
+            onClick={() => navigate("/dashboard")}
             style={{
               background: "none", border: "none", cursor: "pointer",
               display: "flex", alignItems: "center", gap: 6,
@@ -319,7 +312,7 @@ export default function RiwayatSesi() {
               marginBottom: 10, padding: 0, fontFamily: "inherit",
             }}
           >
-            ← Kembali ke Statistik
+            ← Kembali
           </button>
           <p className="sk-greeting-sub">Riwayat Sesi Cerita, {firstName}</p>
           <p className="sk-greeting-hint">Detail lengkap setiap sesi konseling yang pernah kamu jalani</p>
@@ -371,7 +364,6 @@ export default function RiwayatSesi() {
               {myProgress.map((p, idx) => {
                 const isOpen = expanded === idx;
                 const konselor = myKonselor.find(k => k.ID === p.ID_Konselor) ?? myKonselor[0] ?? null;
-                // [FIX] Ambil booking terbaru untuk konselor ini, bukan yang pertama ditemukan
                 const bookingsForKonselor = myBookings
                   .filter(b => b.ID_Konselor === p.ID_Konselor)
                   .sort((a, b) => new Date(b.Tanggal_Sesi ?? 0) - new Date(a.Tanggal_Sesi ?? 0));

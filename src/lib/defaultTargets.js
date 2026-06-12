@@ -7,7 +7,6 @@ const DEFAULT_TARGETS = [
   { nama_target: "Manajemen waktu akademik", target_sesi: 4 },
 ];
 
-/** Buat target default untuk mahasiswa baru jika belum punya. */
 export async function ensureDefaultTargets(idMahasiswa) {
   if (!idMahasiswa) return;
 

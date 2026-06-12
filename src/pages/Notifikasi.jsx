@@ -98,7 +98,6 @@ export default function Notifikasi() {
 
     fetchData();
 
-    // Realtime: tampilkan pesan baru tanpa refresh
     const pesanChannel = supabase
       .channel(`notifikasi-pesan-${userEmail}`)
       .on("postgres_changes", {
@@ -160,7 +159,6 @@ export default function Notifikasi() {
 
     return (
     <div className="db-shell">
-      {/* ── SIDEBAR ── */}
       <aside className="db-sidebar">
         <div className="db-sidebar-top">
           <span className="db-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -212,7 +210,6 @@ export default function Notifikasi() {
       </aside>
 
       <main className="db-main">
-        {/* ── TOPBAR ── */}
         <header className="db-topbar">
           <div className="db-topbar-l">
             <span className="db-topbar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -231,7 +228,6 @@ export default function Notifikasi() {
 
         <div className="db-content">
 
-          {/* ── HEADER SECTION — back + judul dalam satu baris, filter di bawah ── */}
           <div className="db-greeting">
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
               <button
@@ -257,7 +253,6 @@ export default function Notifikasi() {
             <p className="db-greeting-hint">Semua aktivitas dan pesan untukmu, {userName.split(" ")[0]}</p>
           </div>
 
-          {/* ── FILTER BAR ── */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {FILTER_TABS.map(tab => (
@@ -300,7 +295,6 @@ export default function Notifikasi() {
             </div>
           </div>
 
-          {/* ── LIST NOTIFIKASI ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {isLoading && (
               <div style={{ textAlign: "center", padding: "60px 0", color: "#6b8f8c", fontSize: 14 }}>
@@ -329,7 +323,6 @@ export default function Notifikasi() {
                     opacity: dibaca ? 0.75 : 1,
                   }}
                 >
-                  {/* Avatar */}
                   <div style={{
                     width: 42, height: 42, borderRadius: "50%", flexShrink: 0,
                     background: dibaca ? "#e8eeed" : n.bg,
@@ -343,7 +336,6 @@ export default function Notifikasi() {
                     }
                   </div>
 
-                  {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: "#1a3d3a" }}>{n.judul}</span>

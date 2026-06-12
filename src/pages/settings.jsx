@@ -28,7 +28,7 @@ function Toast({ msg, onDone }) {
     if (!msg) return;
     const t = setTimeout(onDone, 2800);
     return () => clearTimeout(t);
-  }, [msg]); // eslint-disable-line
+  }, [msg]); 
   if (!msg) return null;
   return (
     <div style={{
@@ -148,7 +148,7 @@ export default function Settings() {
       }
       if (data?.foto_url) setFotoUrl(data.foto_url);
     })();
-  }, [userEmail]); // eslint-disable-line
+  }, [userEmail]); 
 
   useEffect(() => {
     if (!userEmail) return;
@@ -336,7 +336,6 @@ export default function Settings() {
     <div className="db-shell">
       <Toast msg={toast} onDone={() => setToast("")} />
 
-      {/* ── SIDEBAR ── */}
       <aside className="db-sidebar">
         <div className="db-sidebar-top">
           <span className="db-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -411,6 +410,17 @@ export default function Settings() {
         </header>
 
         <div className="db-content">
+          <button
+            onClick={() => navigate("/dashboard")}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+              color: "#2f7d79", fontSize: 13, fontWeight: 700,
+              marginBottom: 10, padding: 0, fontFamily: "inherit",
+            }}
+          >
+            ← Kembali
+          </button>
           <div className="stg-page-header">
             <h1 className="stg-page-title">Pengaturan</h1>
             <p className="stg-page-sub">Kelola akun dan preferensi perjalanan konselingmu.</p>

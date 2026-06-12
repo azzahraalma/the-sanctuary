@@ -94,6 +94,25 @@ function DonutLight({ pct, size = 110, stroke = 11, color = "#2f7d79", sub }) {
   );
 }
 
+function IconHamburger() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+function IconClose() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 export default function Statistik() {
   const navigate = useNavigate();
 
@@ -112,12 +131,10 @@ export default function Statistik() {
   const [myKonselor, setMyKonselor] = useState([]);
   const [finalReko, setFinalReko]   = useState([]);
   const [loading, setLoading]       = useState(() => Boolean(userEmail));
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!userEmail) {
-      setLoading(false);
-      return;
-    }
+    if (!userEmail) { setLoading(false); return; }
     if (!midLoading && !mid) setLoading(false);
   }, [userEmail, mid, midLoading]);
 
@@ -176,13 +193,9 @@ export default function Statistik() {
       setMyTargets(targets);
 
       const konselorIDs = [...new Set(bookings.map((b) => b.ID_Konselor))].filter(Boolean);
-
       if (konselorIDs.length > 0) {
         const { data: kData } = await supabase.from("data_konselor").select("*").in("id", konselorIDs);
-        const visitedKonselor = (kData ?? []).map(mapKonselor);
-        if (active) {
-          setMyKonselor(visitedKonselor);
-        }
+        if (active) setMyKonselor((kData ?? []).map(mapKonselor));
       }
 
       const { data: rekoData } = await supabase
@@ -196,44 +209,27 @@ export default function Statistik() {
         .slice(0, 3)
         .map(mapKonselor);
 
-      if (active) setFinalReko(reko);
-
       if (active) {
+        setFinalReko(reko);
         setLoading(false);
       }
     }
 
     fetchAll();
 
-    // Realtime: update otomatis saat ada sesi baru atau booking berubah
     const progressChannel = supabase
       .channel(`statistik-progress-${mid}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "progress_konseling",
-        filter: `id_mahasiswa=eq.${mid}`,
-      }, () => { if (active) fetchAll(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "progress_konseling", filter: `id_mahasiswa=eq.${mid}` }, () => { if (active) fetchAll(); })
       .subscribe();
 
     const bookingChannel = supabase
       .channel(`statistik-booking-${mid}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "booking",
-        filter: `id_mahasiswa=eq.${mid}`,
-      }, () => { if (active) fetchAll(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "booking", filter: `id_mahasiswa=eq.${mid}` }, () => { if (active) fetchAll(); })
       .subscribe();
 
     const targetChannel = supabase
       .channel(`statistik-target-${mid}`)
-      .on("postgres_changes", {
-        event: "*",
-        schema: "public",
-        table: "data_target",
-        filter: `id_mahasiswa=eq.${mid}`,
-      }, () => { if (active) fetchAll(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "data_target", filter: `id_mahasiswa=eq.${mid}` }, () => { if (active) fetchAll(); })
       .subscribe();
 
     return () => {
@@ -309,12 +305,15 @@ export default function Statistik() {
   return (
     <div className="sk-shell">
 
-      {/* ── SIDEBAR ── */}
-      <aside className="sk-sidebar">
+      {sidebarOpen && (
+        <div className="sk-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <aside className={`sk-sidebar ${sidebarOpen ? "sk-sidebar--open" : ""}`}>
         <div className="sk-sidebar-top">
           <span className="sk-sidebar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
           <nav className="sk-sidebar-nav">
-            <div className="sk-sidebar-item" onClick={() => navigate("/dashboard")}>
+            <div className="sk-sidebar-item" onClick={() => { navigate("/dashboard"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
                 <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
@@ -327,7 +326,7 @@ export default function Statistik() {
               </svg>
               Statistik
             </div>
-            <div className="sk-sidebar-item" onClick={() => navigate("/riwayat")}>
+            <div className="sk-sidebar-item" onClick={() => { navigate("/riwayat"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
@@ -337,7 +336,7 @@ export default function Statistik() {
               </svg>
               Riwayat Sesi
             </div>
-            <div className="sk-sidebar-item" onClick={() => navigate("/settings")}>
+            <div className="sk-sidebar-item" onClick={() => { navigate("/settings"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <circle cx="12" cy="12" r="3" />
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
@@ -356,11 +355,18 @@ export default function Statistik() {
         </button>
       </aside>
 
-      {/* ── MAIN ── */}
       <main className="sk-main">
 
         <header className="sk-topbar">
           <div className="sk-topbar-l">
+            <button
+              className="sk-sidebar-toggle"
+              onClick={() => setSidebarOpen(o => !o)}
+              title={sidebarOpen ? "Tutup menu" : "Buka menu"}
+            >
+              {sidebarOpen ? <IconClose /> : <IconHamburger />}
+            </button>
+
             <span className="sk-logo" onClick={() => navigate("/")}>The Sanctuary</span>
             <nav className="sk-topbar-nav">
               <span onClick={() => navigate("/")}>Beranda</span>
@@ -370,7 +376,6 @@ export default function Statistik() {
           </div>
           <div className="sk-topbar-r">
             <button className="sk-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
-            {/* ── FIXED: navigate ke /notifikasi ── */}
             <button className="sk-icon-btn" onClick={() => navigate("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -402,10 +407,10 @@ export default function Statistik() {
 
           <div className="sk-stats-row">
             {[
-              { icon: "", val: totalSesi,            lbl: "Total Sesi Cerita",  delta: `+${totalSesi}` },
-              { icon: "", val: lastTanggal,           lbl: "Sesi Terakhir",      delta: "Terbaru" },
-              { icon: "", val: skorKesejahteraan,     lbl: "Skor Kesejahteraan", delta: `+${deltaKesej}` },
-              { icon: "", val: `${targetSelesai}/${targetTotal}`, lbl: "Target Tercapai", delta: targetTotal > 0 ? `${Math.round((targetSelesai / targetTotal) * 100)}%` : "0%" },
+              { icon: "", val: totalSesi,                           lbl: "Total Sesi Cerita",  delta: `+${totalSesi}` },
+              { icon: "", val: lastTanggal,                         lbl: "Sesi Terakhir",      delta: "Terbaru" },
+              { icon: "", val: skorKesejahteraan,                   lbl: "Skor Kesejahteraan", delta: `+${deltaKesej}` },
+              { icon: "", val: `${targetSelesai}/${targetTotal}`,   lbl: "Target Tercapai",    delta: targetTotal > 0 ? `${Math.round((targetSelesai / targetTotal) * 100)}%` : "0%" },
             ].map((s, i) => (
               <div key={i} className="sk-stat-card">
                 <div className="sk-stat-top">
@@ -520,7 +525,6 @@ export default function Statistik() {
 
               <div className="sk-riwayat-list">
                 {myKonselor.map((k) => {
-                  // [FIX] Ambil booking TERBARU per konselor, bukan yang pertama ditemukan
                   const booksForKonselor = myBookings.filter((b) => b.ID_Konselor === k.ID);
                   const bk = booksForKonselor.sort((a, b) =>
                     new Date(b.Tanggal_Sesi) - new Date(a.Tanggal_Sesi)
@@ -584,7 +588,10 @@ export default function Statistik() {
                         <div className="sk-mentor-rate-fill" style={{ width: `${successRate}%`, background: colors[ci % colors.length] }} />
                       </div>
                       <p className="sk-mentor-sr">Berhasil bantu {successRate}% mahasiswa</p>
-                      <button className={`sk-mentor-btn ${ci === 0 ? "sk-mentor-btn--rec" : ""}`} onClick={() => navigate("/konselor")}>
+                      <button
+                        className={`sk-mentor-btn ${ci === 0 ? "sk-mentor-btn--rec" : ""}`}
+                        onClick={() => navigate("/konselor")}
+                      >
                         {ci === 0 ? "Paling Direkomendasikan" : "→ Mulai Cerita"}
                       </button>
                     </div>
@@ -607,6 +614,7 @@ export default function Statistik() {
             <span>Bantuan</span>
           </div>
         </footer>
+
       </main>
     </div>
   );

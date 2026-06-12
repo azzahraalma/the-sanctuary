@@ -56,8 +56,6 @@ export default function Register() {
       return;
     }
 
-    // Supabase mengirim email konfirmasi jika fitur itu aktif.
-    // authData.user ada tapi session null = email belum dikonfirmasi.
     const needsConfirmation = authData.user && !authData.session;
 
     await supabase
@@ -76,7 +74,6 @@ export default function Register() {
     setLoading(false);
 
     if (needsConfirmation) {
-      // Jangan auto-login — arahkan ke halaman login dengan pesan
       navigate("/login", {
         replace: true,
         state: { notice: `Akun berhasil dibuat! Cek email ${emailLower} untuk konfirmasi, lalu login.` },
@@ -84,8 +81,6 @@ export default function Register() {
       return;
     }
 
-    // Jika tidak perlu konfirmasi (email confirmation dimatikan di Supabase),
-    // simpan session dan langsung masuk
     localStorage.setItem("sanctuary_user", JSON.stringify({
       id:         authData.user.id,
       name,

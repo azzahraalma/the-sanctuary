@@ -1,5 +1,3 @@
-// data/kategori.js
-
 export const KATEGORI = {
   AKADEMIK: "Tekanan Akademik & Kesejahteraan Mahasiswa",
   KARIER: "Perencanaan Karier & Kehidupan Kampus",

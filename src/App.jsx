@@ -35,7 +35,6 @@ function ProtectedRoute({ user, isReady, children }) {
 
 function KonselorRoute({ user, isReady, children }) {
   if (!isReady) {
-    // Cek localStorage dulu sebelum redirect
     try {
       const cached = JSON.parse(localStorage.getItem("sanctuary_user") || "null");
       if (cached?.role === "konselor") return <AuthLoader />;

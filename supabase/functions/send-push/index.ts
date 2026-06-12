@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 
-// ── Util: base64url encode ────────────────────────────────────────
 function base64UrlEncode(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let str = "";
@@ -8,7 +7,6 @@ function base64UrlEncode(buffer: ArrayBuffer): string {
   return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-// ── Util: import VAPID private key ───────────────────────────────
 async function importPrivateKey(base64: string): Promise<CryptoKey> {
   const raw = Uint8Array.from(
     atob(base64.replace(/-/g, "+").replace(/_/g, "/")),
@@ -23,7 +21,6 @@ async function importPrivateKey(base64: string): Promise<CryptoKey> {
   );
 }
 
-// ── Buat JWT untuk VAPID Auth ─────────────────────────────────────
 async function makeVapidJwt(
   audience: string,
   subject: string,
@@ -49,7 +46,6 @@ async function makeVapidJwt(
   return `${header}.${payload}.${base64UrlEncode(sig)}`;
 }
 
-// ── Kirim satu push ke endpoint ───────────────────────────────────
 async function sendOnePush(
   subscription: { endpoint: string; p256dh: string; auth: string },
   payload: string,
@@ -76,7 +72,6 @@ async function sendOnePush(
   return { ok: false, status: res.status, error: text };
 }
 
-// ── Handler utama ─────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -100,15 +95,12 @@ Deno.serve(async (req: Request) => {
 
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Ambil subscribers — filter by email & preferensi tipe
     let query = supabase
       .from("push_subscriptions")
       .select("endpoint, p256dh, auth, email");
 
     if (email) query = query.eq("email", email);
 
-    // Filter berdasarkan preferensi (pengingat_sesi / komunitas / pesan_langsung)
-    // Filter berdasarkan preferensi (pengingat_sesi / komunitas / pesan_langsung)
     if (tipe) {
       const prefsRes = await fetch(
         `${SUPABASE_URL}/rest/v1/preferensi_notif?select=email&${tipe}=eq.true`,

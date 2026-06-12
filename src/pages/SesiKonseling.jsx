@@ -42,7 +42,6 @@ export default function SesiKonseling() {
   const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
 
-  // ── ambil user dari localStorage — dijamin ada sebelum render
   const [user] = useState(() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")) ?? {}; }
     catch { return {}; }
@@ -51,7 +50,6 @@ export default function SesiKonseling() {
   const userEmail = (user?.email ?? "").toLowerCase().trim();
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
-  // ── Fetch booking + konselor
   useEffect(() => {
     if (!bookingId) { navigate("/dashboard"); return; }
     (async () => {
@@ -64,7 +62,6 @@ export default function SesiKonseling() {
       if (bkErr) console.error("booking fetch error:", bkErr);
       if (!bk) { navigate("/dashboard"); return; }
 
-      // ── Fetch the availability slot for this booking ──
       let slot = null;
       if (bk.tanggal_sesi) {
         const normalizeTime = (t) => {
@@ -123,7 +120,7 @@ export default function SesiKonseling() {
         end = new Date(`${slot.tanggal}T${normalizeTime(slot.jam_selesai)}+07:00`);
       } else if (bk.tanggal_sesi) {
         start = new Date(bk.tanggal_sesi);
-        end = new Date(start.getTime() + 60 * 60 * 1000); // 1 hour fallback
+        end = new Date(start.getTime() + 60 * 60 * 1000);
       }
 
       const now = new Date();
@@ -149,8 +146,6 @@ export default function SesiKonseling() {
       }
 
       if (isBerjalan(bk.status)) {
-        // [FIX] Cek expiry bahkan ketika end=null (tidak ada slot di availability)
-        // Fallback: anggap sesi berlangsung 2 jam dari tanggal_sesi
         const effectiveEnd = end ?? (bk.tanggal_sesi
           ? new Date(new Date(bk.tanggal_sesi).getTime() + 2 * 60 * 60 * 1000)
           : null);
@@ -169,7 +164,6 @@ export default function SesiKonseling() {
             .eq("id", bookingId);
           bk.status = BOOKING_STATUS.BERJALAN;
         } else {
-          // If not in time range
           if (startBuffer && now < startBuffer) {
             alert("Sesi ini belum dimulai. Silakan tunggu jadwal sesimu ya!");
           } else {
@@ -190,9 +184,8 @@ export default function SesiKonseling() {
       setKonselor(kons);
       setIsLoading(false);
     })();
-  }, [bookingId, user]); // eslint-disable-line
+  }, [bookingId, user]); 
 
-  // ── Fetch pesan & realtime
   useEffect(() => {
     if (!bookingId) return;
 
@@ -223,7 +216,6 @@ export default function SesiKonseling() {
     return () => supabase.removeChannel(channel);
   }, [bookingId]);
 
-  // ── Realtime subscription to detect when counselor ends the session
   useEffect(() => {
     if (!bookingId) return;
 
@@ -261,14 +253,12 @@ export default function SesiKonseling() {
     return () => supabase.removeChannel(bookingChannel);
   }, [bookingId, user, navigate]);
 
-  // ── Timer — mulai hanya setelah booking selesai dimuat
   useEffect(() => {
     if (isLoading) return;
     const t = setInterval(() => setElapsed(s => s + 1), 1000);
     return () => clearInterval(t);
   }, [isLoading]);
 
-  // ── Auto scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -347,10 +337,8 @@ export default function SesiKonseling() {
   );
 
   return (
-    // ── wrapper root agar semua CSS hanya berlaku di halaman ini
     <div className="sesi-konseling-page">
 
-      {/* MODAL — di-render di dalam wrapper, bukan via Portal */}
       {showEndModal && (
         <div className="sk-overlay">
           <div className="sk-modal">
@@ -374,7 +362,6 @@ export default function SesiKonseling() {
       )}
 
       <div className="sk-shell">
-        {/* TOPBAR */}
         <header className="sk-topbar">
           <span className="sk-topbar-brand" onClick={() => navigate("/")}>
             The <span>Sanctuary</span>
@@ -396,7 +383,6 @@ export default function SesiKonseling() {
         </header>
 
         <div className="sk-body">
-          {/* LEFT PANEL */}
           <aside className="sk-left">
             <div className="sk-avatar-wrap">
               {konselor?.image_url
@@ -426,12 +412,10 @@ export default function SesiKonseling() {
             </div>
           </aside>
 
-          {/* CHAT */}
           <div className="sk-center">
             <div className="sk-messages">
               {messages.length === 0 ? (
                 <div className="sk-empty-chat">
-                  {/* Diubah dari className="emoji" → className="sk-empty-emoji" */}
                   <span className="sk-empty-emoji"></span>
                   <span>Sesi dimulai! Apa yang ingin kamu ceritakan hari ini?</span>
                 </div>
@@ -455,7 +439,6 @@ export default function SesiKonseling() {
               <div ref={bottomRef} />
             </div>
 
-            {/* QUICK REFLECTION */}
             <div className="sk-quick-ref">
               <p className="sk-quick-ref-label">Quick Reflection</p>
               <div className="sk-chips">
@@ -472,7 +455,6 @@ export default function SesiKonseling() {
               </div>
             </div>
 
-            {/* INPUT */}
             <div className="sk-input-area">
               <textarea
                 ref={textareaRef}

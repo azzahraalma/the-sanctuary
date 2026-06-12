@@ -1,20 +1,11 @@
-/* ─────────────────────────────────────────────────────────────────
-   sw.js  —  Service Worker for Web Push Notifications
-   The Sanctuary — letakkan file ini di folder /public/
-───────────────────────────────────────────────────────────────── */
-
-
-// ── Install ──────────────────────────────────────────────────────
 self.addEventListener("install", () => {
   self.skipWaiting();
 });
 
-// ── Activate ─────────────────────────────────────────────────────
 self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-// ── Push Event — muncul saat Supabase Edge Function kirim notif ──
 self.addEventListener("push", (event) => {
   if (!event.data) return;
 
@@ -28,9 +19,9 @@ self.addEventListener("push", (event) => {
   const title   = payload.title ?? "The Sanctuary";
   const options = {
     body:    payload.body  ?? "Kamu punya pesan baru",
-    icon:    payload.icon  ?? "/icon-192.png",   // ganti sesuai asset kamu
+    icon:    payload.icon  ?? "/icon-192.png",   
     badge:   payload.badge ?? "/badge-72.png",
-    tag:     payload.tag   ?? "sanctuary-notif", // replace notif sejenis
+    tag:     payload.tag   ?? "sanctuary-notif", 
     renotify: true,
     data: {
       url: payload.url ?? "/dashboard",
@@ -44,7 +35,6 @@ self.addEventListener("push", (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// ── Notification Click ────────────────────────────────────────────
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
@@ -54,14 +44,12 @@ self.addEventListener("notificationclick", (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-      // Kalau tab Sanctuary sudah terbuka, fokus ke sana
       for (const client of windowClients) {
         if (client.url.includes(self.location.origin) && "focus" in client) {
           client.navigate(targetUrl);
           return client.focus();
         }
       }
-      // Kalau belum ada tab, buka baru
       if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
     })
   );

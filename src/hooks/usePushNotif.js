@@ -1,9 +1,3 @@
-/* ─────────────────────────────────────────────────────────────────
-   src/hooks/usePushNotif.js
-   Custom hook — urus subscribe/unsubscribe Web Push
-   Simpan subscription ke tabel push_subscriptions di Supabase
-───────────────────────────────────────────────────────────────── */
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase.js";
 
@@ -29,7 +23,6 @@ export function usePushNotif(userEmail) {
   });
   const [loading, setLoading] = useState(false);
 
-  // Cek status awal saat mount
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
     if (Notification.permission === "denied") return;
@@ -56,13 +49,12 @@ export function usePushNotif(userEmail) {
     };
   }, []);
 
-  // Subscribe
   const subscribe = useCallback(async () => {
     if (!userEmail) return;
     setLoading(true);
     try {
       await navigator.serviceWorker.register("/sw.js");
-      const reg = await navigator.serviceWorker.ready; // pakai reg dari .ready
+      const reg = await navigator.serviceWorker.ready;
 
       const perm = await Notification.requestPermission();
       if (perm === "denied") { setStatus("denied"); return; }
@@ -96,7 +88,6 @@ export function usePushNotif(userEmail) {
     }
   }, [userEmail]);
 
-  // Unsubscribe
   const unsubscribe = useCallback(async () => {
     if (!userEmail) return;
     setLoading(true);

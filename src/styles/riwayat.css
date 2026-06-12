@@ -1,10 +1,5 @@
-/* ─── RIWAYAT SESI — turunan dari Statistik, selaras penuh ─────── */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,700&display=swap');
 
-/* ── Semua variabel diwarisi dari statistik.css ───────────────────
-   Kalau riwayat.css di-import terpisah tanpa statistik.css,
-   variabel ini harus ada di sini. Kalau sudah di-import bersama,
-   blok :root ini tidak merusak apapun (override-safe).            */
 :root {
   --teal:               #2f7d79;
   --teal-lt:            #79d8d1;
@@ -26,9 +21,6 @@
   --grad-stat:          linear-gradient(160deg,#ffffff 0%,#eef8f7 100%);
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   EMPTY STATE
-   ───────────────────────────────────────────────────────────────── */
 .rw-empty {
   display: flex;
   flex-direction: column;
@@ -44,18 +36,12 @@
 .rw-empty-title { font-size: 16px; font-weight: 800; color: #111; margin-bottom: 6px; }
 .rw-empty-sub   { font-size: 13px; color: var(--gray); }
 
-/* ─────────────────────────────────────────────────────────────────
-   LIST WRAPPER
-   ───────────────────────────────────────────────────────────────── */
 .rw-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   RIWAYAT ITEM — kartu accordion
-   ───────────────────────────────────────────────────────────────── */
 .rw-item {
   background: var(--grad-card);
   border: 1px solid rgba(47,125,121,0.09);
@@ -67,7 +53,6 @@
     box-shadow  .28s cubic-bezier(.22,1,.36,1),
     border-color .2s;
 
-  /* staggered fade-up dari parent */
   animation: rwFadeUp .45s cubic-bezier(.22,1,.36,1) both;
 }
 .rw-item:hover {
@@ -84,9 +69,6 @@
   background: linear-gradient(135deg,rgba(47,125,121,0.04) 0%,rgba(121,216,209,0.04) 100%);
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   ITEM HEADER (clickable row)
-   ───────────────────────────────────────────────────────────────── */
 .rw-header {
   display: flex;
   align-items: center;
@@ -99,7 +81,6 @@
   background: rgba(47,125,121,0.03);
 }
 
-/* Session badge: "S1" pill */
 .rw-badge {
   flex-shrink: 0;
   width: 40px;
@@ -116,7 +97,6 @@
   letter-spacing: -0.3px;
 }
 
-/* Meta block (title + sub info) */
 .rw-meta     { flex: 1; min-width: 0; }
 .rw-meta-top {
   display: flex;
@@ -145,7 +125,6 @@
   font-weight: 500;
 }
 
-/* Delta badge (perubahan skor) */
 .rw-delta-pos {
   color: #2f7d79;
   font-weight: 700;
@@ -163,7 +142,6 @@
   font-size: 11px;
 }
 
-/* Right side: skor + chevron */
 .rw-right {
   display: flex;
   align-items: center;
@@ -192,7 +170,6 @@
   margin-top: 2px;
 }
 
-/* Chevron icon */
 .rw-chevron {
   color: var(--gray);
   transition: transform .25s cubic-bezier(.4,0,.2,1), color .2s;
@@ -203,9 +180,6 @@
   color: var(--teal);
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   MOOD BADGE
-   ───────────────────────────────────────────────────────────────── */
 .rw-mood {
   display: inline-flex;
   align-items: center;
@@ -237,9 +211,6 @@
   border: 1px solid rgba(212,133,74,0.22);
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   EXPANDED BODY
-   ───────────────────────────────────────────────────────────────── */
 .rw-body {
   padding: 20px 22px 22px;
   animation: rwBodyIn .3s cubic-bezier(.22,1,.36,1) both;
@@ -251,9 +222,6 @@
   gap: 16px;
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   PANEL (child card di dalam body)
-   ───────────────────────────────────────────────────────────────── */
 .rw-panel {
   background: linear-gradient(145deg,#f8f8f4 0%,#eef8f7 100%);
   border: 1px solid rgba(47,125,121,0.09);
@@ -271,7 +239,6 @@
   letter-spacing: 0.08em;
 }
 
-/* ── Konselor row ── */
 .rw-k-row {
   display: flex;
   align-items: center;
@@ -301,7 +268,6 @@
 .rw-k-name { font-size: 13px; font-weight: 700; color: #111; }
 .rw-k-cat  { font-size: 11px; color: var(--gray); margin-top: 1px; }
 
-/* Konselor status badge */
 .rw-k-status {
   display: inline-flex;
   align-items: center;
@@ -323,7 +289,6 @@
   border: 1px solid rgba(212,133,74,0.20);
 }
 
-/* ── Dimensi progress bars ── */
 .rw-dim-row {
   display: flex;
   align-items: center;
@@ -358,7 +323,6 @@
   flex-shrink: 0;
 }
 
-/* ── Mini Donut row ── */
 .rw-donut-row {
   display: flex;
   justify-content: space-around;
@@ -379,7 +343,6 @@
   letter-spacing: 0.07em;
 }
 
-/* ── Kondisi sebelum vs sesudah ── */
 .rw-kondisi-row {
   display: flex;
   align-items: center;
@@ -420,7 +383,6 @@
   border-left: 3px solid var(--teal);
 }
 
-/* ── Catatan sesi ── */
 .rw-catatan {
   background: linear-gradient(135deg,rgba(47,125,121,0.07) 0%,rgba(121,216,209,0.07) 100%);
   border: 1px solid rgba(47,125,121,0.14);
@@ -435,9 +397,6 @@
   font-style: italic;
 }
 
-/* ─────────────────────────────────────────────────────────────────
-   ANIMATIONS
-   ───────────────────────────────────────────────────────────────── */
 @keyframes rwFadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0);    }
@@ -448,8 +407,6 @@
   to   { opacity: 1; transform: translateY(0);    }
 }
 
-/* stagger delay — diset di JSX via style animationDelay sudah oke,
-   tapi ini fallback jika ingin pure CSS:                         */
 .rw-list .rw-item:nth-child(1) { animation-delay: .04s; }
 .rw-list .rw-item:nth-child(2) { animation-delay: .08s; }
 .rw-list .rw-item:nth-child(3) { animation-delay: .12s; }
@@ -459,9 +416,6 @@
 .rw-list .rw-item:nth-child(7) { animation-delay: .28s; }
 .rw-list .rw-item:nth-child(8) { animation-delay: .32s; }
 
-/* ─────────────────────────────────────────────────────────────────
-   RESPONSIVE
-   ───────────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .rw-body-grid {
     grid-template-columns: 1fr;
@@ -510,7 +464,6 @@
   }
 }
 
-/* Loading State */
 .rw-loading {
   display: flex;
   align-items: center;

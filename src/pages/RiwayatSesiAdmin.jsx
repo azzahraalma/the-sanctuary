@@ -22,17 +22,14 @@ export default function RiwayatSesiAdmin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [filterKonselor, setFilterKonselor] = useState("Semua");
   const [sortBy, setSortBy] = useState("tanggal_desc");
 
-  // Modal state
   const [selectedSesi, setSelectedSesi] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Daftar konselor unik untuk dropdown
   const [konselorList, setKonselorList] = useState([]);
 
   useEffect(() => {
@@ -43,7 +40,6 @@ export default function RiwayatSesiAdmin() {
     setLoading(true);
     setError(null);
     try {
-      // Fetch semua booking
       const { data: bookings, error: bookErr } = await supabase
         .from("booking")
         .select("*")
@@ -51,7 +47,6 @@ export default function RiwayatSesiAdmin() {
 
       if (bookErr) throw bookErr;
 
-      // Fetch profil_pengguna untuk dapat nama konselor
       const { data: profil, error: profilErr } = await supabase
         .from("profil_pengguna")
         .select("nama, konselor_id")
@@ -59,13 +54,11 @@ export default function RiwayatSesiAdmin() {
 
       if (profilErr) throw profilErr;
 
-      // Map konselor_id → nama
       const konselorMap = {};
       profil.forEach((p) => {
         if (p.konselor_id) konselorMap[p.konselor_id] = p.nama;
       });
 
-      // Gabungkan data
       const merged = (bookings || []).map((b) => ({
         ...b,
         nama_konselor: konselorMap[b.id_konselor] || b.id_konselor || "—",
@@ -73,7 +66,6 @@ export default function RiwayatSesiAdmin() {
 
       setSesi(merged);
 
-      // Ambil daftar konselor unik
       const uniqueKonselor = [
         "Semua",
         ...new Set(merged.map((s) => s.nama_konselor)),
@@ -86,7 +78,6 @@ export default function RiwayatSesiAdmin() {
     }
   }
 
-  // Apply filter + sort setiap kali state filter berubah
   const filtered = useMemo(() => {
     let result = [...sesi];
 
@@ -172,7 +163,6 @@ export default function RiwayatSesiAdmin() {
     );
   }
 
-  // Summary stats
   const totalSesi = sesi.length;
   const totalSelesai = sesi.filter(
     (s) => s.status?.toLowerCase() === "selesai"
@@ -186,7 +176,6 @@ export default function RiwayatSesiAdmin() {
 
   return (
     <div className="rsa-page">
-      {/* Header */}
       <div className="rsa-header">
         <button className="rsa-back-btn" onClick={() => navigate("/admin-dashboard")}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -232,7 +221,6 @@ export default function RiwayatSesiAdmin() {
         </div>
       </div>
 
-      {/* Filter Bar */}
       <div className="rsa-filter-bar">
         <div className="rsa-search-wrap">
           <svg className="rsa-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -282,7 +270,6 @@ export default function RiwayatSesiAdmin() {
         <span className="rsa-count">{filtered.length} sesi</span>
       </div>
 
-      {/* Table */}
       {loading ? (
         <div className="rsa-loading">
           <div className="rsa-spinner" />

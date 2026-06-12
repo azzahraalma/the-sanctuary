@@ -13,7 +13,7 @@ import {
 import { computeKonselorStats, syncKonselorStats } from "../lib/konselorStats.js";
 import UlasanForm from "../components/UlasanForm.jsx";
 import "../styles/konselor-detail.css";
-// ── Helpers ───────────────────────────────────────────────────────────────────
+
 function StarRating({ rating, size = 14 }) {
   return (
     <div className="kd-stars">
@@ -21,8 +21,13 @@ function StarRating({ rating, size = 14 }) {
         const full = n <= Math.floor(rating);
         const half = !full && n === Math.ceil(rating) && rating % 1 >= 0.25;
         return (
-          <svg key={n} className={`kd-star ${full ? "s-full" : half ? "s-half" : "s-empty"}`}
-            viewBox="0 0 24 24" width={size} height={size}>
+          <svg
+            key={n}
+            className={`kd-star ${full ? "s-full" : half ? "s-half" : "s-empty"}`}
+            viewBox="0 0 24 24"
+            width={size}
+            height={size}
+          >
             <defs>
               {half && (
                 <linearGradient id={`dh-${n}`} x1="0" x2="1" y1="0" y2="0">
@@ -34,7 +39,8 @@ function StarRating({ rating, size = 14 }) {
             <polygon
               points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
               fill={full ? "currentColor" : half ? `url(#dh-${n})` : "none"}
-              stroke="currentColor" strokeWidth="1.5"
+              stroke="currentColor"
+              strokeWidth="1.5"
             />
           </svg>
         );
@@ -43,7 +49,6 @@ function StarRating({ rating, size = 14 }) {
   );
 }
 
-// ── Static maps (tidak perlu dari DB) ────────────────────────────────────────
 const SPESIALISASI_MAP = {
   "Tekanan Akademik & Kesejahteraan Mahasiswa": [
     { icon: "", judul: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan." },
@@ -98,7 +103,6 @@ function getCalendarDays(year, month) {
   return days;
 }
 
-// Format "HH:MM:SS" → "09:00 AM/PM"
 function formatJam(timeStr) {
   const [h, m] = timeStr.split(":").map(Number);
   const suffix = h >= 12 ? "PM" : "AM";
@@ -106,7 +110,146 @@ function formatJam(timeStr) {
   return `${String(hour).padStart(2, "0")}:${String(m).padStart(2, "0")} ${suffix}`;
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+function FooterModal({ type, onClose }) {
+  if (!type) return null;
+
+  const content = {
+    privasi: {
+      title: "Kebijakan Privasi",
+      sections: [
+        {
+          heading: "Informasi yang Kami Kumpulkan",
+          body: "Kami mengumpulkan informasi yang kamu berikan secara langsung, seperti nama, alamat email, dan data profil saat mendaftar. Kami juga mengumpulkan data penggunaan layanan secara anonim untuk meningkatkan pengalaman pengguna.",
+        },
+        {
+          heading: "Bagaimana Kami Menggunakan Informasimu",
+          body: "Informasi yang kami kumpulkan digunakan untuk menyediakan layanan konseling sebaya, menghubungkan kamu dengan konselor yang tepat, serta mengirimkan notifikasi terkait jadwal dan sesi konselingmu.",
+        },
+        {
+          heading: "Kerahasiaan Sesi Konseling",
+          body: "Semua percakapan dalam sesi konseling bersifat rahasia. Kami tidak membagikan konten sesi kepada pihak ketiga tanpa persetujuan eksplisit darimu, kecuali diwajibkan oleh hukum yang berlaku.",
+        },
+        {
+          heading: "Keamanan Data",
+          body: "Kami menggunakan enkripsi standar industri untuk melindungi data pribadimu. Akses ke data dibatasi hanya untuk personel yang berwenang dan diperlukan untuk operasional layanan.",
+        },
+        {
+          heading: "Hubungi Kami",
+          body: "Jika kamu memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui email: privacy@thesanctuary.id",
+        },
+      ],
+    },
+    syarat: {
+      title: "Syarat dan Ketentuan",
+      sections: [
+        {
+          heading: "Penerimaan Syarat",
+          body: "Dengan menggunakan layanan The Sanctuary, kamu menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan kami.",
+        },
+        {
+          heading: "Penggunaan Layanan",
+          body: "The Sanctuary adalah platform konseling sebaya yang ditujukan untuk mahasiswa Polimedia. Layanan ini bukan pengganti konseling profesional atau layanan kesehatan mental klinis. Untuk kondisi darurat, segera hubungi tenaga profesional.",
+        },
+        {
+          heading: "Kewajiban Pengguna",
+          body: "Kamu bertanggung jawab untuk menjaga kerahasiaan akun dan tidak membagikan informasi login kepada orang lain. Segala aktivitas yang terjadi melalui akunmu adalah tanggung jawabmu.",
+        },
+        {
+          heading: "Kode Etik",
+          body: "Semua pengguna diharapkan berinteraksi dengan saling menghormati. Perilaku yang merendahkan, melecehkan, atau merugikan pengguna lain akan mengakibatkan penangguhan akun.",
+        },
+        {
+          heading: "Perubahan Layanan",
+          body: "Kami berhak mengubah, menangguhkan, atau menghentikan layanan kapan saja dengan pemberitahuan sebelumnya. Perubahan syarat dan ketentuan akan diberitahukan melalui email atau notifikasi aplikasi.",
+        },
+      ],
+    },
+    bantuan: {
+      title: "Pusat Bantuan",
+      sections: [
+        {
+          heading: "Cara Booking Sesi",
+          body: "Kunjungi halaman Konselor, pilih konselor yang sesuai kebutuhanmu, lalu pilih jadwal yang tersedia. Konfirmasi booking dan kamu akan mendapat notifikasi setelah konselor menyetujui sesi.",
+        },
+        {
+          heading: "Bergabung ke Sesi",
+          body: "Saat waktu sesi tiba, tombol 'Mulai Sesi' akan muncul di dashboard. Klik tombol tersebut untuk masuk ke ruang konseling online bersama konselormu.",
+        },
+        {
+          heading: "Membatalkan Sesi",
+          body: "Pembatalan sesi dapat dilakukan melalui halaman Riwayat Sesi minimal 1 jam sebelum waktu sesi dimulai. Pembatalan mendadak kurang dari 1 jam akan dicatat sebagai ketidakhadiran.",
+        },
+        {
+          heading: "Masalah Teknis",
+          body: "Jika kamu mengalami masalah teknis saat menggunakan platform, coba refresh halaman atau hapus cache browser. Jika masalah berlanjut, hubungi tim support kami.",
+        },
+        {
+          heading: "Hubungi Support",
+          body: "📧 support@thesanctuary.id\n📱 WhatsApp: 0812-3456-7890 (Senin–Jumat, 08.00–17.00 WIB)\n🏢 Gedung Polimedia, Ruang Kemahasiswaan Lt. 2",
+        },
+      ],
+    },
+        panduan: {
+      title: "Panduan Konseling Sebaya",
+      sections: [
+        {
+          heading: "Sebelum Memulai Konseling",
+          body: "Pastikan kamu sudah menentukan topik atau permasalahan yang ingin dibahas. Siapkan koneksi internet yang stabil dan pilih tempat yang nyaman agar sesi konseling berjalan lebih efektif."
+        },
+        {
+          heading: "Memilih Konselor",
+          body: "Masuk ke halaman daftar konselor, lihat profil serta bidang pendampingan yang tersedia. Pilih konselor yang paling sesuai dengan kebutuhanmu, kemudian lanjutkan ke proses pemilihan jadwal."
+        },
+        {
+          heading: "Mengajukan Permintaan Sesi",
+          body: "Pilih waktu konseling yang tersedia lalu kirim permintaan sesi. Tunggu persetujuan dari konselor. Setelah disetujui, detail sesi akan tersedia pada menu jadwal konseling."
+        },
+        {
+          heading: "Saat Konseling Berlangsung",
+          body: "Gunakan fitur ruang konseling untuk memulai percakapan dengan konselor. Sampaikan cerita dan perasaanmu secara terbuka agar konselor dapat memberikan pendampingan yang tepat."
+        },
+        {
+          heading: "Aturan Selama Sesi",
+          body: "Jaga komunikasi yang sopan, hargai privasi, dan hindari membagikan informasi pribadi orang lain. Seluruh percakapan selama sesi bersifat rahasia dan digunakan hanya untuk kebutuhan pendampingan."
+        },
+        {
+          heading: "Setelah Sesi Selesai",
+          body: "Kamu dapat memberikan evaluasi atau feedback mengenai pengalaman konseling. Feedback tersebut membantu meningkatkan kualitas layanan konseling sebaya."
+        }
+      ]
+    }
+
+  };
+
+  const c = content[type];
+  if (!c) return null;
+
+  return (
+    <div className="footer-modal-overlay" onClick={onClose}>
+      <div className="footer-modal-container" onClick={(e) => e.stopPropagation()}>
+        <div className="footer-modal-header">
+          <div className="footer-modal-title-wrap">
+            <h2 className="footer-modal-title">{c.title}</h2>
+          </div>
+          <button className="footer-modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="footer-modal-body">
+          {c.sections.map((s, i) => (
+            <div key={i} className="footer-modal-section">
+              <h3 className="footer-modal-section-title">{s.heading}</h3>
+              <p className="footer-modal-section-body">{s.body}</p>
+            </div>
+          ))}
+        </div>
+        <div className="footer-modal-foot">
+          <p className="footer-modal-foot-note">© 2026 The Sanctuary Polimedia · Tempat aman untuk saling mendengar</p>
+          <button className="footer-modal-close-btn" onClick={onClose}>Tutup</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SkeletonDetail() {
   return (
     <div className="kd-layout" style={{ padding: "2rem" }}>
@@ -122,28 +265,27 @@ function SkeletonDetail() {
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
 export default function KonselorDetail() {
   const { id }    = useParams();
   const navigate  = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const ulasanSectionRef = useRef(null);
 
-  // ── State data ──────────────────────────────────────────────────────────────
   const [konselor,  setKonselor]  = useState(null);
   const [slots,     setSlots]     = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
 
-  const [ulasanList, setUlasanList] = useState([]);
-  const [pendingBooking, setPendingBooking] = useState(null);
-  const [showUlasanForm, setShowUlasanForm] = useState(false);
-  const [ulasanSubmitting, setUlasanSubmitting] = useState(false);
-  const [ulasanError, setUlasanError] = useState("");
-  const [ulasanSuccess, setUlasanSuccess] = useState(false);
-  const [liveStats, setLiveStats] = useState(null);
+  const [ulasanList,      setUlasanList]      = useState([]);
+  const [pendingBooking,  setPendingBooking]  = useState(null);
+  const [showUlasanForm,  setShowUlasanForm]  = useState(false);
+  const [ulasanSubmitting,setUlasanSubmitting]= useState(false);
+  const [ulasanError,     setUlasanError]     = useState("");
+  const [ulasanSuccess,   setUlasanSuccess]   = useState(false);
+  const [liveStats,       setLiveStats]       = useState(null);
 
-  // ── State kalender & booking ────────────────────────────────────────────────
+  const [footerModal, setFooterModal] = useState(null);
+
   const [calMonth,     setCalMonth]     = useState(new Date().getMonth());
   const [calYear,      setCalYear]      = useState(new Date().getFullYear());
   const [selectedDay,  setSelectedDay]  = useState(new Date().getDate());
@@ -151,12 +293,10 @@ export default function KonselorDetail() {
   const [bookingDone,  setBookingDone]  = useState(false);
   const [bookingLoad,  setBookingLoad]  = useState(false);
 
-  // ── Fetch konselor + availability ───────────────────────────────────────────
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
 
-      // 1. Data konselor
       const { data: kData, error: kErr } = await supabase
         .from("data_konselor")
         .select("*")
@@ -169,7 +309,6 @@ export default function KonselorDetail() {
         return;
       }
 
-      // Normalize
       setKonselor({
         ID:               kData.id,
         Nama:             kData.nama,
@@ -186,7 +325,6 @@ export default function KonselorDetail() {
         bio:              kData.bio              ?? "",
       });
 
-      // 2. Slot availability — hanya yang tersedia & belum lewat
       const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
       const { data: avData } = await supabase
         .from("konselor_availability")
@@ -200,7 +338,6 @@ export default function KonselorDetail() {
       const slotList = avData || [];
       setSlots(slotList);
 
-      // Auto-jump kalender ke slot terdekat
       if (slotList.length > 0) {
         const [y, m, d] = slotList[0].tanggal.split("-").map(Number);
         setCalYear(y);
@@ -303,11 +440,11 @@ export default function KonselorDetail() {
     }
 
     const { data, error: err } = await submitUlasan({
-      idBooking: pendingBooking.id,
-      idKonselor: id,
-      idMahasiswa: mid,
+      idBooking:      pendingBooking.id,
+      idKonselor:     id,
+      idMahasiswa:    mid,
       emailMahasiswa: user.email?.toLowerCase(),
-      namaMahasiswa: user.nama ?? user.name ?? "Mahasiswa",
+      namaMahasiswa:  user.nama ?? user.name ?? "Mahasiswa",
       rating,
       teks,
     });
@@ -347,11 +484,9 @@ export default function KonselorDetail() {
     setSearchParams(searchParams, { replace: true });
   }
 
-  // ── Slot yang tersedia di hari & bulan yang dipilih ─────────────────────────
-  // Parse tanggal dari string "YYYY-MM-DD" tanpa konversi timezone
   const parseDate = (tanggalStr) => {
     const [y, m, d] = tanggalStr.split("-").map(Number);
-    return { year: y, month: m - 1, day: d }; // month 0-indexed
+    return { year: y, month: m - 1, day: d };
   };
 
   const slotsHariIni = slots.filter((s) => {
@@ -359,7 +494,6 @@ export default function KonselorDetail() {
     return day === selectedDay && month === calMonth && year === calYear;
   });
 
-  // ── Hari yang punya slot (untuk highlight kalender) ─────────────────────────
   const hariAdaSlot = new Set(
     slots
       .filter((s) => {
@@ -369,7 +503,6 @@ export default function KonselorDetail() {
       .map((s) => parseDate(s.tanggal).day)
   );
 
-  // ── Confirm booking → simpan ke tabel booking ───────────────────────────────
   async function handleConfirmBooking() {
     const userRaw = localStorage.getItem("sanctuary_user");
     if (!userRaw) {
@@ -382,9 +515,6 @@ export default function KonselorDetail() {
     const user = JSON.parse(userRaw);
     setBookingLoad(true);
 
-    // [FIX] Gunakan student_id, bukan user.id (UUID auth).
-    // user.id adalah UUID dari Supabase Auth, bukan student_id seperti "M-123456".
-    // Kalau student_id belum ada di localStorage, fetch dari profil_pengguna.
     let mhsId = user.student_id ?? null;
     if (!mhsId) {
       const { data: profil } = await supabase
@@ -404,7 +534,6 @@ export default function KonselorDetail() {
     const slotObj  = slots.find((s) => s.id === selectedSlot);
     const tanggal  = slotObj.tanggal;
 
-    // Helper to normalize time to HH:MM:00
     const normalizeTime = (t) => {
       if (!t) return "00:00:00";
       const parts = t.split(":");
@@ -414,7 +543,7 @@ export default function KonselorDetail() {
 
     const cleanTime      = normalizeTime(slotObj.jam_mulai);
     const startTimestamp = `${tanggal}T${cleanTime}+07:00`;
-    // Query jumlah booking sebelumnya untuk menghitung sesi ke-berapa
+
     const { count } = await supabase
       .from("booking")
       .select("*", { count: "exact", head: true })
@@ -451,33 +580,38 @@ export default function KonselorDetail() {
       if (stats) setLiveStats(stats);
     }).catch(() => {});
 
-    // Update status slot jadi 'booked' dan hapus dari state lokal
     await supabase
       .from("konselor_availability")
       .update({ status: "booked" })
       .eq("id", selectedSlot);
 
-    // Hapus slot yang baru di-book dari tampilan agar tidak bisa dipilih lagi
     setSlots(prev => prev.filter(s => s.id !== selectedSlot));
     setBookingDone(true);
     setBookingLoad(false);
   }
 
-  // ── Auth helpers ─────────────────────────────────────────────────────────────
   const goTo = (dest) => {
     const user = localStorage.getItem("sanctuary_user");
     if (user) navigate(dest);
     else { sessionStorage.setItem("redirect_after_login", dest); navigate("/login"); }
   };
-  const userForNav = user;
-  const handleLogout = () => { supabase.auth.signOut(); localStorage.removeItem("sanctuary_user"); navigate("/login"); };
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  const userForNav = user;
+  const handleLogout = () => {
+    supabase.auth.signOut();
+    localStorage.removeItem("sanctuary_user");
+    navigate("/login");
+  };
+
   if (loading) return (
     <div className="sanctuary kd-page">
-      <header className="nav-shell"><nav className="nav"><div className="nav-l">
-        <span className="nav-logo" onClick={() => navigate("/")}>The Sanctuary</span>
-      </div></nav></header>
+      <header className="nav-shell">
+        <nav className="nav">
+          <div className="nav-l">
+            <span className="nav-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+          </div>
+        </nav>
+      </header>
       <SkeletonDetail />
     </div>
   );
@@ -489,9 +623,9 @@ export default function KonselorDetail() {
     </div>
   );
 
-  const calDays    = getCalendarDays(calYear, calMonth);
-  const today      = new Date();
-  const isToday    = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+  const calDays      = getCalendarDays(calYear, calMonth);
+  const today        = new Date();
+  const isToday      = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
   const spesialisasi = SPESIALISASI_MAP[konselor.Kategori_Masalah] || [];
   const testimoniDb  = ulasanList;
   const testimoniFallback = TESTIMONI_MAP[konselor.ID] || [];
@@ -499,10 +633,10 @@ export default function KonselorDetail() {
   const bio          = konselor.bio || "Konselor sebaya yang berdedikasi dalam membantu mahasiswa.";
 
   const stats = liveStats ?? {
-    rating_final: konselor["Rating_(Final)"],
-    jumlah_kasus: konselor.Jumlah_Kasus,
+    rating_final:  konselor["Rating_(Final)"],
+    jumlah_kasus:  konselor.Jumlah_Kasus,
     kasus_selesai: konselor.Kasus_Selesai,
-    success_rate: konselor.Success_Rate,
+    success_rate:  konselor.Success_Rate,
   };
 
   const ratingBar = (label, val) => (
@@ -522,7 +656,8 @@ export default function KonselorDetail() {
   return (
     <div className="sanctuary kd-page">
 
-      {/* ── NAVBAR ── */}
+      <FooterModal type={footerModal} onClose={() => setFooterModal(null)} />
+
       <header className="nav-shell">
         <nav className="nav">
           <div className="nav-l">
@@ -537,24 +672,32 @@ export default function KonselorDetail() {
             <button className="nav-cta" onClick={() => goTo("/kuesioner")}>Mulai Refleksi Diri</button>
             <button className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
             </button>
             {userForNav ? (
               <div className="nav-user-wrap">
-                <div className="nav-avatar nav-avatar--active" onClick={() => goTo("/dashboard")} title={userForNav.name}>
+                <div
+                  className="nav-avatar nav-avatar--active"
+                  onClick={() => goTo("/dashboard")}
+                  title={userForNav.name}
+                >
                   <span className="nav-avatar-initial">{userForNav.name?.charAt(0).toUpperCase()}</span>
                 </div>
                 <button className="nav-logout-btn" onClick={handleLogout}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
                   </svg>
                 </button>
               </div>
             ) : (
               <div className="nav-avatar" onClick={() => navigate("/login")}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
                 </svg>
               </div>
             )}
@@ -562,7 +705,6 @@ export default function KonselorDetail() {
         </nav>
       </header>
 
-      {/* ── BREADCRUMB ── */}
       <div className="kd-breadcrumb-wrap">
         <div className="kd-breadcrumb">
           <span onClick={() => navigate("/")}>Beranda</span>
@@ -573,18 +715,19 @@ export default function KonselorDetail() {
         </div>
       </div>
 
-      {/* ── MAIN LAYOUT ── */}
       <div className="kd-layout">
 
-        {/* ══ LEFT COLUMN ══ */}
         <div className="kd-left">
 
-          {/* ── HERO CARD ── */}
           <section className="kd-hero-card">
             <div className="kd-hero-photo-col">
               <div className="kd-hero-photo-wrap">
-                <img src={konselor.image} alt={konselor.Nama} className="kd-hero-photo"
-                  onError={(e) => { e.target.src = "/placeholder-avatar.png"; }} />
+                <img
+                  src={konselor.image}
+                  alt={konselor.Nama}
+                  className="kd-hero-photo"
+                  onError={(e) => { e.target.src = "/placeholder-avatar.png"; }}
+                />
               </div>
               <div className="kd-avail-status">
                 <span className="kd-avail-dot" />
@@ -622,20 +765,18 @@ export default function KonselorDetail() {
             </div>
           </section>
 
-          {/* ── TENTANG SAYA ── */}
           <section className="kd-section">
             <h2 className="kd-section-h">Tentang Saya</h2>
             {bio.split("\n\n").map((p, i) => (
               <p key={i} className="kd-bio-p">{p}</p>
             ))}
             <div className="kd-rating-breakdown">
-              {ratingBar("Keramahan",          konselor["Keramahan_(30%)"])}
-              {ratingBar("Kualitas Solusi",    konselor["Solusi_(50%)"])}
-              {ratingBar("Kecepatan Respon",   konselor["Respon_(20%)"])}
+              {ratingBar("Keramahan",        konselor["Keramahan_(30%)"])}
+              {ratingBar("Kualitas Solusi",  konselor["Solusi_(50%)"])}
+              {ratingBar("Kecepatan Respon", konselor["Respon_(20%)"])}
             </div>
           </section>
 
-          {/* ── SPESIALISASI ── */}
           <section className="kd-section">
             <h2 className="kd-section-h">Spesialisasi Keahlian</h2>
             <div className="kd-spesial-grid">
@@ -649,7 +790,6 @@ export default function KonselorDetail() {
             </div>
           </section>
 
-          {/* ── TESTIMONI ── */}
           <section className="kd-section" ref={ulasanSectionRef}>
             <h2 className="kd-section-h">Testimoni Klien</h2>
 
@@ -669,6 +809,7 @@ export default function KonselorDetail() {
                 error={ulasanError}
               />
             )}
+
             <div className="kd-testi-header">
               <div className="kd-testi-score">
                 <span className="kd-testi-big">{avgTestimoniRating}</span>
@@ -678,13 +819,16 @@ export default function KonselorDetail() {
                 </div>
               </div>
               <div className="kd-testi-bars">
-                {[5,4,3,2,1].map((star) => {
+                {[5, 4, 3, 2, 1].map((star) => {
                   const count = testimoni.filter((t) => t.rating === star).length;
                   return (
                     <div key={star} className="kd-testi-bar-row">
                       <span className="kd-testi-bar-label">{star} ★</span>
                       <div className="kd-testi-bar-track">
-                        <div className="kd-testi-bar-fill" style={{ width: testimoni.length ? `${(count/testimoni.length)*100}%` : "0%" }} />
+                        <div
+                          className="kd-testi-bar-fill"
+                          style={{ width: testimoni.length ? `${(count / testimoni.length) * 100}%` : "0%" }}
+                        />
                       </div>
                       <span className="kd-testi-bar-count">{count}</span>
                     </div>
@@ -693,11 +837,12 @@ export default function KonselorDetail() {
               </div>
               <div className="kd-testi-tags">
                 <p className="kd-testi-tags-label">KATEGORI MASALAH DITANGANI</p>
-                <span className="kd-testi-tag primary">{konselor.Kategori_Masalah.split(" ").slice(0,2).join(" ")}</span>
+                <span className="kd-testi-tag primary">{konselor.Kategori_Masalah.split(" ").slice(0, 2).join(" ")}</span>
                 <span className="kd-testi-tag">Stres Kuliah</span>
                 <span className="kd-testi-tag">Motivasi</span>
               </div>
             </div>
+
             <div className="kd-testi-grid">
               {testimoni.length === 0 && (
                 <p className="kd-testi-empty">Belum ada ulasan. Jadilah yang pertama setelah sesi selesai!</p>
@@ -720,7 +865,6 @@ export default function KonselorDetail() {
 
         </div>
 
-        {/* ══ RIGHT COLUMN — BOOKING ══ */}
         <aside className="kd-right">
           <div className="kd-booking-card">
             <div className="kd-booking-header">
@@ -728,7 +872,6 @@ export default function KonselorDetail() {
               <p className="kd-booking-sub">Mulai perjalananmu bersama {konselor.Nama.split(" ")[0]} hari ini</p>
             </div>
 
-            {/* Kalender */}
             <div className="kd-cal">
               <div className="kd-cal-nav">
                 <button className="kd-cal-arrow" onClick={() => {
@@ -751,10 +894,10 @@ export default function KonselorDetail() {
                     key={i}
                     className={[
                       "kd-cal-day",
-                      !d                              ? "kd-cal-empty"    : "",
-                      d === selectedDay               ? "kd-cal-selected" : "",
-                      isToday(d)                      ? "kd-cal-today"    : "",
-                      d && hariAdaSlot.has(d)         ? "kd-cal-has-slot" : "",
+                      !d                        ? "kd-cal-empty"    : "",
+                      d === selectedDay         ? "kd-cal-selected" : "",
+                      isToday(d)                ? "kd-cal-today"    : "",
+                      d && hariAdaSlot.has(d)   ? "kd-cal-has-slot" : "",
                     ].join(" ")}
                     disabled={!d}
                     onClick={() => { if (d) { setSelectedDay(d); setSelectedSlot(null); } }}
@@ -765,7 +908,6 @@ export default function KonselorDetail() {
               </div>
             </div>
 
-            {/* Slot waktu dari Supabase */}
             <div className="kd-slots">
               <p className="kd-slots-label">
                 Slot Tersedia — {selectedDay} {BULAN[calMonth]} {calYear}
@@ -787,16 +929,21 @@ export default function KonselorDetail() {
               )}
             </div>
 
-            {/* Confirm booking */}
             {bookingDone ? (
               <div className="kd-booking-success">
                 <span className="kd-booking-success-icon"></span>
                 <p>Sesi berhasil dijadwalkan!</p>
                 <span>
                   {selectedDay} {BULAN[calMonth]} {calYear},{" "}
-                  {slots.find(s => s.id === selectedSlot) ? formatJam(slots.find(s => s.id === selectedSlot).jam_mulai) : ""}
+                  {slots.find(s => s.id === selectedSlot)
+                    ? formatJam(slots.find(s => s.id === selectedSlot).jam_mulai)
+                    : ""}
                 </span>
-                <button className="kd-confirm-btn" style={{ marginTop: 12 }} onClick={() => goTo("/dashboard")}>
+                <button
+                  className="kd-confirm-btn"
+                  style={{ marginTop: 12 }}
+                  onClick={() => goTo("/dashboard")}
+                >
                   Lihat di Dashboard →
                 </button>
               </div>
@@ -812,18 +959,22 @@ export default function KonselorDetail() {
 
             <p className="kd-booking-note">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="13" height="13">
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               Sesi berlangsung 45 menit via platform Sanctuary. Kamu bisa reschedule hingga 2 jam sebelum sesi dimulai.
             </p>
           </div>
 
-          {/* Konselor lain — fetch dari Supabase juga, tapi pakai data static sementara */}
           <div className="kd-other-card">
             <p className="kd-other-label">KONSELOR LAINNYA</p>
             <p className="kd-other-hint" style={{ fontSize: 12, color: "#888", padding: "8px 0" }}>
               Lihat semua konselor di halaman{" "}
-              <span style={{ color: "#2f7d79", cursor: "pointer" }} onClick={() => navigate("/konselor")}>
+              <span
+                style={{ color: "#2f7d79", cursor: "pointer" }}
+                onClick={() => navigate("/konselor")}
+              >
                 Daftar Konselor →
               </span>
             </p>
@@ -832,22 +983,32 @@ export default function KonselorDetail() {
 
       </div>
 
-      {/* ── FOOTER ── */}
       <footer className="footer" style={{ width: "92%", margin: "80px auto 50px" }}>
         <div className="footer-brand">
           <h3 className="footer-name">The Sanctuary Polimedia</h3>
-          <p className="footer-desc">Platform konseling sebaya untuk mahasiswa Polimedia yang menyediakan ruang aman untuk saling mendengarkan.</p>
+          <p className="footer-desc">
+            Platform konseling sebaya untuk mahasiswa Polimedia yang menyediakan
+            ruang aman untuk saling mendengarkan dan mendukung di lingkungan kampus.
+          </p>
           <small className="footer-copy">© 2026 TheSanctuary. Politeknik Negeri Media Kreatif.</small>
         </div>
-        {[
-          { heading: "Platform", links: ["Layanan","Komunitas","Artikel","Panduan Konseling"] },
-          { heading: "Legal",    links: ["Kebijakan Privasi","Syarat dan Ketentuan","Bantuan"] },
-        ].map((col) => (
-          <div key={col.heading} className="footer-col">
-            <h4 className="footer-col-h">{col.heading}</h4>
-            <ul className="footer-links">{col.links.map((l) => <li key={l}>{l}</li>)}</ul>
-          </div>
-        ))}
+
+        <div className="footer-col">
+          <h4 className="footer-col-h">Platform</h4>
+          <ul className="footer-links">
+            <li onClick={() => navigate("/konselor")}>Layanan</li>
+            <li onClick={() => setFooterModal("panduan")}>Panduan Konseling</li>
+          </ul>
+        </div>
+
+        <div className="footer-col">
+          <h4 className="footer-col-h">Legal</h4>
+          <ul className="footer-links">
+            <li onClick={() => setFooterModal("privasi")}>Kebijakan Privasi</li>
+            <li onClick={() => setFooterModal("syarat")}>Syarat dan Ketentuan</li>
+            <li onClick={() => setFooterModal("bantuan")}>Bantuan</li>
+          </ul>
+        </div>
       </footer>
 
     </div>

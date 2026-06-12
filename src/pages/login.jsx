@@ -13,7 +13,6 @@ export default function Login() {
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
 
-  // Pesan dari halaman register (misal setelah daftar berhasil)
   const notice = location.state?.notice ?? "";
 
   const handleForgotPassword = async () => {
@@ -50,14 +49,12 @@ export default function Login() {
 
     setLoading(true);
 
-    // ── 1. Login via Supabase Auth ──────────────────────────────
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (authError || !authData.user) {
-      // Bedakan pesan error berdasarkan penyebabnya
       if (authError?.message?.toLowerCase().includes("email not confirmed")) {
         setError("Email kamu belum dikonfirmasi. Cek inbox atau folder spam ya.");
       } else if (authError?.message?.toLowerCase().includes("invalid login credentials")) {
@@ -73,7 +70,6 @@ export default function Login() {
 
     const emailLower = email.toLowerCase();
 
-    // ── 2. Fetch profil dari profil_pengguna ────────────────────
     let { data: profil } = await supabase
       .from("profil_pengguna")
       .select("*")
@@ -84,7 +80,6 @@ export default function Login() {
     const nama       = profil?.nama        ?? authData.user.user_metadata?.nama        ?? emailLower.split("@")[0];
     const konselorId = profil?.konselor_id ?? authData.user.user_metadata?.konselor_id ?? null;
 
-    // ── 3. Validasi role sesuai mode ────────────────────────────
     if (mode === "konselor" && role !== "konselor") {
       setError("Akun ini bukan akun konselor. Coba login sebagai Mahasiswa ya.");
       await supabase.auth.signOut();
@@ -128,8 +123,6 @@ export default function Login() {
 
     if (upserted?.student_id) studentId = upserted.student_id;
 
-    // Tulis localStorage SEBELUM navigate agar useCurrentUser di App.jsx
-    // selalu dapat data valid saat route guard dievaluasi
     localStorage.setItem("sanctuary_user", JSON.stringify({
       id:         authData.user.id,
       name:       nama,
@@ -232,7 +225,7 @@ export default function Login() {
                 className="auth-input"
                 placeholder={
                   isKonselor ? "email.konselor@sanctuary.com"
-                  : isAdmin  ? "admin@sanctuary.com"
+                  : isAdmin  ? "Masukan Email Akses"
                   : "contoh@email.com"
                 }
                 value={email}
@@ -298,7 +291,7 @@ export default function Login() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
                 <path d="M15 18l-6-6 6-6"/>
               </svg>
-              Balik ke Beranda
+              Kembali ke Beranda
             </button>
           </div>
         </div>

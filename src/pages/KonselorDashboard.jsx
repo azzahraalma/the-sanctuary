@@ -313,10 +313,6 @@ export default function KonselorDashboard() {
         { icon: "", title: "Fokus & Produktivitas", desc: "Teknik untuk meningkatkan konsentrasi belajar." },
     ];
 
-    // [FIX] Hapus TESTIMONI hardcoded — ganti dengan pesan bahwa fitur ini
-    // belum memiliki tabel di database. Testimoni akan ditambahkan saat tabel
-    // "testimoni_konselor" tersedia di Supabase.
-
     const ratingDist = [5, 4, 3, 2, 1].map((bintang) => ({
         bintang,
         count: ulasanList.filter(u => Math.round(Number(u.rating)) === bintang).length,
@@ -331,7 +327,6 @@ export default function KonselorDashboard() {
         );
     }
 
-    // [FIX] Tampilkan pesan jelas kalau konselor belum punya konselorId di profil
     if (!kid) {
         return (
             <div className="kd-loading">
@@ -1084,7 +1079,7 @@ export default function KonselorDashboard() {
                 <footer className="kd-footer">
                     <div>
                         <span className="kd-footer-brand">The Sanctuary</span>
-                        <span className="kd-footer-copy">© 2025 · Dashboard Konselor</span>
+                        <span className="kd-footer-copy">© 2026</span>
                     </div>
                 </footer>
             </main>

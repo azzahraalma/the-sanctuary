@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../lib/supabase.js";
 import {
   BOOKING_STATUS,
   normalizeStatus,
@@ -11,9 +11,6 @@ import {
 import { syncKonselorStats } from "../lib/konselorStats.js";
 import "../styles/evaluasi-sesi.css";
 
-// [FIX 1] Hapus duplikasi createClient — gunakan instance supabase yang sudah ada
-// di src/lib/supabase.js agar tidak ada dua koneksi berbeda ke Supabase.
-
 const SUASANA_HATI_OPTIONS = [
   { label: "Sangat Baik",  value: 1.0 },
   { label: "Baik",         value: 0.75 },
@@ -21,8 +18,6 @@ const SUASANA_HATI_OPTIONS = [
   { label: "Stres",        value: 0.25 },
   { label: "Sangat Stres", value: 0.1 },
 ];
-// [FIX 2] Tambahkan emoji yang hilang. Sebelumnya semua emoji string kosong "",
-// sehingga tombol suasana hati tampil kosong dan tidak informatif bagi pengguna.
 
 const SLIDER_FIELDS = [
   { key: "mindfulness",        label: "Mindfulness",        desc: "Seberapa hadir & sadar klien selama sesi" },
@@ -32,9 +27,6 @@ const SLIDER_FIELDS = [
   { key: "keseimbangan_hidup", label: "Keseimbangan Hidup", desc: "Keseimbangan antara studi, sosial, dan diri" },
 ];
 
-// [FIX 3] SliderField dipindah ke luar komponen utama agar tidak di-redeclare
-// setiap render. Sebelumnya sudah benar posisinya, tapi onChange dibiarkan
-// inline tanpa useCallback — diperbaiki di komponen induk.
 function SliderField({ field, value, onChange }) {
   const pct = Math.round(value * 100);
   const color =
@@ -75,7 +67,7 @@ export default function EvaluasiSesi() {
   const [booking, setBooking]     = useState(null);
   const [mahasiswa, setMahasiswa] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError]         = useState(null); // [FIX 4] Tambah state error untuk feedback ke user
+  const [error, setError]         = useState(null); 
   const [submitting, setSubmitting] = useState(false);
   const [step, setStep]           = useState(1);
 
@@ -95,7 +87,7 @@ export default function EvaluasiSesi() {
       return;
     }
 
-    let cancelled = false; // [FIX 5] Guard untuk mencegah state update setelah unmount
+    let cancelled = false; 
 
     (async () => {
       try {
@@ -105,7 +97,6 @@ export default function EvaluasiSesi() {
           .eq("id", bookingId)
           .maybeSingle();
 
-        // [FIX 6] Periksa error Supabase, sebelumnya error query diabaikan sepenuhnya
         if (bkErr) throw bkErr;
         if (!bk) { navigate("/konselor-dashboard"); return; }
 
@@ -128,7 +119,6 @@ export default function EvaluasiSesi() {
             .eq("student_id", bk.id_mahasiswa)
             .maybeSingle();
 
-          // Error profil tidak fatal — lanjutkan meski gagal
           if (mhsErr) console.warn("Gagal ambil profil mahasiswa:", mhsErr.message);
           if (!cancelled) setMahasiswa(mhs ?? null);
         }
@@ -139,8 +129,8 @@ export default function EvaluasiSesi() {
       }
     })();
 
-    return () => { cancelled = true; }; // cleanup saat unmount
-  }, [bookingId, navigate]); // [FIX 7] Tambah navigate ke dependency array (sebelumnya di-suppress eslint)
+    return () => { cancelled = true; };
+  }, [bookingId, navigate]); 
 
   const avgScore = useMemo(() => {
     const keys = ["mindfulness","manajemen_stres","ketahanan_diri","hubungan_sosial","keseimbangan_hidup"];
@@ -148,8 +138,6 @@ export default function EvaluasiSesi() {
     return sum / keys.length;
   }, [answers]);
 
-  // [FIX 8] Stabilkan handler onChange slider dengan useCallback agar tidak
-  // membuat fungsi baru setiap render untuk setiap field.
   const handleSliderChange = useCallback((key, val) => {
     setAnswers(prev => ({ ...prev, [key]: val }));
   }, []);
@@ -157,7 +145,6 @@ export default function EvaluasiSesi() {
   const handleSubmit = async () => {
     if (!answers.suasana_hati || submitting) return;
 
-    // [FIX 9] Pastikan booking sudah ada sebelum melanjutkan submit
     if (!booking) return;
 
     setSubmitting(true);
@@ -169,7 +156,6 @@ export default function EvaluasiSesi() {
       const skor_keterbukaan   = Math.round(avgScore * 100);
       const skor_konsistensi   = Math.round(avgScore * 90);
 
-      // Hitung sesi ke-berapa
       const { count, error: countErr } = await supabase
         .from("progress_konseling")
         .select("*", { count: "exact", head: true })
@@ -178,7 +164,6 @@ export default function EvaluasiSesi() {
       if (countErr) throw countErr;
       const sesiKe = (count ?? 0) + 1;
 
-      // Ambil target sesi
       const { data: targets, error: targetErr } = await supabase
         .from("data_target")
         .select("*")
@@ -188,7 +173,6 @@ export default function EvaluasiSesi() {
 
       const targetSesi = targets?.[0]?.target_sesi ?? 4;
 
-      // Insert progress
       const { error: progErr } = await supabase.from("progress_konseling").insert({
         id_mahasiswa:       booking.id_mahasiswa,
         id_konselor:        booking.id_konselor,
@@ -210,10 +194,8 @@ export default function EvaluasiSesi() {
         sesi_tercapai:      `${sesiKe}/${targetSesi}`,
       });
 
-      // [FIX 10] Lempar error insert agar tidak lanjut ke step berikutnya bila gagal
       if (progErr) throw progErr;
 
-      // Update data_target
       if (targets && targets.length > 0) {
         for (const t of targets) {
           if (normalizeStatus(t.status) === BOOKING_STATUS.BERJALAN) {
@@ -225,13 +207,11 @@ export default function EvaluasiSesi() {
               .eq("id_mahasiswa", booking.id_mahasiswa)
               .eq("nama_target", t.nama_target);
 
-            // [FIX 11] Log warning tapi jangan lempar — tidak blokir alur utama
             if (tErr) console.warn("Gagal update data_target:", tErr.message);
           }
         }
       }
 
-      // Update booking jadi Selesai
       const { error: bkUpdateErr } = await supabase
         .from("booking")
         .update({ status: BOOKING_STATUS.SELESAI, kondisi_saat_ini: avgScore })
@@ -243,15 +223,12 @@ export default function EvaluasiSesi() {
 
       navigate("/konselor-dashboard");
     } catch (err) {
-      // [FIX 12] Sebelumnya semua error hanya di-console.error dan submit tetap
-      // dianggap selesai. Sekarang error ditampilkan ke user dan submitting di-reset.
       console.error("Submit evaluasi error:", err);
       setError(err.message ?? "Gagal menyimpan evaluasi. Silakan coba lagi.");
       setSubmitting(false);
     }
   };
 
-  // ─── Loading & Error states ───────────────────────────────────────────────
   if (isLoading) return (
     <div className="ev-loading">
       <div className="ev-loading-spinner" />
@@ -259,7 +236,6 @@ export default function EvaluasiSesi() {
     </div>
   );
 
-  // [FIX 13] Tampilkan layar error bila fetch awal gagal (sebelumnya tidak ada)
   if (error && !booking) return (
     <div className="ev-loading">
       <p style={{ color: "#e05c5c", textAlign: "center" }}>
@@ -275,9 +251,6 @@ export default function EvaluasiSesi() {
     </div>
   );
 
-  // ─── Derived display values ───────────────────────────────────────────────
-  // [FIX 14] Guard split() — jika namaMahasiswa string kosong, initials jadi ""
-  // bukan crash. Sebelumnya w[0] bisa undefined bila kata kosong.
   const namaMahasiswa = mahasiswa?.nama ?? booking?.nama_mahasiswa ?? "Klien";
   const initials = namaMahasiswa
     .split(" ")
@@ -288,7 +261,6 @@ export default function EvaluasiSesi() {
 
   return (
     <div className="ev-shell">
-      {/* TOPBAR */}
       <header className="ev-topbar">
         <span className="ev-brand" onClick={() => navigate("/konselor-dashboard")}>
           The <span>Sanctuary</span>
@@ -302,14 +274,12 @@ export default function EvaluasiSesi() {
       <main className="ev-main">
         <div className="ev-container">
 
-          {/* HEADER */}
           <div className="ev-header">
             <div className="ev-header-tag">Evaluasi Sesi</div>
             <h1>Bagaimana kondisi klien<br />setelah sesi ini?</h1>
             <p>Isi evaluasi singkat ini untuk memantau perkembangan klien dari sesi ke sesi.</p>
           </div>
 
-          {/* KLIEN INFO */}
           <div className="ev-klien-card">
             <div className="ev-klien-avatar">
               {mahasiswa?.foto_url
@@ -326,20 +296,17 @@ export default function EvaluasiSesi() {
             <div className="ev-klien-badge">{booking?.id_mahasiswa}</div>
           </div>
 
-          {/* PROGRESS STEPS */}
           <div className="ev-steps">
             <div className={`ev-step ${step >= 1 ? "active" : ""} ${step > 1 ? "done" : ""}`} />
             <div className={`ev-step ${step >= 2 ? "active" : ""}`} />
           </div>
 
-          {/* ERROR INLINE (submit gagal) */}
           {error && booking && (
             <div className="ev-error-banner" role="alert">
               ⚠️ {error}
             </div>
           )}
 
-          {/* STEP 1: SUASANA HATI */}
           {step === 1 && (
             <div className="ev-card">
               <div className="ev-card-title">Suasana Hati Klien</div>
@@ -378,7 +345,6 @@ export default function EvaluasiSesi() {
             </div>
           )}
 
-          {/* STEP 2: SLIDER */}
           {step === 2 && (
             <>
               <div className="ev-summary">

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase.js";
+import { isSelesai, isMenungguEvaluasi, normalizeStatus, BOOKING_STATUS } from "../lib/bookingStatus.js";
 
 const EMPTY_FORM = {
   nama: "",
@@ -11,6 +12,14 @@ const EMPTY_FORM = {
   solusi: "",
   respon: "",
 };
+
+function isDibatalkan(status) {
+  return normalizeStatus(status) === BOOKING_STATUS.DIBATALKAN;
+}
+
+function isKasusSelesai(status) {
+  return isSelesai(status) || isMenungguEvaluasi(status);
+}
 
 function avg3(k, s, r) {
   const vals = [Number(k) * 0.3, Number(s) * 0.5, Number(r) * 0.2].filter(
@@ -27,7 +36,6 @@ function initials(nama = "") {
     .join("")
     .toUpperCase();
 }
-
 
 function AvatarCircle({ src, nama, size = 48 }) {
   const [err, setErr] = useState(false);
@@ -190,7 +198,6 @@ function KonselorDrawer({ mode, data, onClose, onSaved }) {
         </div>
 
         <div className="km-drawer-body">
-          {/* avatar preview */}
           <div className="km-drawer-avatar-row">
             <AvatarCircle src={form.image_url} nama={form.nama || "?"} size={64} />
             <div className="km-drawer-avatar-info">
@@ -367,21 +374,80 @@ export function KonselorTab() {
   const [error,   setError]   = useState(null);
   const [search,  setSearch]  = useState("");
 
-  const [drawer,   setDrawer]   = useState(null); 
-  const [detail,   setDetail]   = useState(null); 
-  const [confirm,  setConfirm]  = useState(null);
-  const [toast,    setToast]    = useState(null); 
+  const [drawer,  setDrawer]  = useState(null);
+  const [detail,  setDetail]  = useState(null);
+  const [confirm, setConfirm] = useState(null);
+  const [toast,   setToast]   = useState(null);
 
   useEffect(() => { fetchList(); }, []);
 
   async function fetchList() {
-    setLoading(true); setError(null);
-    const { data, error: err } = await supabase
+    setLoading(true);
+    setError(null);
+
+    // 1. Fetch semua konselor
+    const { data: konselor, error: err } = await supabase
       .from("data_konselor")
       .select("*")
       .order("nama", { ascending: true });
-    if (err) setError(err.message);
-    else setList(data || []);
+
+    if (err) {
+      setError(err.message);
+      setLoading(false);
+      return;
+    }
+
+    const konselorIds = (konselor || []).map((k) => k.id);
+
+    // 2. Fetch booking + ulasan sekaligus (2 query untuk semua konselor)
+    const [{ data: allBookings }, { data: allUlasan }] = await Promise.all([
+      supabase
+        .from("booking")
+        .select("id_konselor, status")
+        .in("id_konselor", konselorIds),
+      supabase
+        .from("ulasan_konselor")
+        .select("id_konselor, rating")
+        .in("id_konselor", konselorIds),
+    ]);
+
+    // 3. Group per konselor
+    const bookingMap = {};
+    (allBookings ?? []).forEach((b) => {
+      if (!bookingMap[b.id_konselor]) bookingMap[b.id_konselor] = [];
+      bookingMap[b.id_konselor].push(b);
+    });
+
+    const ulasanMap = {};
+    (allUlasan ?? []).forEach((u) => {
+      if (!ulasanMap[u.id_konselor]) ulasanMap[u.id_konselor] = [];
+      ulasanMap[u.id_konselor].push(u);
+    });
+
+    // 4. Hitung stats live, gabung ke data konselor
+    const enriched = (konselor || []).map((k) => {
+      const bookings    = (bookingMap[k.id] ?? []).filter((b) => !isDibatalkan(b.status));
+      const total       = bookings.length;
+      const selesai     = bookings.filter((b) => isKasusSelesai(b.status)).length;
+      const successRate = total > 0 ? selesai / total : 0;
+
+      const ratings = (ulasanMap[k.id] ?? [])
+        .map((u) => Number(u.rating))
+        .filter((r) => r >= 1 && r <= 5);
+      const avgUlasan = ratings.length
+        ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+        : null;
+
+      return {
+        ...k,
+        jumlah_kasus:  total,
+        kasus_selesai: selesai,
+        success_rate:  successRate,
+        rating_final:  avgUlasan ?? k.rating_final ?? 0,
+      };
+    });
+
+    setList(enriched);
     setLoading(false);
   }
 
@@ -396,7 +462,7 @@ export function KonselorTab() {
 
   function handleSaved(result, mode) {
     if (mode === "edit") {
-      setList((prev) => prev.map((k) => (k.id === result.id ? result : k)));
+      setList((prev) => prev.map((k) => (k.id === result.id ? { ...k, ...result } : k)));
       setToast({ msg: "Perubahan berhasil disimpan.", type: "ok" });
     } else {
       setList((prev) => [...prev, result].sort((a, b) => a.nama.localeCompare(b.nama)));
@@ -450,7 +516,6 @@ export function KonselorTab() {
         />
       )}
 
-      {/* toolbar */}
       <div className="km-toolbar">
         <div className="km-search-wrap">
           <svg className="km-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -479,7 +544,6 @@ export function KonselorTab() {
         </button>
       </div>
 
-      {/* content */}
       {loading ? (
         <div className="rsa-loading"><div className="rsa-spinner" /><span>Memuat data konselor…</span></div>
       ) : error ? (
@@ -495,9 +559,9 @@ export function KonselorTab() {
       ) : (
         <div className="km-grid">
           {filtered.map((k) => {
-            const imgSrc  = k.image_url || k.foto_url;
-            const rating  = Number(k.rating_final) || 0;
-            const srPct   = k.success_rate != null ? Math.round(k.success_rate * 100) : null;
+            const imgSrc = k.image_url || k.foto_url;
+            const rating = Number(k.rating_final) || 0;
+            const srPct  = k.success_rate != null ? Math.round(k.success_rate * 100) : null;
             return (
               <div
                 key={k.id}

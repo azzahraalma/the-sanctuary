@@ -31,15 +31,15 @@ export default function SesiKonseling() {
   const { bookingId } = useParams();
   const navigate = useNavigate();
 
-  const [booking, setBooking]           = useState(null);
-  const [konselor, setKonselor]         = useState(null);
-  const [messages, setMessages]         = useState([]);
-  const [input, setInput]               = useState("");
-  const [isSending, setIsSending]       = useState(false);
-  const [isLoading, setIsLoading]       = useState(true);
-  const [showEndModal, setShowEndModal] = useState(false);
+  const [booking, setBooking]             = useState(null);
+  const [konselor, setKonselor]           = useState(null);
+  const [messages, setMessages]           = useState([]);
+  const [input, setInput]                 = useState("");
+  const [isSending, setIsSending]         = useState(false);
+  const [isLoading, setIsLoading]         = useState(true);
+  const [showEndModal, setShowEndModal]   = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
-  const [elapsed, setElapsed]           = useState(0);
+  const [elapsed, setElapsed]             = useState(0);
   const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
 
@@ -48,11 +48,13 @@ export default function SesiKonseling() {
     catch { return {}; }
   });
 
-  const userEmail = (user?.email ?? "").toLowerCase().trim();
-  const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
+  const isKonselor = user?.role === "konselor";
+  const userEmail  = (user?.email ?? "").toLowerCase().trim();
+  const firstName  = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
   useEffect(() => {
-    if (!bookingId) { navigate("/dashboard"); return; }
+    if (!bookingId) { navigate(isKonselor ? "/konselor-dashboard" : "/dashboard"); return; }
+
     (async () => {
       const { data: bk, error: bkErr } = await supabase
         .from("booking")
@@ -61,7 +63,48 @@ export default function SesiKonseling() {
         .maybeSingle();
 
       if (bkErr) console.error("booking fetch error:", bkErr);
-      if (!bk) { navigate("/dashboard"); return; }
+      if (!bk) { navigate(isKonselor ? "/konselor-dashboard" : "/dashboard"); return; }
+
+      if (isSelesai(bk.status)) {
+        alert("Sesi konseling ini sudah selesai. Terima kasih!");
+        navigate(isKonselor ? "/konselor-dashboard" : "/dashboard");
+        return;
+      }
+
+      if (isMenungguEvaluasi(bk.status)) {
+        if (!isKonselor) {
+          sessionStorage.setItem("sanctuary_pending_ulasan", JSON.stringify({
+            bookingId: bk.id,
+            konselorId: bk.id_konselor,
+          }));
+          alert("Sesi telah diakhiri. Yuk berikan ulasan untuk konselormu!");
+          navigate(`/konselor/${bk.id_konselor}?ulasan=1`);
+          return;
+        }
+        setBooking(bk);
+        const { data: kons } = await supabase
+          .from("data_konselor").select("*").eq("id", bk.id_konselor).maybeSingle();
+        setKonselor(kons);
+        setIsLoading(false);
+        return;
+      }
+
+      if (isKonselor) {
+        if (isTerjadwal(bk.status)) {
+          await supabase
+            .from("booking")
+            .update({ status: BOOKING_STATUS.BERJALAN })
+            .eq("id", bookingId);
+          bk.status = BOOKING_STATUS.BERJALAN;
+        }
+
+        setBooking(bk);
+        const { data: kons } = await supabase
+          .from("data_konselor").select("*").eq("id", bk.id_konselor).maybeSingle();
+        setKonselor(kons);
+        setIsLoading(false);
+        return;
+      }
 
       let slot = null;
       if (bk.tanggal_sesi) {
@@ -86,13 +129,13 @@ export default function SesiKonseling() {
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
-            hour12: false
+            hour12: false,
           }).replace(/\./g, ":");
         };
 
         const isDateOnly = bk.tanggal_sesi.includes("T00:00:00") || !bk.tanggal_sesi.includes("T");
-        const bkDateStr = getWIBDateStr(bk.tanggal_sesi);
-        const bkTimeStr = getWIBTimeStr(bk.tanggal_sesi);
+        const bkDateStr  = getWIBDateStr(bk.tanggal_sesi);
+        const bkTimeStr  = getWIBTimeStr(bk.tanggal_sesi);
 
         const { data: slots } = await supabase
           .from("konselor_availability")
@@ -114,37 +157,18 @@ export default function SesiKonseling() {
       };
 
       let start = null;
-      let end = null;
+      let end   = null;
 
       if (slot) {
         start = new Date(`${slot.tanggal}T${normalizeTime(slot.jam_mulai)}+07:00`);
-        end = new Date(`${slot.tanggal}T${normalizeTime(slot.jam_selesai)}+07:00`);
+        end   = new Date(`${slot.tanggal}T${normalizeTime(slot.jam_selesai)}+07:00`);
       } else if (bk.tanggal_sesi) {
         start = new Date(bk.tanggal_sesi);
-        end = new Date(start.getTime() + 60 * 60 * 1000);
+        end   = new Date(start.getTime() + 60 * 60 * 1000);
       }
 
-      const now = new Date();
-      const startBuffer = start;
-      const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
-
-      if (isSelesai(bk.status)) {
-        alert("Sesi konseling ini sudah selesai. Terima kasih!");
-        navigate("/dashboard");
-        return;
-      }
-
-      if (isMenungguEvaluasi(bk.status)) {
-        if (user?.role === "mahasiswa") {
-          sessionStorage.setItem("sanctuary_pending_ulasan", JSON.stringify({
-            bookingId: bk.id,
-            konselorId: bk.id_konselor,
-          }));
-          alert("Sesi telah diakhiri. Yuk berikan ulasan untuk konselormu!");
-          navigate(`/konselor/${bk.id_konselor}?ulasan=1`);
-          return;
-        }
-      }
+      const now         = new Date();
+      const isTimeRange = start && end && now >= start && now <= end;
 
       if (isBerjalan(bk.status)) {
         const effectiveEnd = end ?? (bk.tanggal_sesi
@@ -165,7 +189,7 @@ export default function SesiKonseling() {
             .eq("id", bookingId);
           bk.status = BOOKING_STATUS.BERJALAN;
         } else {
-          if (startBuffer && now < startBuffer) {
+          if (start && now < start) {
             alert("Sesi ini belum dimulai. Silakan tunggu jadwal sesimu ya!");
           } else {
             alert("Jadwal sesi ini sudah berakhir. Sesi tidak dapat dimulai.");
@@ -178,14 +202,11 @@ export default function SesiKonseling() {
       setBooking(bk);
 
       const { data: kons } = await supabase
-        .from("data_konselor")
-        .select("*")
-        .eq("id", bk.id_konselor)
-        .maybeSingle();
+        .from("data_konselor").select("*").eq("id", bk.id_konselor).maybeSingle();
       setKonselor(kons);
       setIsLoading(false);
     })();
-  }, [bookingId, user]); 
+  }, [bookingId, user]);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -230,7 +251,7 @@ export default function SesiKonseling() {
       }, payload => {
         const st = payload.new.status;
         setBooking(payload.new);
-        if (user?.role === "mahasiswa") {
+        if (!isKonselor) {
           const konselorId = payload.new.id_konselor;
           if (isMenungguEvaluasi(st)) {
             sessionStorage.setItem("sanctuary_pending_ulasan", JSON.stringify({
@@ -288,11 +309,11 @@ export default function SesiKonseling() {
     }
 
     const payload = {
-      booking_id: bookingId,
+      booking_id:     bookingId,
       pengirim_email: userEmail,
-      pengirim_nama: firstName,
-      teks: text,
-      tipe: user?.role === "konselor" ? "konselor" : "mahasiswa",
+      pengirim_nama:  firstName,
+      teks:           text,
+      tipe:           isKonselor ? "konselor" : "mahasiswa",
     };
 
     const { error } = await supabase.from("pesan_sesi").insert(payload);
@@ -412,7 +433,12 @@ export default function SesiKonseling() {
           <span className="sk-topbar-brand" onClick={() => navigate("/")}>
             The <span>Sanctuary</span>
           </span>
-          <div className="sk-session-info" onClick={() => setShowInfoModal(true)} style={{ cursor: "pointer" }} title="Klik untuk detail sesi">
+          <div
+            className="sk-session-info"
+            onClick={() => setShowInfoModal(true)}
+            style={{ cursor: "pointer" }}
+            title="Klik untuk detail sesi"
+          >
             <div className="sk-dot" />
             <span className="sk-session-title">
               <span className="sk-session-prefix">Sesi dengan </span>
@@ -421,12 +447,16 @@ export default function SesiKonseling() {
             <span className="sk-timer">{elapsedStr}</span>
             <span className="sk-info-icon" style={{ marginLeft: 4, fontSize: 13, opacity: 0.7 }}>ⓘ</span>
           </div>
-          {user?.role === "konselor" ? (
+          {isKonselor ? (
             <button className="sk-end-btn" onClick={() => setShowEndModal(true)}>
               Akhiri Sesi
             </button>
           ) : (
-            <button className="sk-end-btn" style={{ background: "#2f7d79", color: "#fff" }} onClick={() => navigate("/dashboard")}>
+            <button
+              className="sk-end-btn"
+              style={{ background: "#2f7d79", color: "#fff" }}
+              onClick={() => navigate("/dashboard")}
+            >
               Kembali ke Dashboard
             </button>
           )}

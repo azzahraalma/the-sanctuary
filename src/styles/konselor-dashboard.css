@@ -1492,8 +1492,6 @@ body::before {
   color: #c0392b;
 }
 
-/* ── Toast ────────────────────────────────────────────────── */
-
 .kd-toast {
   position: fixed;
   bottom: 28px;
@@ -1664,8 +1662,6 @@ body::before {
 .stg-toggle input:checked + .stg-toggle-track .stg-toggle-thumb {
   transform: translateX(20px);
 }
-
-/* ── Misc buttons ─────────────────────────────────────────── */
 
 .kd-edit-btn {
   display: flex;
@@ -2269,4 +2265,17 @@ body,
 
 @media (min-width: 769px) {
   .kd-topbar-logout { display: none; }
+}
+
+.kd-btn-detail--sesi {
+    background: linear-gradient(135deg, #2f7d79, #4aab7a);
+    color: #fff;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.kd-btn-detail--sesi:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
 }

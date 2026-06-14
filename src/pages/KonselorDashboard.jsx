@@ -677,9 +677,21 @@ export default function KonselorDashboard() {
                                             </div>
                                             <div className="kd-table-cell"><span className={`kd-badge ${isSelesai(b.Status) ? "kd-badge--done" : "kd-badge--run"}`}>{statusLabel(b.Status)}</span></div>
                                             <div className="kd-table-cell">
-                                                <button className="kd-btn-detail" onClick={() => { setSelectedKlien(b); setShowDetailModal(true); }}>
-                                                    Lihat Detail 
-                                                </button>
+                                                {isAktif(b.Status) ? (
+                                                    <button
+                                                        className="kd-btn-detail kd-btn-detail--sesi"
+                                                        onClick={() => navigate(`/sesi/${b.ID_Booking}`)}
+                                                    >
+                                                        Masuk Sesi →
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className="kd-btn-detail"
+                                                        onClick={() => { setSelectedKlien(b); setShowDetailModal(true); }}
+                                                    >
+                                                        Lihat Detail
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     );

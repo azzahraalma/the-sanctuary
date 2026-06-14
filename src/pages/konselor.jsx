@@ -152,7 +152,7 @@ function FooterModal({ type, onClose }) {
         },
       ],
     },
-        panduan: {
+    panduan: {
       title: "Panduan Konseling Sebaya",
       sections: [
         {
@@ -301,15 +301,17 @@ export default function Konselor() {
       <header className="nav-shell">
         <nav className="nav">
           <div className="nav-l">
-            <span className="nav-logo" onClick={() => navigate("/?home=1")}>The Sanctuary</span>
+            <span className="nav-logo" onClick={() => navigate("/?home=1")}>
+              The<br className="nav-logo-br" />Sanctuary
+            </span>
             <ul className="nav-menu">
               <li className="nav-item" onClick={() => navigate("/?home=1")}>Beranda</li>
               <li className="nav-item is-active">Konselor</li>
-              <li className="nav-item" onClick={() => goTo("/dashboard")}>Dashboard</li>
+              <li className="nav-item" onClick={() => goTo("/dashboard")}>Beranda</li>
             </ul>
           </div>
           <div className="nav-r">
-            <button type="button" className="nav-cta" onClick={() => goTo("/kuesioner") }>
+            <button type="button" className="nav-cta" onClick={() => goTo("/kuesioner")}>
               Mulai Refleksi Diri
             </button>
             <button type="button" className="nav-icon-btn" aria-label="Notifikasi" onClick={() => goTo("/notifikasi")}>
@@ -436,7 +438,9 @@ export default function Konselor() {
             <p className="kon-filter-label">KETERSEDIAAN</p>
             <div className="kon-avail-wrap">
               {["Hari ini", "Minggu ini", "Sesi Malam"].map((a) => (
-                <button                  type="button"                  key={a}
+                <button
+                  type="button"
+                  key={a}
                   className={`kon-avail-btn ${filterAvail.includes(a) ? "aktif" : ""}`}
                   onClick={() => toggleAvail(a)}
                 >

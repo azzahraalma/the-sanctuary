@@ -78,11 +78,6 @@ export default function UlasanForm({
           >
             {submitting ? "Menyimpan..." : "Kirim Ulasan"}
           </button>
-          {onSkip && (
-            <button type="button" className="kd-ulasan-skip" onClick={onSkip} disabled={submitting}>
-              Nanti saja
-            </button>
-          )}
         </div>
       </form>
     </div>

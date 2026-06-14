@@ -49,48 +49,6 @@ function StarRating({ rating, size = 14 }) {
   );
 }
 
-const SPESIALISASI_MAP = {
-  "Tekanan Akademik & Kesejahteraan Mahasiswa": [
-    { icon: "", judul: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline dengan strategi yang efektif dan berkelanjutan." },
-    { icon: "", judul: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental di tengah tuntutan perkuliahan yang tinggi." },
-    { icon: "", judul: "Fokus & Produktivitas", desc: "Teknik dan strategi untuk meningkatkan konsentrasi belajar dan produktivitas akademik sehari-hari." },
-  ],
-  "Perencanaan Karier & Kehidupan Kampus": [
-    { icon: "️", judul: "Perencanaan Karier", desc: "Membantu mahasiswa merancang jalur karier yang sesuai dengan minat, bakat, dan kondisi pasar kerja saat ini." },
-    { icon: "", judul: "Kehidupan Kampus", desc: "Pendampingan adaptasi di lingkungan kampus, membangun relasi, dan memaksimalkan pengalaman perkuliahan." },
-    { icon: "", judul: "Persiapan Dunia Kerja", desc: "Bimbingan menyiapkan diri untuk transisi dari dunia kampus ke dunia profesional dengan percaya diri." },
-  ],
-  "Pengelolaan Kebiasaan & Emosi Mahasiswa": [
-    { icon: "", judul: "Regulasi Emosi", desc: "Teknik mengelola emosi agar tidak menghambat aktivitas dan hubungan sosial di lingkungan kampus." },
-    { icon: "", judul: "Pembentukan Kebiasaan Baik", desc: "Membangun rutinitas positif yang mendukung pertumbuhan diri dan pencapaian tujuan jangka panjang." },
-    { icon: "", judul: "Komunikasi Asertif", desc: "Melatih kemampuan menyampaikan pikiran dan perasaan secara sehat, jelas, dan efektif." },
-  ],
-  "Kelelahan Akademik & Aktivitas Kampus": [
-    { icon: "", judul: "Pemulihan Burnout", desc: "Strategi mengenali, mengatasi, dan pulih dari kelelahan akademik yang berkepanjangan secara bertahap." },
-    { icon: "️", judul: "Work-Life Balance Kampus", desc: "Menyeimbangkan aktivitas akademik, organisasi, dan kehidupan pribadi tanpa mengorbankan kesehatan." },
-    { icon: "", judul: "Self-Care & Resiliensi", desc: "Membangun ketahanan diri agar mampu bangkit dari tekanan dan tantangan kehidupan kampus." },
-  ],
-};
-
-const TESTIMONI_MAP = {
-  "K-001": [
-    { nama: "Rizki Pratama", peran: "Mahasiswa Semester 6", rating: 5, teks: "Almalia sangat sabar dan penuh empati. Beliau membantu saya menemukan cara belajar yang lebih efektif saat menghadapi tekanan skripsi." },
-    { nama: "Sari Dewi", peran: "Mahasiswa Semester 4", rating: 5, teks: "Sesi bersama Almalia benar-benar mengubah cara pandang saya terhadap stres akademik. Sekarang saya lebih tenang menghadapi ujian." },
-  ],
-  "K-002": [
-    { nama: "Budi Santoso", peran: "Fresh Graduate", rating: 4, teks: "Felicia membantu saya memetakan jalur karier yang selama ini membingungkan. Pendekatannya sangat terstruktur dan mudah dipahami." },
-    { nama: "Nina Kartika", peran: "Mahasiswa Semester 7", rating: 5, teks: "Berkat Felicia, saya jadi lebih yakin dengan pilihan karier saya. Beliau memiliki wawasan luas tentang dunia kerja kreatif." },
-  ],
-  "K-003": [
-    { nama: "Dika Ramadhan", peran: "Mahasiswa Semester 3", rating: 5, teks: "Haris benar-benar mendengarkan tanpa menghakimi. Saya bisa cerita apa saja dan beliau selalu memberikan perspektif yang menyegarkan." },
-    { nama: "Putri Amalia", peran: "Mahasiswa Semester 5", rating: 5, teks: "Sesi dengan Haris membantu saya mengelola emosi saat konflik dengan teman seangkatan. Tekniknya praktis dan langsung bisa diterapkan." },
-  ],
-  "K-004": [
-    { nama: "Fajar Nugroho", peran: "Mahasiswa Semester 8", rating: 3, teks: "Haikal membantu saya mengenali tanda-tanda burnout lebih awal. Meski masih baru, semangatnya untuk membantu sangat terasa." },
-    { nama: "Anisa Putri", peran: "Mahasiswa Semester 6", rating: 4, teks: "Pendekatan Haikal cukup membantu saya menyeimbangkan kegiatan organisasi dan kuliah yang sempat bikin kewalahan." },
-  ],
-};
-
 const HARI  = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
 const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
@@ -117,108 +75,44 @@ function FooterModal({ type, onClose }) {
     privasi: {
       title: "Kebijakan Privasi",
       sections: [
-        {
-          heading: "Informasi yang Kami Kumpulkan",
-          body: "Kami mengumpulkan informasi yang kamu berikan secara langsung, seperti nama, alamat email, dan data profil saat mendaftar. Kami juga mengumpulkan data penggunaan layanan secara anonim untuk meningkatkan pengalaman pengguna.",
-        },
-        {
-          heading: "Bagaimana Kami Menggunakan Informasimu",
-          body: "Informasi yang kami kumpulkan digunakan untuk menyediakan layanan konseling sebaya, menghubungkan kamu dengan konselor yang tepat, serta mengirimkan notifikasi terkait jadwal dan sesi konselingmu.",
-        },
-        {
-          heading: "Kerahasiaan Sesi Konseling",
-          body: "Semua percakapan dalam sesi konseling bersifat rahasia. Kami tidak membagikan konten sesi kepada pihak ketiga tanpa persetujuan eksplisit darimu, kecuali diwajibkan oleh hukum yang berlaku.",
-        },
-        {
-          heading: "Keamanan Data",
-          body: "Kami menggunakan enkripsi standar industri untuk melindungi data pribadimu. Akses ke data dibatasi hanya untuk personel yang berwenang dan diperlukan untuk operasional layanan.",
-        },
-        {
-          heading: "Hubungi Kami",
-          body: "Jika kamu memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui email: privacy@thesanctuary.id",
-        },
+        { heading: "Informasi yang Kami Kumpulkan", body: "Kami mengumpulkan informasi yang kamu berikan secara langsung, seperti nama, alamat email, dan data profil saat mendaftar. Kami juga mengumpulkan data penggunaan layanan secara anonim untuk meningkatkan pengalaman pengguna." },
+        { heading: "Bagaimana Kami Menggunakan Informasimu", body: "Informasi yang kami kumpulkan digunakan untuk menyediakan layanan konseling sebaya, menghubungkan kamu dengan konselor yang tepat, serta mengirimkan notifikasi terkait jadwal dan sesi konselingmu." },
+        { heading: "Kerahasiaan Sesi Konseling", body: "Semua percakapan dalam sesi konseling bersifat rahasia. Kami tidak membagikan konten sesi kepada pihak ketiga tanpa persetujuan eksplisit darimu, kecuali diwajibkan oleh hukum yang berlaku." },
+        { heading: "Keamanan Data", body: "Kami menggunakan enkripsi standar industri untuk melindungi data pribadimu. Akses ke data dibatasi hanya untuk personel yang berwenang dan diperlukan untuk operasional layanan." },
+        { heading: "Hubungi Kami", body: "Jika kamu memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui email: privacy@thesanctuary.id" },
       ],
     },
     syarat: {
       title: "Syarat dan Ketentuan",
       sections: [
-        {
-          heading: "Penerimaan Syarat",
-          body: "Dengan menggunakan layanan The Sanctuary, kamu menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan kami.",
-        },
-        {
-          heading: "Penggunaan Layanan",
-          body: "The Sanctuary adalah platform konseling sebaya yang ditujukan untuk mahasiswa Polimedia. Layanan ini bukan pengganti konseling profesional atau layanan kesehatan mental klinis. Untuk kondisi darurat, segera hubungi tenaga profesional.",
-        },
-        {
-          heading: "Kewajiban Pengguna",
-          body: "Kamu bertanggung jawab untuk menjaga kerahasiaan akun dan tidak membagikan informasi login kepada orang lain. Segala aktivitas yang terjadi melalui akunmu adalah tanggung jawabmu.",
-        },
-        {
-          heading: "Kode Etik",
-          body: "Semua pengguna diharapkan berinteraksi dengan saling menghormati. Perilaku yang merendahkan, melecehkan, atau merugikan pengguna lain akan mengakibatkan penangguhan akun.",
-        },
-        {
-          heading: "Perubahan Layanan",
-          body: "Kami berhak mengubah, menangguhkan, atau menghentikan layanan kapan saja dengan pemberitahuan sebelumnya. Perubahan syarat dan ketentuan akan diberitahukan melalui email atau notifikasi aplikasi.",
-        },
+        { heading: "Penerimaan Syarat", body: "Dengan menggunakan layanan The Sanctuary, kamu menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan kami." },
+        { heading: "Penggunaan Layanan", body: "The Sanctuary adalah platform konseling sebaya yang ditujukan untuk mahasiswa Polimedia. Layanan ini bukan pengganti konseling profesional atau layanan kesehatan mental klinis. Untuk kondisi darurat, segera hubungi tenaga profesional." },
+        { heading: "Kewajiban Pengguna", body: "Kamu bertanggung jawab untuk menjaga kerahasiaan akun dan tidak membagikan informasi login kepada orang lain. Segala aktivitas yang terjadi melalui akunmu adalah tanggung jawabmu." },
+        { heading: "Kode Etik", body: "Semua pengguna diharapkan berinteraksi dengan saling menghormati. Perilaku yang merendahkan, melecehkan, atau merugikan pengguna lain akan mengakibatkan penangguhan akun." },
+        { heading: "Perubahan Layanan", body: "Kami berhak mengubah, menangguhkan, atau menghentikan layanan kapan saja dengan pemberitahuan sebelumnya. Perubahan syarat dan ketentuan akan diberitahukan melalui email atau notifikasi aplikasi." },
       ],
     },
     bantuan: {
       title: "Pusat Bantuan",
       sections: [
-        {
-          heading: "Cara Booking Sesi",
-          body: "Kunjungi halaman Konselor, pilih konselor yang sesuai kebutuhanmu, lalu pilih jadwal yang tersedia. Konfirmasi booking dan kamu akan mendapat notifikasi setelah konselor menyetujui sesi.",
-        },
-        {
-          heading: "Bergabung ke Sesi",
-          body: "Saat waktu sesi tiba, tombol 'Mulai Sesi' akan muncul di dashboard. Klik tombol tersebut untuk masuk ke ruang konseling online bersama konselormu.",
-        },
-        {
-          heading: "Membatalkan Sesi",
-          body: "Pembatalan sesi dapat dilakukan melalui halaman Riwayat Sesi minimal 1 jam sebelum waktu sesi dimulai. Pembatalan mendadak kurang dari 1 jam akan dicatat sebagai ketidakhadiran.",
-        },
-        {
-          heading: "Masalah Teknis",
-          body: "Jika kamu mengalami masalah teknis saat menggunakan platform, coba refresh halaman atau hapus cache browser. Jika masalah berlanjut, hubungi tim support kami.",
-        },
-        {
-          heading: "Hubungi Support",
-          body: "📧 support@thesanctuary.id\n📱 WhatsApp: 0812-3456-7890 (Senin–Jumat, 08.00–17.00 WIB)\n🏢 Gedung Polimedia, Ruang Kemahasiswaan Lt. 2",
-        },
+        { heading: "Cara Booking Sesi", body: "Kunjungi halaman Konselor, pilih konselor yang sesuai kebutuhanmu, lalu pilih jadwal yang tersedia. Konfirmasi booking dan kamu akan mendapat notifikasi setelah konselor menyetujui sesi." },
+        { heading: "Bergabung ke Sesi", body: "Saat waktu sesi tiba, tombol 'Mulai Sesi' akan muncul di dashboard. Klik tombol tersebut untuk masuk ke ruang konseling online bersama konselormu." },
+        { heading: "Membatalkan Sesi", body: "Pembatalan sesi dapat dilakukan melalui halaman Riwayat Sesi minimal 1 jam sebelum waktu sesi dimulai. Pembatalan mendadak kurang dari 1 jam akan dicatat sebagai ketidakhadiran." },
+        { heading: "Masalah Teknis", body: "Jika kamu mengalami masalah teknis saat menggunakan platform, coba refresh halaman atau hapus cache browser. Jika masalah berlanjut, hubungi tim support kami." },
+        { heading: "Hubungi Support", body: "📧 support@thesanctuary.id\n📱 WhatsApp: 0812-3456-7890 (Senin–Jumat, 08.00–17.00 WIB)\n🏢 Gedung Polimedia, Ruang Kemahasiswaan Lt. 2" },
       ],
     },
-        panduan: {
+    panduan: {
       title: "Panduan Konseling Sebaya",
       sections: [
-        {
-          heading: "Sebelum Memulai Konseling",
-          body: "Pastikan kamu sudah menentukan topik atau permasalahan yang ingin dibahas. Siapkan koneksi internet yang stabil dan pilih tempat yang nyaman agar sesi konseling berjalan lebih efektif."
-        },
-        {
-          heading: "Memilih Konselor",
-          body: "Masuk ke halaman daftar konselor, lihat profil serta bidang pendampingan yang tersedia. Pilih konselor yang paling sesuai dengan kebutuhanmu, kemudian lanjutkan ke proses pemilihan jadwal."
-        },
-        {
-          heading: "Mengajukan Permintaan Sesi",
-          body: "Pilih waktu konseling yang tersedia lalu kirim permintaan sesi. Tunggu persetujuan dari konselor. Setelah disetujui, detail sesi akan tersedia pada menu jadwal konseling."
-        },
-        {
-          heading: "Saat Konseling Berlangsung",
-          body: "Gunakan fitur ruang konseling untuk memulai percakapan dengan konselor. Sampaikan cerita dan perasaanmu secara terbuka agar konselor dapat memberikan pendampingan yang tepat."
-        },
-        {
-          heading: "Aturan Selama Sesi",
-          body: "Jaga komunikasi yang sopan, hargai privasi, dan hindari membagikan informasi pribadi orang lain. Seluruh percakapan selama sesi bersifat rahasia dan digunakan hanya untuk kebutuhan pendampingan."
-        },
-        {
-          heading: "Setelah Sesi Selesai",
-          body: "Kamu dapat memberikan evaluasi atau feedback mengenai pengalaman konseling. Feedback tersebut membantu meningkatkan kualitas layanan konseling sebaya."
-        }
-      ]
-    }
-
+        { heading: "Sebelum Memulai Konseling", body: "Pastikan kamu sudah menentukan topik atau permasalahan yang ingin dibahas. Siapkan koneksi internet yang stabil dan pilih tempat yang nyaman agar sesi konseling berjalan lebih efektif." },
+        { heading: "Memilih Konselor", body: "Masuk ke halaman daftar konselor, lihat profil serta bidang pendampingan yang tersedia. Pilih konselor yang paling sesuai dengan kebutuhanmu, kemudian lanjutkan ke proses pemilihan jadwal." },
+        { heading: "Mengajukan Permintaan Sesi", body: "Pilih waktu konseling yang tersedia lalu kirim permintaan sesi. Tunggu persetujuan dari konselor. Setelah disetujui, detail sesi akan tersedia pada menu jadwal konseling." },
+        { heading: "Saat Konseling Berlangsung", body: "Gunakan fitur ruang konseling untuk memulai percakapan dengan konselor. Sampaikan cerita dan perasaanmu secara terbuka agar konselor dapat memberikan pendampingan yang tepat." },
+        { heading: "Aturan Selama Sesi", body: "Jaga komunikasi yang sopan, hargai privasi, dan hindari membagikan informasi pribadi orang lain. Seluruh percakapan selama sesi bersifat rahasia dan digunakan hanya untuk kebutuhan pendampingan." },
+        { heading: "Setelah Sesi Selesai", body: "Kamu dapat memberikan evaluasi atau feedback mengenai pengalaman konseling. Feedback tersebut membantu meningkatkan kualitas layanan konseling sebaya." },
+      ],
+    },
   };
 
   const c = content[type];
@@ -265,6 +159,16 @@ function SkeletonDetail() {
   );
 }
 
+// Normalise spesialisasi dari Supabase ke format display (icon, judul, desc)
+function normalizeSpesialisasi(raw) {
+  if (!raw || !Array.isArray(raw) || raw.length === 0) return [];
+  return raw.map((s) => ({
+    icon:  s.icon  ?? "",
+    judul: s.judul ?? s.title ?? "",
+    desc:  s.desc  ?? "",
+  }));
+}
+
 export default function KonselorDetail() {
   const { id }    = useParams();
   const navigate  = useNavigate();
@@ -276,13 +180,13 @@ export default function KonselorDetail() {
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
 
-  const [ulasanList,      setUlasanList]      = useState([]);
-  const [pendingBooking,  setPendingBooking]  = useState(null);
-  const [showUlasanForm,  setShowUlasanForm]  = useState(false);
-  const [ulasanSubmitting,setUlasanSubmitting]= useState(false);
-  const [ulasanError,     setUlasanError]     = useState("");
-  const [ulasanSuccess,   setUlasanSuccess]   = useState(false);
-  const [liveStats,       setLiveStats]       = useState(null);
+  const [ulasanList,       setUlasanList]      = useState([]);
+  const [pendingBooking,   setPendingBooking]  = useState(null);
+  const [showUlasanForm,   setShowUlasanForm]  = useState(false);
+  const [ulasanSubmitting, setUlasanSubmitting]= useState(false);
+  const [ulasanError,      setUlasanError]     = useState("");
+  const [ulasanSuccess,    setUlasanSuccess]   = useState(false);
+  const [liveStats,        setLiveStats]       = useState(null);
 
   const [footerModal, setFooterModal] = useState(null);
 
@@ -323,6 +227,7 @@ export default function KonselorDetail() {
         Success_Rate:     kData.success_rate     ?? 0,
         image:            kData.image_url || kData.foto_url || "/placeholder-avatar.png",
         bio:              kData.bio              ?? "",
+        spesialisasi:     kData.spesialisasi     ?? null,
       });
 
       const todayStr = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
@@ -623,14 +528,17 @@ export default function KonselorDetail() {
     </div>
   );
 
-  const calDays      = getCalendarDays(calYear, calMonth);
-  const today        = new Date();
-  const isToday      = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
-  const spesialisasi = SPESIALISASI_MAP[konselor.Kategori_Masalah] || [];
-  const testimoniDb  = ulasanList;
-  const testimoniFallback = TESTIMONI_MAP[konselor.ID] || [];
-  const testimoni    = testimoniDb.length > 0 ? testimoniDb : testimoniFallback;
-  const bio          = konselor.bio || "Konselor sebaya yang berdedikasi dalam membantu mahasiswa.";
+  const calDays = getCalendarDays(calYear, calMonth);
+  const today   = new Date();
+  const isToday = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+
+  // Spesialisasi 100% dari Supabase — diisi konselor via Edit Profil di dashboard
+  const spesialisasi = normalizeSpesialisasi(konselor.spesialisasi);
+
+  // Testimoni 100% dari Supabase (ulasan_konselor)
+  const testimoni = ulasanList;
+
+  const bio = konselor.bio || "Konselor sebaya yang berdedikasi dalam membantu mahasiswa.";
 
   const stats = liveStats ?? {
     rating_final:  konselor["Rating_(Final)"],
@@ -661,7 +569,7 @@ export default function KonselorDetail() {
       <header className="nav-shell">
         <nav className="nav">
           <div className="nav-l">
-            <span className="nav-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+            <span className="nav-logo" onClick={() => navigate("/")}>The<br className="nav-logo-br" />Sanctuary</span>
             <ul className="nav-menu">
               <li className="nav-item" onClick={() => navigate("/")}>Beranda</li>
               <li className="nav-item is-active" onClick={() => navigate("/konselor")}>Konselor</li>
@@ -779,15 +687,19 @@ export default function KonselorDetail() {
 
           <section className="kd-section">
             <h2 className="kd-section-h">Spesialisasi Keahlian</h2>
-            <div className="kd-spesial-grid">
-              {spesialisasi.map((s, i) => (
-                <div key={i} className="kd-spesial-card">
-                  <span className="kd-spesial-icon">{s.icon}</span>
-                  <h4 className="kd-spesial-judul">{s.judul}</h4>
-                  <p className="kd-spesial-desc">{s.desc}</p>
-                </div>
-              ))}
-            </div>
+            {spesialisasi.length === 0 ? (
+              <p className="kd-testi-empty">Belum ada data spesialisasi untuk konselor ini.</p>
+            ) : (
+              <div className="kd-spesial-grid">
+                {spesialisasi.map((s, i) => (
+                  <div key={i} className="kd-spesial-card">
+                    <span className="kd-spesial-icon">{s.icon}</span>
+                    <h4 className="kd-spesial-judul">{s.judul}</h4>
+                    <p className="kd-spesial-desc">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="kd-section" ref={ulasanSectionRef}>
@@ -931,7 +843,7 @@ export default function KonselorDetail() {
 
             {bookingDone ? (
               <div className="kd-booking-success">
-                <span className="kd-booking-success-icon"></span>
+                <span className="kd-booking-success-icon">✅</span>
                 <p>Sesi berhasil dijadwalkan!</p>
                 <span>
                   {selectedDay} {BULAN[calMonth]} {calYear},{" "}
@@ -966,21 +878,7 @@ export default function KonselorDetail() {
               Sesi berlangsung 45 menit via platform Sanctuary. Kamu bisa reschedule hingga 2 jam sebelum sesi dimulai.
             </p>
           </div>
-
-          <div className="kd-other-card">
-            <p className="kd-other-label">KONSELOR LAINNYA</p>
-            <p className="kd-other-hint" style={{ fontSize: 12, color: "#888", padding: "8px 0" }}>
-              Lihat semua konselor di halaman{" "}
-              <span
-                style={{ color: "#2f7d79", cursor: "pointer" }}
-                onClick={() => navigate("/konselor")}
-              >
-                Daftar Konselor →
-              </span>
-            </p>
-          </div>
         </aside>
-
       </div>
 
       <footer className="footer" style={{ width: "92%", margin: "80px auto 50px" }}>

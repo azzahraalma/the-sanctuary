@@ -375,7 +375,7 @@ export default function Statistik() {
             </nav>
           </div>
           <div className="sk-topbar-r">
-            <button className="sk-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
+            <button className="sk-cta" onClick={() => navigate("/konselor")}>Temukan Konselor</button>
             <button className="sk-icon-btn" onClick={() => navigate("/notifikasi")}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -559,14 +559,6 @@ export default function Statistik() {
                     </div>
                   );
                 })}
-              </div>
-
-              <div className="sk-section-hd">
-                <div>
-                  <h2 className="sk-section-h2">Teman Konselor yang Mungkin Cocok</h2>
-                  <p className="sk-section-sub">Pilihan konselor sebaya berdasarkan rating dan kecocokan topik</p>
-                </div>
-                <button className="sk-link-btn" onClick={() => navigate("/konselor")}>Temukan Lainnya →</button>
               </div>
 
               <div className="sk-mentor-grid">

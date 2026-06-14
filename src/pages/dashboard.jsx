@@ -714,7 +714,7 @@ export default function Dashboard() {
             </nav>
           </div>
           <div className="db-topbar-r">
-            <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>Cari Teman Cerita</button>
+            <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>Temukan Konselor</button>
             <button className="db-icon-btn" onClick={() => navigate("/notifikasi")} style={{ position: "relative" }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -731,6 +731,13 @@ export default function Dashboard() {
             <div className="db-avatar" onClick={() => navigate("/settings")}>
               {(user?.nama ?? user?.name ?? "U").charAt(0).toUpperCase()}
             </div>
+                <button className="nav-logout-btn" onClick={handleLogout}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                </button>
           </div>
         </header>
 
@@ -751,7 +758,7 @@ export default function Dashboard() {
                 Ceritakan apa yang kamu rasakan kepada konselor sebaya yang siap mendengarkan.
               </p>
               <button className="db-hero-btn" onClick={() => navigate("/konselor")}>
-                Cari Teman Cerita
+                Temukan Konselor
               </button>
             </div>
             <div className="db-hero-right">

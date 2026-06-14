@@ -1037,17 +1037,14 @@
   opacity: 0.88;
 }
 
-/* ─── hide line break on desktop ─── */
 .nav-logo-br { display: none; }
 
-/* ─── Tablet ─── */
 @media (max-width: 1024px) {
   .kd-layout { grid-template-columns: 1fr; }
   .kd-right  { position: static; }
   .kd-spesial-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* ─── Mobile ─── */
 @media (max-width: 768px) {
   .kd-layout { grid-template-columns: 1fr; }
   .kd-right  { position: static; }
@@ -1060,7 +1057,6 @@
     white-space: nowrap;
   }
 
-  /* Hero card stack vertikal */
   .kd-hero-card {
     grid-template-columns: 1fr;
     text-align: center;
@@ -1091,7 +1087,6 @@
     display: none;
   }
 
-  /* Rating breakdown — tetap horizontal, ukuran lebih kecil */
   .kd-rating-breakdown {
     padding: 14px;
     gap: 10px;
@@ -1121,10 +1116,8 @@
     width: 24px;
   }
 
-  /* Spesialisasi 1 kolom di mobile */
   .kd-spesial-grid { grid-template-columns: 1fr; }
 
-  /* Testimoni stack */
   .kd-testi-header { grid-template-columns: 1fr; }
   .kd-testi-grid { grid-template-columns: 1fr; }
 }

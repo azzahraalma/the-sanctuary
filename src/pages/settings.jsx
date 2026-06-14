@@ -1,9 +1,28 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState, useEffect, useRef } from "react";
-import "../styles/dashboard.css";
 import "../styles/settings.css";
+import "../styles/statistik.css";
 import { supabase } from "../lib/supabase.js";
 import { usePushNotif } from "../hooks/usePushNotif.js";
+
+function IconHamburger() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+function IconClose() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="18" height="18">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
 
 function Toggle({ checked, onChange, disabled }) {
   return (
@@ -97,6 +116,7 @@ function PasswordStrength({ password }) {
 export default function Settings() {
   const navigate = useNavigate();
   const fileRef  = useRef(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const user = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
@@ -168,28 +188,30 @@ export default function Settings() {
   const handlePengingat    = (v) => { setPengingat(v); saveNotifPref("pengingat_sesi", v); };
 
   const handlePushToggle = async () => {
-    if (pushLoading || pushHookLoading) return;
+    if (pushLoading || pushHookLoading || status === "idle") return;
+  
     setPushLoading(true);
-    if (pushStatus === "subscribed") {
-      await unsubscribe();
-      await saveNotifPref("push_aktif", false);
-      showToast("Push notifikasi dinonaktifkan");
-    } else {
-      if (pushStatus === "unsupported") {
-        showToast("Browser tidak mendukung push notifikasi");
-        setPushLoading(false);
-        return;
+    try {
+      if (pushStatus === "subscribed") {
+        await unsubscribe();
+        await saveNotifPref("push_aktif", false);
+        showToast("Push notifikasi dinonaktifkan");
+      } else {
+        if (pushStatus === "unsupported") {
+          showToast("Browser tidak mendukung push notifikasi");
+          return;
+        }
+        if (pushStatus === "denied") {
+          showToast("Izin notifikasi ditolak di browser — ubah di pengaturan browser");
+          return;
+        }
+        await subscribe();
+        await saveNotifPref("push_aktif", true);
+        showToast("Push notifikasi diaktifkan ✓");
       }
-      if (pushStatus === "denied") {
-        showToast("Izin notifikasi ditolak di browser");
-        setPushLoading(false);
-        return;
-      }
-      await subscribe();
-      await saveNotifPref("push_aktif", true);
-      showToast("Push notifikasi diaktifkan ✓");
+    } finally {
+      setPushLoading(false);
     }
-    setPushLoading(false);
   };
 
   const handleFotoChange = (e) => {
@@ -333,94 +355,123 @@ export default function Settings() {
   }[pushStatus] ?? "";
 
   return (
-    <div className="db-shell">
-      <Toast msg={toast} onDone={() => setToast("")} />
+    <div className="sk-shell">
 
-      <aside className="db-sidebar">
-        <div className="db-sidebar-top">
-          <span className="db-logo" onClick={() => navigate("/")}>The Sanctuary</span>
-          <nav className="db-nav">
-            <div className="db-nav-item" onClick={() => navigate("/dashboard")}>
+      {sidebarOpen && (
+        <div className="sk-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <aside className={`sk-sidebar ${sidebarOpen ? "sk-sidebar--open" : ""}`}>
+        <div className="sk-sidebar-top">
+          <span className="sk-sidebar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+          <nav className="sk-sidebar-nav">
+            <div className="sk-sidebar-item" onClick={() => { navigate("/dashboard"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
               </svg>
               Beranda
             </div>
-            <div className="db-nav-item" onClick={() => navigate("/statistik")}>
+            <div className="sk-sidebar-item" onClick={() => { navigate("/statistik"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
               </svg>
               Statistik
             </div>
-            <div className="db-nav-item" onClick={() => navigate("/riwayat")}>
+            <div className="sk-sidebar-item" onClick={() => { navigate("/riwayat"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
               </svg>
               Riwayat Sesi
             </div>
-            <div className="db-nav-item db-nav-item--active">
+            <div className="sk-sidebar-item sk-sidebar-item--active" onClick={() => { navigate("/settings"); setSidebarOpen(false); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
               </svg>
               Pengaturan
             </div>
           </nav>
         </div>
-        <button className="db-logout" onClick={handleLogout}>
+        <button className="sk-sidebar-logout" onClick={handleLogout}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
           </svg>
           Keluar
         </button>
       </aside>
 
-      <main className="db-main">
-        <header className="db-topbar">
-          <div className="db-topbar-l">
-            <span className="db-topbar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
-            <nav className="db-topbar-nav">
-              <span onClick={() => navigate("/")}>Beranda</span>
-              <span onClick={() => navigate("/konselor")}>Konselor</span>
-              <span onClick={() => navigate("/dashboard")}>Dashboard</span>
-            </nav>
-          </div>
-          <div className="db-topbar-r">
-            <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>Temukan Konselor</button>
-            <button className="db-icon-btn" onClick={() => navigate("/notifikasi")}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-            </button>
-            <div className="db-avatar" onClick={() => navigate("/dashboard")}>
-              {avatarSrc
-                ? <img src={avatarSrc} alt="avatar" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
-                : userName.charAt(0).toUpperCase()
-              }
+      <main className="sk-main">
+
+        <header className="sk-topbar">
+          <div className="sk-topbar-inner">
+
+            <div className="sk-topbar-row1">
+
+              <div className="sk-topbar-l">
+                <button
+                  className="sk-sidebar-toggle"
+                  onClick={() => setSidebarOpen((o) => !o)}
+                  title={sidebarOpen ? "Tutup menu" : "Buka menu"}
+                >
+                  {sidebarOpen ? <IconClose /> : <IconHamburger />}
+                </button>
+
+                <span className="sk-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+
+                <nav className="sk-topbar-nav sk-topbar-nav--desktop">
+                  <span onClick={() => navigate("/?home=1")}>Beranda</span>
+                  <span onClick={() => navigate("/konselor")}>Konselor</span>
+                  <span className="sk-topbar-active">Dashboard</span>
+                </nav>
+              </div>
+
+              <div className="sk-topbar-r">
+                <button className="sk-cta" onClick={() => navigate("/konselor")}>
+                  Temukan Konselor
+                </button>
+
+                <button className="sk-icon-btn" onClick={() => navigate("/notifikasi")}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                </button>
+
+                <div className="sk-avatar" onClick={() => navigate("/settings")}>
+                  {avatarSrc
+                    ? <img src={avatarSrc} alt="avatar" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                    : userName.charAt(0).toUpperCase()
+                  }
+                </div>
+
+                <button className="sk-nav-logout-btn" onClick={handleLogout} title="Keluar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                </button>
+              </div>
+
             </div>
+
+            <nav className="sk-topbar-nav sk-topbar-nav--mobile">
+              <span onClick={() => navigate("/?home=1")}>Beranda</span>
+              <span onClick={() => navigate("/konselor")}>Konselor</span>
+              <span className="sk-topbar-active">Dashboard</span>
+            </nav>
+
           </div>
         </header>
 
-        <div className="db-content">
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={{
-              background: "none", border: "none", cursor: "pointer",
-              display: "flex", alignItems: "center", gap: 6,
-              color: "#2f7d79", fontSize: 13, fontWeight: 700,
-              marginBottom: 10, padding: 0, fontFamily: "inherit",
-            }}
-          >
-            ← Kembali
-          </button>
+        <div className="sk-content">
           <div className="stg-page-header">
             <h1 className="stg-page-title">Pengaturan</h1>
             <p className="stg-page-sub">Kelola akun dan preferensi perjalanan konselingmu.</p>
@@ -540,42 +591,45 @@ export default function Settings() {
                   <Toggle checked={pengingat} onChange={handlePengingat} disabled={!notifLoaded} />
                 </div>
 
-                <div className="stg-notif-item" style={{
-                  background: pushChecked ? "linear-gradient(135deg,#f0fffe,#e4f8f6)" : "#fafbfb",
-                  border: `1px solid ${pushChecked ? "#b0e8e2" : "#e0eeec"}`,
-                  borderRadius: 14, padding: "16px", marginTop: 8,
-                }}>
-                  <div className="stg-notif-info">
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                      <p className="stg-notif-title" style={{ margin: 0 }}>Push Notification ke Browser / HP</p>
-                      {pushChecked && <span style={{ background: "#2f7d79", color: "#fff", fontSize: 9, fontWeight: 700, letterSpacing: ".5px", padding: "2px 8px", borderRadius: 99 }}>AKTIF</span>}
-                      {pushStatus === "denied" && <span style={{ background: "#fee2e2", color: "#dc2626", fontSize: 9, fontWeight: 700, letterSpacing: ".5px", padding: "2px 8px", borderRadius: 99 }}>DIBLOKIR</span>}
-                    </div>
-                    <p className="stg-notif-sub">{pushLabel}</p>
-                    {pushStatus === "denied" && <p className="stg-notif-sub" style={{ color: "#dc2626", marginTop: 4 }}>Buka pengaturan browser → izinkan notifikasi untuk situs ini, lalu muat ulang halaman.</p>}
+              <div className="stg-notif-item" style={{
+                background: pushChecked ? "linear-gradient(135deg,#f0fffe,#e4f8f6)" : "#fafbfb",
+                border: `1px solid ${pushChecked ? "#b0e8e2" : "#e0eeec"}`,
+                borderRadius: 14, padding: "16px", marginTop: 8,
+              }}>
+                <div className="stg-notif-info">
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <p className="stg-notif-title" style={{ margin: 0 }}>Push Notification ke Browser / HP</p>
+                    {pushChecked && (
+                      <span style={{ background: "#2f7d79", color: "#fff", fontSize: 9, fontWeight: 700, letterSpacing: ".5px", padding: "2px 8px", borderRadius: 99 }}>
+                        AKTIF
+                      </span>
+                    )}
+                    {pushStatus === "denied" && (
+                      <span style={{ background: "#fee2e2", color: "#dc2626", fontSize: 9, fontWeight: 700, letterSpacing: ".5px", padding: "2px 8px", borderRadius: 99 }}>
+                        DIBLOKIR
+                      </span>
+                    )}
                   </div>
-                  <Toggle checked={pushChecked} onChange={handlePushToggle} disabled={pushLoading || pushStatus === "idle" || pushStatus === "unsupported" || pushStatus === "denied"} />
+                  <p className="stg-notif-sub">{pushLabel}</p>
+                  {pushStatus === "denied" && (
+                    <p className="stg-notif-sub" style={{ color: "#dc2626", marginTop: 4 }}>
+                      Buka pengaturan browser → izinkan notifikasi untuk situs ini, lalu muat ulang halaman.
+                    </p>
+                  )}
                 </div>
-
-                <div style={{ marginTop: 12 }}>
-                  <button
-                    onClick={() => navigate("/notifikasi")}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 8,
-                      background: "#f0fffe", border: "1px solid #b0e8e2",
-                      borderRadius: 10, padding: "10px 16px",
-                      fontSize: 13, color: "#2f7d79", fontWeight: 600,
-                      cursor: "pointer", width: "100%",
-                    }}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                    </svg>
-                    Lihat Semua Notifikasi →
-                  </button>
-                </div>
+            
+                <Toggle
+                  checked={pushChecked}
+                  onChange={handlePushToggle}
+                  disabled={
+                    pushLoading ||
+                    pushHookLoading ||
+                    pushStatus === "unsupported" ||
+                    pushStatus === "denied"
+                  }
+                />
               </div>
+            </div>
             </Section>
 
             <Section title="Keluar">
@@ -591,15 +645,18 @@ export default function Settings() {
           </div>
         </div>
 
-        <footer className="db-footer">
+        <footer className="sk-footer">
           <div>
-            <span className="db-footer-brand">The Sanctuary</span>
-            <p className="db-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
+            <span className="sk-footer-brand">The Sanctuary</span>
+            <p className="sk-footer-copy">© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
           </div>
-          <div className="db-footer-links">
-            <span>Kebijakan Privasi</span><span>Syarat dan Ketentuan</span><span>Bantuan</span>
+          <div className="sk-footer-links">
+            <span>Kebijakan Privasi</span>
+            <span>Syarat dan Ketentuan</span>
+            <span>Bantuan</span>
           </div>
         </footer>
+
       </main>
     </div>
   );

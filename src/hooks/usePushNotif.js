@@ -11,43 +11,56 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 export function usePushNotif(userEmail) {
-  const [status, setStatus]   = useState(() => {
-    if (typeof window === "undefined" || typeof navigator === "undefined") return "idle";
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      return "unsupported";
-    }
-    if (Notification.permission === "denied") {
-      return "denied";
-    }
-    return "idle";
-  });
+  const [status, setStatus] = useState("idle");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-    if (Notification.permission === "denied") return;
+    if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setStatus("unsupported");
+      return;
+    }
+    if (Notification.permission === "denied") {
+      setStatus("denied");
+      return;
+    }
 
-    let active = true;
+    let cancelled = false;
+
     (async () => {
       try {
         await navigator.serviceWorker.register("/sw.js");
         const reg = await navigator.serviceWorker.ready;
         const existing = await reg.pushManager.getSubscription();
-        if (active) {
-          setStatus(existing ? "subscribed" : "unsubscribed");
-        }
-      } catch (err) {
-        console.error("SW check error:", err);
-        if (active) {
+
+        if (cancelled) return;
+
+        if (existing) {
+          if (userEmail) {
+            const subJson = existing.toJSON();
+            await supabase
+              .from("push_subscriptions")
+              .upsert(
+                {
+                  email:    userEmail,
+                  endpoint: subJson.endpoint,
+                  p256dh:   subJson.keys?.p256dh,
+                  auth:     subJson.keys?.auth,
+                },
+                { onConflict: "email" }
+              );
+          }
+          setStatus("subscribed");
+        } else {
           setStatus("unsubscribed");
         }
+      } catch (err) {
+        console.error("SW init error:", err);
+        if (!cancelled) setStatus("unsubscribed");
       }
     })();
 
-    return () => {
-      active = false;
-    };
-  }, []);
+    return () => { cancelled = true; };
+  }, [userEmail]); 
 
   const subscribe = useCallback(async () => {
     if (!userEmail) return;
@@ -57,7 +70,13 @@ export function usePushNotif(userEmail) {
       const reg = await navigator.serviceWorker.ready;
 
       const perm = await Notification.requestPermission();
-      if (perm === "denied") { setStatus("denied"); return; }
+      if (perm === "denied") {
+        setStatus("denied");
+        return;
+      }
+      if (perm !== "granted") {
+        return;
+      }
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly:      true,
@@ -96,6 +115,7 @@ export function usePushNotif(userEmail) {
       const sub = await reg.pushManager.getSubscription();
       if (sub) await sub.unsubscribe();
 
+      // Hapus dari DB
       await supabase.from("push_subscriptions").delete().eq("email", userEmail);
       setStatus("unsubscribed");
     } catch (err) {

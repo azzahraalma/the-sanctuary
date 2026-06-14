@@ -275,7 +275,7 @@ export default function Login() {
                 ? <span className="auth-spinner" />
                 : isKonselor ? "Masuk sebagai Konselor"
                 : isAdmin    ? "Masuk sebagai Admin"
-                : "Masuk ke Ruang Saya"}
+                : "Masuk"}
             </button>
           </form>
 

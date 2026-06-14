@@ -648,7 +648,6 @@ export default function Dashboard() {
         <div className="db-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* ── Sidebar ── */}
       <aside className={`db-sidebar ${sidebarOpen ? "db-sidebar--open" : ""}`}>
         <div className="db-sidebar-top">
           <span className="db-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -697,19 +696,11 @@ export default function Dashboard() {
 
       <main className="db-main">
 
-        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            TOPBAR
-            Desktop : [hamburger + logo + nav] ........... [CTA + bell + avatar + logout]
-            Mobile  : Row1 [hamburger + logo] ...... [CTA + bell + avatar + logout]
-                      Row2         [Beranda | Konselor | Dashboard]
-            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <header className="db-topbar">
           <div className="db-topbar-inner">
 
-            {/* ── Row-1 wrapper (only matters on mobile; on desktop it's just flex) ── */}
             <div className="db-topbar-row1">
 
-              {/* Left: hamburger + logo  [+ nav on desktop] */}
               <div className="db-topbar-l">
                 <button
                   className="db-sidebar-toggle"
@@ -721,7 +712,6 @@ export default function Dashboard() {
 
                 <span className="db-topbar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
 
-                {/* Nav lives here on DESKTOP, hidden on mobile (moved to row2 below) */}
                 <nav className="db-topbar-nav db-topbar-nav--desktop">
                   <span onClick={() => navigate("/?home=1")}>Beranda</span>
                   <span onClick={() => navigate("/konselor")}>Konselor</span>
@@ -729,7 +719,6 @@ export default function Dashboard() {
                 </nav>
               </div>
 
-              {/* Right: CTA + bell + avatar + logout */}
               <div className="db-topbar-r">
                 <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>
                   Temukan Konselor
@@ -766,9 +755,8 @@ export default function Dashboard() {
                 </button>
               </div>
 
-            </div>{/* end db-topbar-row1 */}
+            </div>
 
-            {/* ── Row-2: nav links — MOBILE ONLY (hidden on desktop) ── */}
             <nav className="db-topbar-nav db-topbar-nav--mobile">
               <span onClick={() => navigate("/?home=1")}>Beranda</span>
               <span onClick={() => navigate("/konselor")}>Konselor</span>
@@ -778,7 +766,6 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* ── Content ── */}
         <div className="db-content">
           <div className="db-greeting">
             <p className="db-greeting-sub">Halo, {firstName}</p>
@@ -838,7 +825,6 @@ export default function Dashboard() {
           <div className="db-grid">
             <KuesionerUX userName={firstName} userKey={userKey} />
 
-            {/* Sesi Konseling */}
             <div className="db-card">
               <div className="db-card-hd">
                 <div>
@@ -951,8 +937,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Pesan Masuk */}
-            <div className="db-card">
++            <div className="db-card">
               <div className="db-card-hd">
                 <div>
                   <h3 className="db-card-h3">Pesan Masuk</h3>
@@ -997,7 +982,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ── Footer ── */}
         <footer className="db-footer">
           <div>
             <span className="db-footer-brand">The Sanctuary</span>

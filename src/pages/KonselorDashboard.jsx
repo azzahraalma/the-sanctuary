@@ -1037,7 +1037,7 @@ export default function KonselorDashboard() {
                                                 </div>
                                             </div>
                                         </div>
-                                        {/* Belum ada tabel testimoni di database — tampilkan placeholder */}
+
                                         <div className="kd-testi-cards">
                                             {ulasanList.length === 0 ? (
                                                 <p style={{ color: "#aaa", fontSize: 13, textAlign: "center", padding: "20px 0" }}>

@@ -279,7 +279,7 @@ function KuesionerUX({ userName, onScoreChange, userKey }) {
 
   useEffect(() => {
     onScoreChange?.(submitted ? uxIdx : 0);
-  }, [submitted, uxIdx]); 
+  }, [submitted, uxIdx]);
 
   useEffect(() => {
     async function fetchPertanyaan() {
@@ -610,7 +610,7 @@ export default function Dashboard() {
       active = false;
       supabase.removeChannel(bookingChannel);
     };
-  }, [mid]); 
+  }, [mid]);
 
   const handlePesanClick = async (p) => {
     setSelectedPesan(p);
@@ -648,6 +648,7 @@ export default function Dashboard() {
         <div className="db-sidebar-overlay" onClick={() => setSidebarOpen(false)} />
       )}
 
+      {/* ── Sidebar ── */}
       <aside className={`db-sidebar ${sidebarOpen ? "db-sidebar--open" : ""}`}>
         <div className="db-sidebar-top">
           <span className="db-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -696,51 +697,70 @@ export default function Dashboard() {
 
       <main className="db-main">
 
+        {/* ── Topbar — sama strukturnya seperti Home nav ── */}
         <header className="db-topbar">
-          <div className="db-topbar-l">
-            <button
-              className="db-sidebar-toggle"
-              onClick={() => setSidebarOpen(o => !o)}
-              title={sidebarOpen ? "Tutup menu" : "Buka menu"}
-            >
-              {sidebarOpen ? <IconClose /> : <IconHamburger />}
-            </button>
+          <div className="db-topbar-inner">
 
-            <span className="db-topbar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
-            <nav className="db-topbar-nav">
-              <span onClick={() => navigate("/?home=1")}>Beranda</span>
-              <span onClick={() => navigate("/konselor")}>Konselor</span>
-              <span className="db-topbar-active">Dashboard</span>
-            </nav>
-          </div>
-          <div className="db-topbar-r">
-            <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>Temukan Konselor</button>
-            <button className="db-icon-btn" onClick={() => navigate("/notifikasi")} style={{ position: "relative" }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              {unreadCount > 0 && (
-                <span style={{
-                  position: "absolute", top: 2, right: 2,
-                  width: 8, height: 8, borderRadius: "50%",
-                  background: "#2f7d79", border: "2px solid #fff",
-                }} />
-              )}
-            </button>
-            <div className="db-avatar" onClick={() => navigate("/settings")}>
-              {(user?.nama ?? user?.name ?? "U").charAt(0).toUpperCase()}
+            {/* Left: hamburger + logo + nav links */}
+            <div className="db-topbar-l">
+              <button
+                className="db-sidebar-toggle"
+                onClick={() => setSidebarOpen(o => !o)}
+                title={sidebarOpen ? "Tutup menu" : "Buka menu"}
+              >
+                {sidebarOpen ? <IconClose /> : <IconHamburger />}
+              </button>
+
+              <span className="db-topbar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+
+              <nav className="db-topbar-nav">
+                <span onClick={() => navigate("/?home=1")}>Beranda</span>
+                <span onClick={() => navigate("/konselor")}>Konselor</span>
+                <span className="db-topbar-active">Dashboard</span>
+              </nav>
             </div>
-                <button className="nav-logout-btn" onClick={handleLogout}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
-                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                    <polyline points="16 17 21 12 16 7" />
-                    <line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
-                </button>
+
+            {/* Right: CTA + notif + avatar + logout */}
+            <div className="db-topbar-r">
+              <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>
+                Temukan Konselor
+              </button>
+
+              <button
+                className="db-icon-btn"
+                onClick={() => navigate("/notifikasi")}
+                style={{ position: "relative" }}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: "absolute", top: 2, right: 2,
+                    width: 8, height: 8, borderRadius: "50%",
+                    background: "#2f7d79", border: "2px solid #fff",
+                  }} />
+                )}
+              </button>
+
+              <div className="db-avatar" onClick={() => navigate("/settings")}>
+                {(user?.nama ?? user?.name ?? "U").charAt(0).toUpperCase()}
+              </div>
+
+              <button className="nav-logout-btn" onClick={handleLogout} title="Keluar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              </button>
+            </div>
+
           </div>
         </header>
 
+        {/* ── Content ── */}
         <div className="db-content">
           <div className="db-greeting">
             <p className="db-greeting-sub">Halo, {firstName}</p>
@@ -800,6 +820,7 @@ export default function Dashboard() {
           <div className="db-grid">
             <KuesionerUX userName={firstName} userKey={userKey} />
 
+            {/* Sesi Konseling */}
             <div className="db-card">
               <div className="db-card-hd">
                 <div>
@@ -912,6 +933,7 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Pesan Masuk */}
             <div className="db-card">
               <div className="db-card-hd">
                 <div>
@@ -957,6 +979,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ── Footer ── */}
         <footer className="db-footer">
           <div>
             <span className="db-footer-brand">The Sanctuary</span>

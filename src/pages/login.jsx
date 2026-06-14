@@ -212,7 +212,7 @@ export default function Login() {
               {isKonselor
                 ? "Masukkan akun konselor kamu untuk mengakses dashboard dan jadwal sesimu."
                 : isAdmin
-                ? "Masukkan akun admin kamu untuk mengakses dashboard analitik UX."
+                ? "Masukkan akun admin kamu untuk mengelola."
                 : "Masukkan akun kamu untuk lanjut ngobrol, melihat dashboard, dan mengakses ruang yang sudah dipersonalisasi buat kamu."}
             </p>
           </div>

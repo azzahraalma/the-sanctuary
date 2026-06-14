@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import "../styles/admin-dashboard.css";
 import "../styles/riwayat-sesi-admin.css";
+import { KonselorTab } from "../components/KonselorTab.jsx";
+import "../styles/manajemen-konselor.css";
 
 const STATUS_OPTIONS = ["Semua", "Terjadwal", "Berjalan", "Menunggu Evaluasi", "Selesai", "Dibatalkan"];
 
@@ -714,6 +716,10 @@ export default function AdminDashboard() {
             className={`ad-topnav-link${activeTab === "riwayat" ? " ad-topnav-link--active" : ""}`}
             onClick={() => setActiveTab("riwayat")}
           >Riwayat Sesi</span>
+        <span
+          className={`ad-topnav-link${activeTab === "konselor" ? " ad-topnav-link--active" : ""}`}
+          onClick={() => setActiveTab("konselor")}
+        >Manajemen Konselor</span>
         </nav>
         <button
           className="ad-logout-btn"
@@ -749,6 +755,15 @@ export default function AdminDashboard() {
               <p className="ad-hero-sub">Seluruh rekam jejak sesi konseling di The Sanctuary.</p>
             </section>
             <RiwayatSesiTab />
+          </>
+        )}
+        {activeTab === "konselor" && (
+          <>
+            <section className="ad-hero">
+              <h1 className="ad-hero-title">Manajemen Konselor</h1>
+              <p className="ad-hero-sub">Kelola informasi dan performa konselor di The Sanctuary.</p>
+            </section>
+            <KonselorTab />
           </>
         )}
       </main>

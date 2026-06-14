@@ -100,18 +100,18 @@ body::before {
 /* ── Main ── */
 .db-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-/* ── Topbar — matched to Home .nav-shell height & style ── */
+/* ── Topbar ── */
 .db-topbar {
-  background: rgba(242,242,234,0.82);
+  background: rgba(242,242,234,0.92);
   border-bottom: 1px solid rgba(47,125,121,0.10);
   position: sticky; top: 0; z-index: 10;
-  /* Same structure as Home: inner .nav handles the actual layout */
 }
 
+/* DESKTOP: satu baris penuh */
 .db-topbar-inner {
   width: 92%;
   margin: auto;
-  padding: 16px 0;
+  padding: 14px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -119,7 +119,9 @@ body::before {
 }
 
 .db-topbar-l {
-  display: flex; align-items: center; gap: 48px;
+  display: flex;
+  align-items: center;
+  gap: 48px;
 }
 
 .db-sidebar-toggle {
@@ -136,7 +138,6 @@ body::before {
   transform: scale(1.05);
 }
 
-/* Logo — same as Home .nav-logo */
 .db-topbar-logo {
   font-size: 18px; font-weight: 800; cursor: pointer;
   letter-spacing: -0.3px;
@@ -146,9 +147,9 @@ body::before {
   white-space: nowrap;
 }
 
-/* Nav links — same as Home .nav-menu */
 .db-topbar-nav {
-  display: flex; gap: 28px;
+  display: flex;
+  gap: 28px;
   list-style: none;
 }
 .db-topbar-nav span {
@@ -171,7 +172,6 @@ body::before {
   display: flex; align-items: center; gap: 12px;
 }
 
-/* CTA — same as Home .nav-cta */
 .db-topbar-cta {
   background: var(--grad-teal); color: white; border: none;
   padding: 10px 22px; border-radius: var(--radius-sm);
@@ -204,7 +204,6 @@ body::before {
   box-shadow: 0 0 0 4px var(--teal-glow);
 }
 
-/* Logout button in topbar — same as Home .nav-logout-btn */
 .nav-logout-btn {
   background: none; border: none; color: var(--gray);
   display: flex; align-items: center; justify-content: center;
@@ -637,73 +636,123 @@ body::before {
 .db-stat-card:nth-child(3) { animation-delay: .15s; }
 .db-stat-card:nth-child(4) { animation-delay: .20s; }
 
+/* ── Nav variants: desktop shows inline, mobile shows row2 ── */
+
+/* Desktop: show inline nav, hide mobile-only row2 nav */
+.db-topbar-nav--desktop { display: flex; }
+.db-topbar-nav--mobile  { display: none; }
+
+/* db-topbar-row1 is transparent on desktop — just a passthrough flex wrapper */
+.db-topbar-row1 {
+  display: contents; /* renders children as if row1 doesn't exist on desktop */
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .db-stats-row { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MOBILE  ≤ 768px
+   Layout topbar:
+     Row 1  │ [hamburger] [logo]      [CTA] [bell] [avatar] [logout]
+     Row 2  │        [Beranda] [Konselor] [Dashboard]
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 @media (max-width: 768px) {
-  /* ── Topbar: 2-row layout persis kayak Home ── */
+
+  /* Topbar wrapper: column, auto height */
   .db-topbar-inner {
     width: 92%;
     margin: auto;
     padding: 0;
     display: flex;
-    flex-direction: column;   /* ← column, bukan wrap */
+    flex-direction: column;
     align-items: stretch;
-    height: auto;             /* ← bukan fixed height */
     gap: 0;
+    height: auto;
   }
 
-  /* Row 1: hamburger+logo DI KIRI, CTA+icons DI KANAN — sejajar */
+  /* ── Row 1 wrapper (new element in JSX) ── */
   .db-topbar-row1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
     height: 56px;
     width: 100%;
+    gap: 0;
   }
 
+  /* Left side of row 1: hamburger + logo only */
   .db-topbar-l {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex: 0 0 auto;           /* don't grow, don't shrink */
     height: 56px;
   }
 
+  /* Right side of row 1: CTA + bell + avatar + logout */
   .db-topbar-r {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    flex: 0 0 auto;
     height: 56px;
   }
 
-  /* Row 2: nav links penuh di bawah */
+  /* ── Row 2: nav links ── */
   .db-topbar-nav {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 24px;
     width: 100%;
-    height: 40px;
+    height: 38px;
     border-top: 1px solid rgba(47,125,121,0.08);
-    position: static;   /* ← bukan absolute */
+    /* TIDAK absolute, TIDAK relative trick */
+    position: static;
+    bottom: auto;
+    left: auto;
+    right: auto;
   }
 
-  .db-topbar-logo { font-size: 16px; }
+  .db-topbar-nav span {
+    font-size: 13px;
+  }
 
+  /* Logo lebih kecil */
+  .db-topbar-logo {
+    font-size: 15px;
+  }
+
+  /* CTA kompak */
   .db-topbar-cta {
-    padding: 7px 12px;
+    padding: 7px 10px;
     font-size: 11px;
   }
 
+  /* Icon button lebih kecil */
+  .db-icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Avatar lebih kecil */
+  .db-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  /* Logout tetap visible */
   .nav-logout-btn {
     display: flex;
-    width: 30px; height: 30px;
+    width: 28px;
+    height: 28px;
     flex-shrink: 0;
   }
 
-  /* Content & grid */
+  /* ── Rest of mobile layout ── */
   .db-content    { padding: 20px 16px; }
   .db-grid       { grid-template-columns: 1fr; }
   .db-kuesioner-card { grid-column: 1; grid-row: auto; }

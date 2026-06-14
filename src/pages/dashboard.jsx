@@ -696,11 +696,20 @@ export default function Dashboard() {
       </aside>
 
       <main className="db-main">
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            TOPBAR
+            Desktop : [hamburger + logo + nav] ........... [CTA + bell + avatar + logout]
+            Mobile  : Row1 [hamburger + logo] ...... [CTA + bell + avatar + logout]
+                      Row2         [Beranda | Konselor | Dashboard]
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <header className="db-topbar">
           <div className="db-topbar-inner">
 
-            {/* ── Row 1: hamburger+logo | CTA+icons ── */}
+            {/* ── Row-1 wrapper (only matters on mobile; on desktop it's just flex) ── */}
             <div className="db-topbar-row1">
+
+              {/* Left: hamburger + logo  [+ nav on desktop] */}
               <div className="db-topbar-l">
                 <button
                   className="db-sidebar-toggle"
@@ -709,9 +718,18 @@ export default function Dashboard() {
                 >
                   {sidebarOpen ? <IconClose /> : <IconHamburger />}
                 </button>
+
                 <span className="db-topbar-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+
+                {/* Nav lives here on DESKTOP, hidden on mobile (moved to row2 below) */}
+                <nav className="db-topbar-nav db-topbar-nav--desktop">
+                  <span onClick={() => navigate("/?home=1")}>Beranda</span>
+                  <span onClick={() => navigate("/konselor")}>Konselor</span>
+                  <span className="db-topbar-active">Dashboard</span>
+                </nav>
               </div>
 
+              {/* Right: CTA + bell + avatar + logout */}
               <div className="db-topbar-r">
                 <button className="db-topbar-cta" onClick={() => navigate("/konselor")}>
                   Temukan Konselor
@@ -747,10 +765,11 @@ export default function Dashboard() {
                   </svg>
                 </button>
               </div>
-            </div>
 
-            {/* ── Row 2: nav links ── */}
-            <nav className="db-topbar-nav">
+            </div>{/* end db-topbar-row1 */}
+
+            {/* ── Row-2: nav links — MOBILE ONLY (hidden on desktop) ── */}
+            <nav className="db-topbar-nav db-topbar-nav--mobile">
               <span onClick={() => navigate("/?home=1")}>Beranda</span>
               <span onClick={() => navigate("/konselor")}>Konselor</span>
               <span className="db-topbar-active">Dashboard</span>

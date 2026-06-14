@@ -302,7 +302,7 @@ export default function Konselor() {
         <nav className="nav">
           <div className="nav-l">
             <span className="nav-logo" onClick={() => navigate("/?home=1")}>
-              The<br className="nav-logo-br" />Sanctuary
+              The Sanctuary
             </span>
             <ul className="nav-menu">
               <li className="nav-item" onClick={() => navigate("/?home=1")}>Beranda</li>

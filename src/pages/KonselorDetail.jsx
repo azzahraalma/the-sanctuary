@@ -513,7 +513,7 @@ export default function KonselorDetail() {
       <header className="nav-shell">
         <nav className="nav">
           <div className="nav-l">
-            <span className="nav-logo" onClick={() => navigate("/")}>The Sanctuary</span>
+            <span className="nav-logo" onClick={() => navigate("/?home=1")}>The Sanctuary</span>
           </div>
         </nav>
       </header>
@@ -569,9 +569,9 @@ export default function KonselorDetail() {
       <header className="nav-shell">
         <nav className="nav">
           <div className="nav-l">
-            <span className="nav-logo" onClick={() => navigate("/")}>The<br className="nav-logo-br" />Sanctuary</span>
+            <span className="nav-logo" onClick={() => navigate("/?home=1")}>The Sanctuary</span>
             <ul className="nav-menu">
-              <li className="nav-item" onClick={() => navigate("/")}>Beranda</li>
+              <li className="nav-item" onClick={() => navigate("/?home=1")}>Beranda</li>
               <li className="nav-item is-active" onClick={() => navigate("/konselor")}>Konselor</li>
               <li className="nav-item" onClick={() => goTo("/dashboard")}>Dashboard</li>
             </ul>
@@ -615,7 +615,7 @@ export default function KonselorDetail() {
 
       <div className="kd-breadcrumb-wrap">
         <div className="kd-breadcrumb">
-          <span onClick={() => navigate("/")}>Beranda</span>
+          <span onClick={() => navigate("/?home=1")}>Beranda</span>
           <span className="kd-bc-sep">›</span>
           <span onClick={() => navigate("/konselor")}>Konselor</span>
           <span className="kd-bc-sep">›</span>

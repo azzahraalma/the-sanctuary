@@ -1049,15 +1049,9 @@
 
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
-
-  /* Navbar: logo 2 baris + spacing tombol refleksi */
-  .nav-logo-br { display: block; }
-
-  .nav-logo {
-    font-size: 15px;
-    line-height: 1.2;
-    text-align: center;
-  }
+  .kd-layout { grid-template-columns: 1fr; }
+  .kd-right  { position: static; }
+  .kd-spesial-grid { grid-template-columns: 1fr 1fr; }
 
   .nav-cta {
     margin-left: 6px;

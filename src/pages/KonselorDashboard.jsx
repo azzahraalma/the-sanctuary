@@ -4,6 +4,7 @@ import "../styles/konselor-dashboard.css";
 import EditProfilModal from "./EditProfilModal.jsx";
 import { supabase } from "../lib/supabase.js";
 import { fetchTeamStats } from "../lib/teamStats.js";
+import { useKonselorPushNotif } from "../hooks/useKonselorPushNotif.js";
 import {
     BOOKING_STATUS,
     isSelesai,
@@ -13,6 +14,8 @@ import {
     isMenungguEvaluasi,
     statusLabel,
 } from "../lib/bookingStatus.js";
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function kondisiLabel(val) {
     if (val >= 1.0) return "Pulih";
@@ -28,6 +31,8 @@ function kondisiColor(val) {
     if (val >= 0.5) return "#e8a838";
     return "#e05c5c";
 }
+
+// ── UI Atoms ─────────────────────────────────────────────────────────────────
 
 function Donut({ pct, size = 90, stroke = 10, color = "#79d8d1", label, sublabel }) {
     const r = (size - stroke) / 2;
@@ -73,16 +78,54 @@ function ProgressBar({ value, max, color = "var(--grad-teal)" }) {
     );
 }
 
-function KlienDetailModal({ klien, onClose, konselor }) {
-    if (!klien) return null;
+function Toggle({ checked, onChange, disabled }) {
+    return (
+        <label className="stg-toggle" style={{ opacity: disabled ? 0.4 : 1, flexShrink: 0, cursor: disabled ? "not-allowed" : "pointer" }}>
+            <input
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => !disabled && onChange(e.target.checked)}
+                disabled={disabled}
+            />
+            <span className="stg-toggle-track">
+                <span className="stg-toggle-thumb" />
+            </span>
+        </label>
+    );
+}
 
+function NotifToast({ msg, onDone }) {
+    useEffect(() => {
+        if (!msg) return;
+        const t = setTimeout(onDone, 2800);
+        return () => clearTimeout(t);
+    }, [msg]);
+    if (!msg) return null;
+    return (
+        <div style={{
+            position: "fixed", bottom: 28, right: 28, zIndex: 9999,
+            background: "linear-gradient(135deg,#2f7d79,#79d8d1)",
+            color: "#fff", padding: "12px 20px", borderRadius: 12,
+            fontSize: 13, fontWeight: 600,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+            display: "flex", alignItems: "center", gap: 8,
+            animation: "kd-fade-up .25s ease",
+        }}>
+            {msg}
+        </div>
+    );
+}
+
+// ── Klien Detail Modal ────────────────────────────────────────────────────────
+
+function KlienDetailModal({ klien, onClose }) {
+    if (!klien) return null;
     const progPct = Math.round((klien.Kondisi_Saat_Ini ?? 0) * 100);
     const awalPct = Math.round((klien.Kondisi_Awal ?? 0) * 100);
     const gain = progPct - awalPct;
-
     return (
         <div className="kd-modal-overlay" onClick={onClose}>
-            <div className="kd-modal" onClick={e => e.stopPropagation()}>
+            <div className="kd-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="kd-modal-header">
                     <div className="kd-modal-avatar">
                         {klien.Nama_Mahasiswa?.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
@@ -93,7 +136,6 @@ function KlienDetailModal({ klien, onClose, konselor }) {
                     </div>
                     <button className="kd-modal-close" onClick={onClose}>✕</button>
                 </div>
-
                 <div className="kd-modal-body">
                     <div className="kd-modal-section">
                         <div className="kd-modal-info-row">
@@ -111,7 +153,6 @@ function KlienDetailModal({ klien, onClose, konselor }) {
                             </span>
                         </div>
                     </div>
-
                     <div className="kd-modal-section">
                         <div className="kd-modal-section-title">Progress Kondisi Klien</div>
                         <div className="kd-modal-progress-wrap">
@@ -123,19 +164,16 @@ function KlienDetailModal({ klien, onClose, konselor }) {
                                 <div className="kd-modal-progress-awal" style={{ left: `${awalPct}%` }} title={`Awal: ${awalPct}%`} />
                                 <div className="kd-modal-progress-fill" style={{ width: `${progPct}%`, background: kondisiColor(klien.Kondisi_Saat_Ini) }} />
                             </div>
-                                <div className="kd-modal-progress-numbers">
+                            <div className="kd-modal-progress-numbers">
                                 <span className="kd-modal-progress-num">{awalPct}%</span>
                                 <span className="kd-modal-progress-arrow">→</span>
-                                <span className="kd-modal-progress-num" style={{ color: kondisiColor(klien.Kondisi_Saat_Ini) }}>
-                                    {progPct}%
-                                </span>
+                                <span className="kd-modal-progress-num" style={{ color: kondisiColor(klien.Kondisi_Saat_Ini) }}>{progPct}%</span>
                                 <span className={`kd-modal-gain ${gain >= 0 ? "kd-modal-gain--pos" : "kd-modal-gain--neg"}`}>
                                     {gain >= 0 ? "+" : ""}{gain}%
                                 </span>
                             </div>
                         </div>
                     </div>
-
                     <div className="kd-modal-section">
                         <div className="kd-modal-info-row">
                             <span className="kd-modal-info-label">Tingkat Pemulihan</span>
@@ -144,19 +182,17 @@ function KlienDetailModal({ klien, onClose, konselor }) {
                             </span>
                         </div>
                     </div>
-
                     <div className="kd-modal-section">
                         <div className="kd-modal-section-title">Catatan Perkembangan</div>
                         <p className="kd-modal-note">
-                            {klien.Kondisi_Saat_Ini >= 0.75 
+                            {klien.Kondisi_Saat_Ini >= 0.75
                                 ? `Klien menunjukkan perkembangan yang sangat baik. ${klien.Nama_Mahasiswa?.split(" ")[0]} sudah mulai bisa mengelola stres dengan lebih baik.`
                                 : klien.Kondisi_Saat_Ini >= 0.5
-                                ? `Klien dalam proses pemulihan yang baik. Terus berikan dukungan dan motivasi.`
-                                : `Masih dalam tahap awal pemulihan. Perlu pendekatan yang lebih intensif.`}
+                                    ? "Klien dalam proses pemulihan yang baik. Terus berikan dukungan dan motivasi."
+                                    : "Masih dalam tahap awal pemulihan. Perlu pendekatan yang lebih intensif."}
                         </p>
                     </div>
                 </div>
-
                 <div className="kd-modal-footer">
                     <button className="kd-modal-btn" onClick={onClose}>Tutup</button>
                 </div>
@@ -165,27 +201,261 @@ function KlienDetailModal({ klien, onClose, konselor }) {
     );
 }
 
+// ── Notif Section (inline, tidak perlu file terpisah) ─────────────────────────
+
+function KonselorNotifSection({ kid, user }) {
+    const konselorEmail = (user?.email ?? "").toLowerCase();
+
+    const [pengingat, setPengingat]       = useState(true);
+    const [notifBooking, setNotifBooking] = useState(true);
+    const [notifEmail, setNotifEmail]     = useState(true);
+    const [notifLoaded, setNotifLoaded]   = useState(false);
+    const [pushLoading, setPushLoading]   = useState(false);
+    const [toast, setToast]               = useState("");
+
+    const {
+        status: pushStatus,
+        loading: pushHookLoading,
+        subscribe,
+        unsubscribe,
+    } = useKonselorPushNotif(kid, konselorEmail);
+
+    useEffect(() => {
+        if (!konselorEmail) return;
+        (async () => {
+            const { data } = await supabase
+                .from("preferensi_notif")
+                .select("*")
+                .eq("email", konselorEmail)
+                .maybeSingle();
+            if (data) {
+                setPengingat(data.pengingat_sesi  ?? true);
+                setNotifBooking(data.notif_booking ?? true);
+                setNotifEmail(data.notif_email     ?? true);
+            }
+            setNotifLoaded(true);
+        })();
+    }, [konselorEmail]);
+
+    const saveNotifPref = async (field, val) => {
+        if (!konselorEmail) return;
+        await supabase
+            .from("preferensi_notif")
+            .upsert({ email: konselorEmail, [field]: val }, { onConflict: "email" });
+        setToast("Preferensi disimpan ✓");
+    };
+
+    const handlePengingat    = (v) => { setPengingat(v);    saveNotifPref("pengingat_sesi", v); };
+    const handleNotifBooking = (v) => { setNotifBooking(v); saveNotifPref("notif_booking",  v); };
+    const handleNotifEmail   = (v) => { setNotifEmail(v);   saveNotifPref("notif_email",    v); };
+
+    const handlePushToggle = async () => {
+        if (pushLoading || pushHookLoading) return;
+        setPushLoading(true);
+        try {
+            if (pushStatus === "subscribed") {
+                await unsubscribe();
+                await saveNotifPref("push_aktif", false);
+                setToast("Push notifikasi dinonaktifkan");
+            } else {
+                if (pushStatus === "unsupported") { setToast("Browser tidak mendukung push notifikasi"); return; }
+                if (pushStatus === "denied")      { setToast("Izin notifikasi ditolak — aktifkan di pengaturan browser"); return; }
+                await subscribe();
+                await saveNotifPref("push_aktif", true);
+                setToast("Push notifikasi diaktifkan ✓");
+            }
+        } finally {
+            setPushLoading(false);
+        }
+    };
+
+    const pushChecked = pushStatus === "subscribed";
+    const isLoading   = pushStatus === "idle" || pushHookLoading;
+
+    const pushStatusLabel = {
+        idle:         "Memeriksa status...",
+        unsupported:  "Browser tidak mendukung push notifikasi",
+        denied:       "Izin notifikasi ditolak di browser",
+        subscribed:   "Aktif — kamu akan menerima notifikasi langsung",
+        unsubscribed: "Nonaktif",
+    }[pushStatus] ?? "";
+
+    const ROW = {
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 16, padding: "15px 0",
+        borderBottom: "1px solid rgba(47,125,121,0.08)",
+    };
+    const ROW_LAST = { ...ROW, borderBottom: "none", paddingBottom: 0 };
+
+    return (
+        <>
+            <NotifToast msg={toast} onDone={() => setToast("")} />
+
+            <div className="kd-card kd-card--wide" style={{ marginTop: 24 }}>
+
+                {/* Header */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                    <div style={{
+                        width: 36, height: 36, borderRadius: 10,
+                        background: "linear-gradient(135deg,#2f7d79,#79d8d1)",
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    }}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" width="16" height="16">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                    </div>
+                    <div>
+                        <div className="kd-card-h3" style={{ marginBottom: 2 }}>Preferensi Notifikasi</div>
+                        <div className="kd-card-sub">Atur kapan dan bagaimana kamu menerima notifikasi sesi.</div>
+                    </div>
+                </div>
+
+                {/* Push notification card */}
+                <div style={{
+                    background: pushChecked
+                        ? "linear-gradient(135deg, rgba(47,125,121,0.07), rgba(121,216,209,0.07))"
+                        : "rgba(47,125,121,0.03)",
+                    border: `1.5px solid ${pushChecked ? "rgba(47,125,121,0.25)" : "rgba(47,125,121,0.1)"}`,
+                    borderRadius: 14, padding: "16px 18px", marginBottom: 16,
+                    transition: "all .3s ease",
+                }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
+                        <div style={{ flex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                                <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: "#1a3d3a" }}>
+                                    Push Notification ke Browser / HP
+                                </p>
+                                {isLoading && (
+                                    <span style={{
+                                        fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                                        background: "rgba(47,125,121,0.1)", color: "#2f7d79",
+                                    }}>MEMERIKSA...</span>
+                                )}
+                                {!isLoading && pushChecked && (
+                                    <span style={{
+                                        fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                                        background: "#2f7d79", color: "#fff",
+                                    }}>AKTIF</span>
+                                )}
+                                {!isLoading && pushStatus === "denied" && (
+                                    <span style={{
+                                        fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99,
+                                        background: "#fee2e2", color: "#dc2626",
+                                    }}>DIBLOKIR</span>
+                                )}
+                            </div>
+                            <p style={{ margin: 0, fontSize: 12, color: "#6b8f8c", lineHeight: 1.5 }}>
+                                {pushStatusLabel}
+                            </p>
+                            {pushStatus === "denied" && (
+                                <p style={{ margin: "5px 0 0", fontSize: 12, color: "#dc2626" }}>
+                                    Buka pengaturan browser → izinkan notifikasi → muat ulang halaman.
+                                </p>
+                            )}
+                        </div>
+                        <Toggle
+                            checked={pushChecked}
+                            onChange={handlePushToggle}
+                            disabled={pushLoading || isLoading || pushStatus === "unsupported" || pushStatus === "denied"}
+                        />
+                    </div>
+                </div>
+
+                {/* Sub-preferensi */}
+                <div style={{
+                    background: "rgba(47,125,121,0.02)",
+                    border: "1.5px solid rgba(47,125,121,0.08)",
+                    borderRadius: 14, padding: "4px 18px",
+                }}>
+                    {/* Pengingat sesi */}
+                    <div style={ROW}>
+                        <div>
+                            <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: "#1a3d3a" }}>
+                                Pengingat Sesi
+                            </p>
+                            <p style={{ margin: "2px 0 0", fontSize: 12, color: "#6b8f8c" }}>
+                                Push notification 15 menit sebelum sesi dimulai.
+                            </p>
+                        </div>
+                        <Toggle
+                            checked={pengingat}
+                            onChange={handlePengingat}
+                            disabled={!notifLoaded || !pushChecked}
+                        />
+                    </div>
+
+                    {/* Notif booking baru */}
+                    <div style={ROW}>
+                        <div>
+                            <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: "#1a3d3a" }}>
+                                Notifikasi Booking Baru
+                            </p>
+                            <p style={{ margin: "2px 0 0", fontSize: 12, color: "#6b8f8c" }}>
+                                Terima push notification saat mahasiswa booking sesi denganmu.
+                            </p>
+                        </div>
+                        <Toggle
+                            checked={notifBooking}
+                            onChange={handleNotifBooking}
+                            disabled={!notifLoaded || !pushChecked}
+                        />
+                    </div>
+
+                    {/* Notif email */}
+                    <div style={ROW_LAST}>
+                        <div>
+                            <p style={{ margin: 0, fontWeight: 600, fontSize: 13, color: "#1a3d3a" }}>
+                                Notifikasi via Email
+                            </p>
+                            <p style={{ margin: "2px 0 0", fontSize: 12, color: "#6b8f8c" }}>
+                                Kirim ringkasan booking baru dan pengingat ke{" "}
+                                <strong style={{ color: "#2f7d79" }}>{konselorEmail || "email kamu"}</strong>.
+                            </p>
+                        </div>
+                        <Toggle
+                            checked={notifEmail}
+                            onChange={handleNotifEmail}
+                            disabled={!notifLoaded}
+                        />
+                    </div>
+                </div>
+
+                {/* Hint kalau push belum aktif */}
+                {!pushChecked && !isLoading && pushStatus !== "denied" && pushStatus !== "unsupported" && (
+                    <p style={{
+                        margin: "12px 0 0", fontSize: 11, color: "#aaa",
+                        textAlign: "center", lineHeight: 1.5,
+                    }}>
+                        Aktifkan push notification terlebih dahulu untuk mengatur pengingat & notif booking.
+                    </p>
+                )}
+            </div>
+        </>
+    );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+
 export default function KonselorDashboard() {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState("overview");
-    const [filterKlien, setFilterKlien] = useState("Semua");
-    const [konselor, setKonselor] = useState(null);
-    const [myBookings, setMyBookings] = useState([]);
-    const [loadingData, setLoadingData] = useState(true);
-    const [showEditModal, setShowEditModal] = useState(false);
-    const [slots, setSlots] = useState([]);
-    const [newSlot, setNewSlot] = useState({ tanggal: "", jam_mulai: "", jam_selesai: "" });
-    const [addingSlot, setAddingSlot] = useState(false);
-    const [now, setNow] = useState(new Date());
-    const [teamStats, setTeamStats] = useState({ ratingTim: 0, kasusTim: 0, probSukses: 0, avgKasusSelesai: 0 });
-    const [ulasanList, setUlasanList] = useState([]);
-    const [selectedKlien, setSelectedKlien] = useState(null);
+    const [activeTab, setActiveTab]           = useState("overview");
+    const [filterKlien, setFilterKlien]       = useState("Semua");
+    const [konselor, setKonselor]             = useState(null);
+    const [myBookings, setMyBookings]         = useState([]);
+    const [loadingData, setLoadingData]       = useState(true);
+    const [showEditModal, setShowEditModal]   = useState(false);
+    const [slots, setSlots]                   = useState([]);
+    const [newSlot, setNewSlot]               = useState({ tanggal: "", jam_mulai: "", jam_selesai: "" });
+    const [addingSlot, setAddingSlot]         = useState(false);
+    const [now, setNow]                       = useState(new Date());
+    const [teamStats, setTeamStats]           = useState({ ratingTim: 0, kasusTim: 0, probSukses: 0, avgKasusSelesai: 0 });
+    const [ulasanList, setUlasanList]         = useState([]);
+    const [selectedKlien, setSelectedKlien]   = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setNow(new Date());
-        }, 1000);
+        const timer = setInterval(() => setNow(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
@@ -201,10 +471,7 @@ export default function KonselorDashboard() {
     const kid = user?.konselorId ?? user?.konselor_id ?? null;
 
     useEffect(() => {
-        if (!kid) {
-            setLoadingData(false);
-            return;
-        }
+        if (!kid) { setLoadingData(false); return; }
         async function fetchData() {
             setLoadingData(true);
             try {
@@ -212,10 +479,8 @@ export default function KonselorDashboard() {
                     supabase.from("data_konselor").select("*").eq("id", kid).single(),
                     supabase.from("booking").select("*").eq("id_konselor", kid).order("tanggal_sesi", { ascending: false }),
                 ]);
-
                 if (kErr) console.error("Fetch konselor error:", kErr.message);
                 if (bErr) console.error("Fetch booking error:", bErr.message);
-
                 if (kData) {
                     setKonselor({
                         ID: kData.id,
@@ -235,7 +500,6 @@ export default function KonselorDashboard() {
                         spesialisasi: kData.spesialisasi,
                     });
                 }
-
                 if (bData) {
                     setMyBookings(bData.map((b) => ({
                         ID_Booking: b.id,
@@ -250,22 +514,17 @@ export default function KonselorDashboard() {
                         Kondisi_Saat_Ini: b.kondisi_saat_ini,
                     })));
                 }
-
-                const { data: ulasanData, error: ulasanErr } = await supabase
+                const { data: ulasanData } = await supabase
                     .from("ulasan_konselor")
                     .select("*")
                     .eq("id_konselor", kid)
                     .order("created_at", { ascending: false });
-
-                console.log("ulasan fetch:", { ulasanData, ulasanErr });
                 if (ulasanData) setUlasanList(ulasanData);
-
             } catch (err) {
                 console.error("KonselorDashboard fetchData error:", err);
             } finally {
                 setLoadingData(false);
             }
-
         }
         fetchData();
     }, [kid]);
@@ -292,7 +551,6 @@ export default function KonselorDashboard() {
     const updateProfil = useCallback(async (fields) => {
         if (!kid) return;
         let fotoUrl = konselor?.foto || konselor?.image || null;
-
         if (fields.foto && fields.foto.startsWith("data:")) {
             const res = await fetch(fields.foto);
             const blob = await res.blob();
@@ -304,34 +562,25 @@ export default function KonselorDashboard() {
             if (!uploadError) {
                 const { data: urlData } = supabase.storage.from("konselor-foto").getPublicUrl(fileName);
                 fotoUrl = urlData.publicUrl;
-            } else {
-                console.error("Upload foto gagal:", uploadError.message);
             }
         } else if (fields.foto === null) {
             fotoUrl = null;
         }
-
         const { error } = await supabase
             .from("data_konselor")
             .update({ foto_url: fotoUrl, bio: fields.bio, spesialisasi: fields.spesialisasi })
             .eq("id", kid);
-
         if (!error) {
             setKonselor((prev) => ({ ...prev, foto: fotoUrl, bio: fields.bio, spesialisasi: fields.spesialisasi }));
-        } else {
-            console.error("Update profil gagal:", error.message);
         }
     }, [kid, konselor]);
 
-    const selesai = myBookings.filter((b) => isSelesai(b.Status)).length;
-    const berjalan = myBookings.filter((b) => isAktif(b.Status)).length;
-    const total = myBookings.length;
+    const selesai    = myBookings.filter((b) => isSelesai(b.Status)).length;
+    const berjalan   = myBookings.filter((b) => isAktif(b.Status)).length;
+    const total      = myBookings.length;
     const successRate = total > 0 ? Math.round((selesai / total) * 100) : 0;
 
-    const ratingTim = teamStats.ratingTim;
-    const kasusTim = teamStats.kasusTim;
-    const probTim = teamStats.probSukses;
-    const avgKasusSelesai = teamStats.avgKasusSelesai ?? 0;
+    const { ratingTim, kasusTim, probSukses: probTim, avgKasusSelesai = 0 } = teamStats;
 
     const kategoriMap = useMemo(() => {
         const map = {};
@@ -344,8 +593,7 @@ export default function KonselorDashboard() {
 
     const filteredBookings = useMemo(() => {
         let result;
-        if (filterKlien === "Semua") result = myBookings;
-        else if (filterKlien === "Berjalan") result = myBookings.filter((b) => isAktif(b.Status));
+        if (filterKlien === "Berjalan") result = myBookings.filter((b) => isAktif(b.Status));
         else if (filterKlien === "Selesai") result = myBookings.filter((b) => isSelesai(b.Status));
         else result = myBookings;
         return [...result].sort((a, b) => new Date(b.Tanggal_Sesi) - new Date(a.Tanggal_Sesi));
@@ -353,11 +601,7 @@ export default function KonselorDashboard() {
 
     function handleLogout() {
         localStorage.removeItem("sanctuary_user");
-        supabase.auth.signOut().then(() => {
-            navigate("/login");
-        }).catch(() => {
-            navigate("/login");
-        });
+        supabase.auth.signOut().then(() => navigate("/login")).catch(() => navigate("/login"));
     }
 
     async function handleTambahSlot() {
@@ -365,15 +609,8 @@ export default function KonselorDashboard() {
         setAddingSlot(true);
         const { data, error } = await supabase
             .from("konselor_availability")
-            .insert({
-                konselor_id: kid,
-                tanggal: newSlot.tanggal,
-                jam_mulai: newSlot.jam_mulai,
-                jam_selesai: newSlot.jam_selesai,
-                status: "tersedia",
-            })
-            .select()
-            .single();
+            .insert({ konselor_id: kid, tanggal: newSlot.tanggal, jam_mulai: newSlot.jam_mulai, jam_selesai: newSlot.jam_selesai, status: "tersedia" })
+            .select().single();
         if (!error && data) {
             setSlots((prev) => [...prev, data].sort((a, b) =>
                 a.tanggal.localeCompare(b.tanggal) || a.jam_mulai.localeCompare(b.jam_mulai)
@@ -388,32 +625,32 @@ export default function KonselorDashboard() {
         setSlots((prev) => prev.filter((s) => s.id !== slotId));
     }
 
-    const initials = (konselor?.Nama ?? "K")
-        .split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-
-    const navItems = [
-        { key: "overview", label: "Overview", icon: "" },
-        { key: "klien", label: "Klien Saya", icon: "" },
-        { key: "jadwal", label: "Jadwal", icon: "" },
-        { key: "performa", label: "Performa", icon: "" },
-        { key: "profil", label: "Profil Saya", icon: "" },
-    ];
-
+    const initials  = (konselor?.Nama ?? "K").split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
     const keramahan = konselor?.["Keramahan_(30%)"] ?? 0;
-    const solusi = konselor?.["Solusi_(50%)"] ?? 0;
-    const respon = konselor?.["Respon_(20%)"] ?? 0;
+    const solusi    = konselor?.["Solusi_(50%)"]    ?? 0;
+    const respon    = konselor?.["Respon_(20%)"]    ?? 0;
     const ratingFinal = konselor?.["Rating_(Final)"] ?? 0;
 
     const SPESIALISASI_DEFAULT = [
         { icon: "✓", title: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline." },
-        { icon: "✓", title: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental." },
-        { icon: "✓", title: "Fokus & Produktivitas", desc: "Teknik untuk meningkatkan konsentrasi belajar." },
+        { icon: "✓", title: "Kesejahteraan Mental",     desc: "Pendampingan untuk menjaga keseimbangan mental." },
+        { icon: "✓", title: "Fokus & Produktivitas",    desc: "Teknik untuk meningkatkan konsentrasi belajar." },
     ];
 
     const ratingDist = [5, 4, 3, 2, 1].map((bintang) => ({
         bintang,
-        count: ulasanList.filter(u => Math.round(Number(u.rating)) === bintang).length,
+        count: ulasanList.filter((u) => Math.round(Number(u.rating)) === bintang).length,
     }));
+
+    const navItems = [
+        { key: "overview", label: "Overview" },
+        { key: "klien",    label: "Klien Saya" },
+        { key: "jadwal",   label: "Jadwal" },
+        { key: "performa", label: "Performa" },
+        { key: "profil",   label: "Profil Saya" },
+    ];
+
+    // ── Loading / no-kid guard ─────────────────────────────────────────────────
 
     if (loadingData) {
         return (
@@ -441,19 +678,21 @@ export default function KonselorDashboard() {
         );
     }
 
+    // ── Render ─────────────────────────────────────────────────────────────────
+
     return (
         <div className="kd-shell">
+
             {showDetailModal && (
-                <KlienDetailModal 
-                    klien={selectedKlien} 
-                    onClose={() => {
-                        setShowDetailModal(false);
-                        setSelectedKlien(null);
-                    }} 
+                <KlienDetailModal
+                    klien={selectedKlien}
+                    onClose={() => { setShowDetailModal(false); setSelectedKlien(null); }}
                 />
             )}
 
             <main className="kd-main">
+
+                {/* Topbar */}
                 <div className="kd-topbar">
                     <div className="kd-topbar-l">
                         <span className="kd-topbar-logo" onClick={() => navigate("/konselor-dashboard")}>The Sanctuary</span>
@@ -473,7 +712,6 @@ export default function KonselorDashboard() {
                         <div className="kd-avatar" title={konselor?.Nama} onClick={() => setActiveTab("profil")} style={{ cursor: "pointer" }}>
                             {initials}
                         </div>
-                        
                         <button className="kd-nav-logout-btn" onClick={handleLogout} title="Keluar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -482,7 +720,6 @@ export default function KonselorDashboard() {
                             </svg>
                             <span>Keluar</span>
                         </button>
-
                         <button className="kd-topbar-logout" onClick={handleLogout} title="Keluar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -495,13 +732,13 @@ export default function KonselorDashboard() {
 
                 <div className="kd-content">
 
+                    {/* ── OVERVIEW ─────────────────────────────────────────────── */}
                     {activeTab === "overview" && (
                         <>
                             <div className="kd-greeting">
                                 <h2 className="kd-greeting-h2">Halo, {konselor?.Nama?.split(" ")[0]}</h2>
                                 <p className="kd-greeting-sub">Berikut ringkasan aktivitas konselingmu hari ini.</p>
                             </div>
-
                             <div className="kd-hero">
                                 <div className="kd-hero-left">
                                     <span className="kd-hero-tag">KONSELOR AKTIF</span>
@@ -516,22 +753,19 @@ export default function KonselorDashboard() {
                                     <Donut pct={successRate} size={110} stroke={12} color="#79d8d1" label={`${successRate}%`} sublabel="Success Rate" />
                                 </div>
                             </div>
-
                             <div className="kd-stats-row">
                                 {[
-                                    { icon: "", val: ratingFinal.toFixed(1), lbl: "Rating Saya" },
-                                    { icon: "", val: total, lbl: "Total Kasus" },
-                                    { icon: "", val: selesai, lbl: "Kasus Selesai" },
-                                    { icon: "", val: berjalan, lbl: "Sedang Berjalan" },
+                                    { val: ratingFinal.toFixed(1), lbl: "Rating Saya" },
+                                    { val: total,    lbl: "Total Kasus" },
+                                    { val: selesai,  lbl: "Kasus Selesai" },
+                                    { val: berjalan, lbl: "Sedang Berjalan" },
                                 ].map((s, i) => (
                                     <div key={i} className="kd-stat-card">
-                                        <span className="kd-stat-icon">{s.icon}</span>
                                         <span className="kd-stat-val">{s.val}</span>
                                         <span className="kd-stat-lbl">{s.lbl}</span>
                                     </div>
                                 ))}
                             </div>
-
                             <div className="kd-grid">
                                 <div className="kd-card">
                                     <div className="kd-card-hd">
@@ -539,7 +773,7 @@ export default function KonselorDashboard() {
                                             <div className="kd-card-h3">Sesi Terbaru</div>
                                             <div className="kd-card-sub">{myBookings.length} total sesi</div>
                                         </div>
-                                        <button className="kd-card-link" onClick={() => setActiveTab("klien")}>Lihat semua </button>
+                                        <button className="kd-card-link" onClick={() => setActiveTab("klien")}>Lihat semua →</button>
                                     </div>
                                     <div className="kd-sesi-list">
                                         {myBookings.slice(0, 4).map((b) => (
@@ -560,7 +794,6 @@ export default function KonselorDashboard() {
                                         {myBookings.length === 0 && <p className="kd-empty">Belum ada sesi yang ditangani.</p>}
                                     </div>
                                 </div>
-
                                 <div className="kd-card">
                                     <div className="kd-card-hd">
                                         <div>
@@ -571,8 +804,8 @@ export default function KonselorDashboard() {
                                     <div className="kd-performa-list">
                                         {[
                                             { lbl: "Keramahan (30%)", val: keramahan, max: 5 },
-                                            { lbl: "Solusi (50%)", val: solusi, max: 5 },
-                                            { lbl: "Respon (20%)", val: respon, max: 5 },
+                                            { lbl: "Solusi (50%)",    val: solusi,    max: 5 },
+                                            { lbl: "Respon (20%)",    val: respon,    max: 5 },
                                         ].map((p) => (
                                             <div key={p.lbl} className="kd-perf-row">
                                                 <div className="kd-perf-lbl">{p.lbl}</div>
@@ -584,21 +817,18 @@ export default function KonselorDashboard() {
                                     <div className="kd-divider" />
                                     <div className="kd-card-h3" style={{ marginBottom: 12 }}>Performa Tim</div>
                                     <div className="kd-tim-row">
-                                        <div className="kd-tim-item">
-                                            <div className="kd-tim-val">{ratingTim.toFixed(1)}</div>
-                                            <div className="kd-tim-lbl">Avg Rating Tim</div>
-                                        </div>
-                                        <div className="kd-tim-item">
-                                            <div className="kd-tim-val">{kasusTim}</div>
-                                            <div className="kd-tim-lbl">Kasus Selesai Tim</div>
-                                        </div>
-                                        <div className="kd-tim-item">
-                                            <div className="kd-tim-val">{Math.round(probTim * 100)}%</div>
-                                            <div className="kd-tim-lbl">Prob. Sukses Tim</div>
-                                        </div>
+                                        {[
+                                            { val: ratingTim.toFixed(1), lbl: "Avg Rating Tim" },
+                                            { val: kasusTim,             lbl: "Kasus Selesai Tim" },
+                                            { val: `${Math.round(probTim * 100)}%`, lbl: "Prob. Sukses Tim" },
+                                        ].map((t) => (
+                                            <div key={t.lbl} className="kd-tim-item">
+                                                <div className="kd-tim-val">{t.val}</div>
+                                                <div className="kd-tim-lbl">{t.lbl}</div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
-
                                 <div className="kd-card kd-card--wide">
                                     <div className="kd-card-hd">
                                         <div>
@@ -624,96 +854,68 @@ export default function KonselorDashboard() {
                         </>
                     )}
 
+                    {/* ── KLIEN ────────────────────────────────────────────────── */}
                     {activeTab === "klien" && (
                         <>
                             <div className="kd-greeting">
                                 <h2 className="kd-greeting-h2">Klien Saya</h2>
                                 <p className="kd-greeting-sub">{total} klien terdaftar · {berjalan} sedang berjalan</p>
                             </div>
-
                             <div className="kd-filter-row">
                                 {["Semua", "Berjalan", "Selesai"].map((f) => (
                                     <button
                                         key={f}
                                         className={`kd-filter-pill ${filterKlien === f ? "kd-filter-pill--active" : ""}`}
                                         onClick={() => setFilterKlien(f)}
-                                    >
-                                        {f}
-                                    </button>
+                                    >{f}</button>
                                 ))}
                             </div>
-
                             <div className="kd-klien-table">
                                 <div className="kd-table-head">
-                                    <span>Klien</span>
-                                    <span>Kategori</span>
-                                    <span>Sesi</span>
-                                    <span>Progress</span>
-                                    <span>Status</span>
-                                    <span>Aksi</span>
+                                    <span>Klien</span><span>Kategori</span><span>Sesi</span>
+                                    <span>Progress</span><span>Status</span><span>Aksi</span>
                                 </div>
                                 {filteredBookings.map((b) => {
                                     const progPct = Math.round((b.Kondisi_Saat_Ini ?? 0) * 100);
                                     const awalPct = Math.round((b.Kondisi_Awal ?? 0) * 100);
-                                    const gain = progPct - awalPct;
+                                    const gain    = progPct - awalPct;
 
                                     const normalizeTime = (t) => {
                                         if (!t) return "00:00:00";
-                                        const parts = t.split(":");
-                                        if (parts.length === 2) return `${t}:00`;
-                                        return t;
+                                        return t.split(":").length === 2 ? `${t}:00` : t;
                                     };
+                                    const getWIBDateStr = (ds) => ds ? new Date(ds).toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" }) : "";
+                                    const getWIBTimeStr = (ds) => ds
+                                        ? new Date(ds).toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).replace(/\./g, ":")
+                                        : "00:00:00";
 
-                                    const getWIBDateStr = (dateStr) => {
-                                        if (!dateStr) return "";
-                                        const date = new Date(dateStr);
-                                        return date.toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
-                                    };
-
-                                    const getWIBTimeStr = (dateStr) => {
-                                        if (!dateStr) return "00:00:00";
-                                        const date = new Date(dateStr);
-                                        return date.toLocaleTimeString("id-ID", {
-                                            timeZone: "Asia/Jakarta",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                            second: "2-digit",
-                                            hour12: false
-                                        }).replace(/\./g, ":");
-                                    };
-
-                                    const isDateOnly = b.Tanggal_Sesi && (b.Tanggal_Sesi.includes("T00:00:00") || !b.Tanggal_Sesi.includes("T"));
-                                    const bkDateStr = b.Tanggal_Sesi ? getWIBDateStr(b.Tanggal_Sesi) : "";
-                                    const bkTimeStr = b.Tanggal_Sesi ? getWIBTimeStr(b.Tanggal_Sesi) : "00:00:00";
+                                    const isDateOnly  = b.Tanggal_Sesi && (b.Tanggal_Sesi.includes("T00:00:00") || !b.Tanggal_Sesi.includes("T"));
+                                    const bkDateStr   = getWIBDateStr(b.Tanggal_Sesi);
+                                    const bkTimeStr   = getWIBTimeStr(b.Tanggal_Sesi);
                                     const isBerjalanSesi = isBerjalan(b.Status);
                                     const isMenungguEval = isMenungguEvaluasi(b.Status);
 
-                                    const matchedSlot = slots.find(s =>
-                                        s.tanggal === bkDateStr &&
-                                        (isDateOnly || normalizeTime(s.jam_mulai) === bkTimeStr)
+                                    const matchedSlot = slots.find((s) =>
+                                        s.tanggal === bkDateStr && (isDateOnly || normalizeTime(s.jam_mulai) === bkTimeStr)
                                     );
 
-                                    let start = null;
-                                    let end = null;
-
+                                    let start = null, end = null;
                                     if (matchedSlot) {
                                         start = new Date(`${matchedSlot.tanggal}T${normalizeTime(matchedSlot.jam_mulai)}+07:00`);
-                                        end = new Date(`${matchedSlot.tanggal}T${normalizeTime(matchedSlot.jam_selesai)}+07:00`);
+                                        end   = new Date(`${matchedSlot.tanggal}T${normalizeTime(matchedSlot.jam_selesai)}+07:00`);
                                     } else if (b.Tanggal_Sesi) {
                                         start = new Date(b.Tanggal_Sesi);
-                                        end = new Date(start.getTime() + 60 * 60 * 1000);
+                                        end   = new Date(start.getTime() + 60 * 60 * 1000);
                                     }
 
-                                    const startBuffer = start;
-                                    const isTimeRange = startBuffer && end && now >= startBuffer && now <= end;
-                                    const bisaMulai = isTerjadwal(b.Status) && isTimeRange;
-                                    const bisaMasuk = isBerjalanSesi && (end ? now <= end : true);
+                                    const isTimeRange = start && end && now >= start && now <= end;
+                                    const bisaMulai   = isTerjadwal(b.Status) && isTimeRange;
+                                    const bisaMasuk   = isBerjalanSesi && (end ? now <= end : true);
 
                                     let statusHelperText = null;
                                     if (b.Status !== "Selesai") {
-                                        if (isTerjadwal(b.Status) && startBuffer && now < startBuffer) {
-                                            const jamStr = start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" });
-                                            statusHelperText = `Mulai pukul ${jamStr}`;
+                                        if (isTerjadwal(b.Status) && start && now < start) {
+                                            statusHelperText = `Mulai pukul ${start.toLocaleTimeString("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit" })}`;
                                         } else if (end && now > end) {
                                             statusHelperText = "Terlewat";
                                         }
@@ -750,40 +952,23 @@ export default function KonselorDashboard() {
                                             </div>
                                             <div className="kd-table-cell" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                                                 {bisaMulai || bisaMasuk ? (
-                                                    <button
-                                                        className="kd-btn-mulai-sesi"
-                                                        onClick={async () => {
-                                                            await supabase
-                                                                .from("booking")
-                                                                .update({ status: BOOKING_STATUS.BERJALAN })
-                                                                .eq("id", b.ID_Booking);
-                                                            navigate(`/sesi/${b.ID_Booking}`);
-                                                        }}
-                                                    >
+                                                    <button className="kd-btn-mulai-sesi" onClick={async () => {
+                                                        await supabase.from("booking").update({ status: BOOKING_STATUS.BERJALAN }).eq("id", b.ID_Booking);
+                                                        navigate(`/sesi/${b.ID_Booking}`);
+                                                    }}>
                                                         {bisaMasuk ? "Masuk Sesi →" : "Mulai Sesi →"}
                                                     </button>
                                                 ) : isMenungguEval ? (
-                                                    <button 
-                                                        className="kd-btn-evaluasi"
-                                                        onClick={() => navigate(`/evaluasi-sesi/${b.ID_Booking}`)}
-                                                    >
+                                                    <button className="kd-btn-evaluasi" onClick={() => navigate(`/evaluasi-sesi/${b.ID_Booking}`)}>
                                                         Isi Evaluasi →
                                                     </button>
                                                 ) : statusHelperText ? (
-                                                    <span className="kd-status-helper" style={{ fontSize: "0.75rem", color: "#666", fontWeight: "500" }}>
-                                                        {statusHelperText}
-                                                    </span>
+                                                    <span style={{ fontSize: "0.75rem", color: "#666", fontWeight: 500 }}>{statusHelperText}</span>
                                                 ) : (
                                                     <>
                                                         <span className="kd-cell-dash">—</span>
-                                                        <button 
-                                                            className="kd-btn-detail"
-                                                            onClick={() => {
-                                                                setSelectedKlien(b);
-                                                                setShowDetailModal(true);
-                                                            }}
-                                                        >
-                                                            Lihat Detail 
+                                                        <button className="kd-btn-detail" onClick={() => { setSelectedKlien(b); setShowDetailModal(true); }}>
+                                                            Lihat Detail
                                                         </button>
                                                     </>
                                                 )}
@@ -800,66 +985,46 @@ export default function KonselorDashboard() {
                         </>
                     )}
 
+                    {/* ── JADWAL ───────────────────────────────────────────────── */}
                     {activeTab === "jadwal" && (
                         <>
                             <div className="kd-greeting">
                                 <h2 className="kd-greeting-h2">Jadwal Saya</h2>
                                 <p className="kd-greeting-sub">Atur slot waktu yang tersedia untuk mahasiswa booking.</p>
                             </div>
-
                             <div className="kd-card" style={{ marginBottom: 20 }}>
                                 <div className="kd-card-h3" style={{ marginBottom: 16 }}>Tambah Slot Baru</div>
                                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                        <label style={{ fontSize: 11, fontWeight: 700, color: "var(--gray)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Tanggal</label>
-                                        <input
-                                            type="date"
-                                            value={newSlot.tanggal}
-                                            min={new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" })}
-                                            onChange={(e) => setNewSlot((p) => ({ ...p, tanggal: e.target.value }))}
-                                            style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid var(--gray-lt)", fontSize: 13, fontFamily: "inherit", background: "#fafafa" }}
-                                        />
-                                    </div>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                        <label style={{ fontSize: 11, fontWeight: 700, color: "var(--gray)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Jam Mulai</label>
-                                        <input
-                                            type="time"
-                                            value={newSlot.jam_mulai}
-                                            onChange={(e) => setNewSlot((p) => ({ ...p, jam_mulai: e.target.value }))}
-                                            style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid var(--gray-lt)", fontSize: 13, fontFamily: "inherit", background: "#fafafa" }}
-                                        />
-                                    </div>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                        <label style={{ fontSize: 11, fontWeight: 700, color: "var(--gray)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Jam Selesai</label>
-                                        <input
-                                            type="time"
-                                            value={newSlot.jam_selesai}
-                                            onChange={(e) => setNewSlot((p) => ({ ...p, jam_selesai: e.target.value }))}
-                                            style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid var(--gray-lt)", fontSize: 13, fontFamily: "inherit", background: "#fafafa" }}
-                                        />
-                                    </div>
+                                    {[
+                                        { label: "Tanggal", type: "date", key: "tanggal", extra: { min: new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" }) } },
+                                        { label: "Jam Mulai",  type: "time", key: "jam_mulai" },
+                                        { label: "Jam Selesai", type: "time", key: "jam_selesai" },
+                                    ].map(({ label, type, key, extra = {} }) => (
+                                        <div key={key} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--gray)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</label>
+                                            <input
+                                                type={type}
+                                                value={newSlot[key]}
+                                                onChange={(e) => setNewSlot((p) => ({ ...p, [key]: e.target.value }))}
+                                                style={{ padding: "8px 12px", borderRadius: 10, border: "1.5px solid var(--gray-lt)", fontSize: 13, fontFamily: "inherit", background: "#fafafa" }}
+                                                {...extra}
+                                            />
+                                        </div>
+                                    ))}
                                     <button
                                         onClick={handleTambahSlot}
                                         disabled={addingSlot || !newSlot.tanggal || !newSlot.jam_mulai || !newSlot.jam_selesai}
-                                        style={{
-                                            padding: "9px 20px",
-                                            background: "linear-gradient(135deg, #2f7d79, #79d8d1)",
-                                            color: "white", border: "none", borderRadius: 10,
-                                            fontSize: 13, fontWeight: 700, cursor: "pointer",
-                                            fontFamily: "inherit", opacity: addingSlot ? 0.7 : 1,
-                                            transition: "opacity 0.2s",
-                                        }}
+                                        style={{ padding: "9px 20px", background: "linear-gradient(135deg,#2f7d79,#79d8d1)", color: "#fff", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: addingSlot ? 0.7 : 1 }}
                                     >
                                         {addingSlot ? "Menyimpan..." : "+ Tambah Slot"}
                                     </button>
                                 </div>
                             </div>
-
                             <div className="kd-card">
                                 <div className="kd-card-hd">
                                     <div>
                                         <div className="kd-card-h3">Slot Tersedia</div>
-                                        <div className="kd-card-sub">{slots.filter(s => s.status === "tersedia").length} slot aktif · {slots.filter(s => s.status === "booked").length} sudah dibooking</div>
+                                        <div className="kd-card-sub">{slots.filter((s) => s.status === "tersedia").length} slot aktif · {slots.filter((s) => s.status === "booked").length} sudah dibooking</div>
                                     </div>
                                 </div>
                                 {slots.length === 0 ? (
@@ -867,11 +1032,7 @@ export default function KonselorDashboard() {
                                 ) : (
                                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                                         {Object.entries(
-                                            slots.reduce((acc, s) => {
-                                                if (!acc[s.tanggal]) acc[s.tanggal] = [];
-                                                acc[s.tanggal].push(s);
-                                                return acc;
-                                            }, {})
+                                            slots.reduce((acc, s) => { if (!acc[s.tanggal]) acc[s.tanggal] = []; acc[s.tanggal].push(s); return acc; }, {})
                                         ).map(([tanggal, slotList]) => (
                                             <div key={tanggal}>
                                                 <div style={{ fontSize: 12, fontWeight: 800, color: "var(--teal)", marginBottom: 8, marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
@@ -879,30 +1040,13 @@ export default function KonselorDashboard() {
                                                 </div>
                                                 <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                                                     {slotList.map((s) => (
-                                                        <div key={s.id} style={{
-                                                            display: "flex", alignItems: "center", gap: 10,
-                                                            padding: "8px 14px",
-                                                            background: s.status === "booked" ? "rgba(232,168,56,0.10)" : "rgba(47,125,121,0.07)",
-                                                            border: `1.5px solid ${s.status === "booked" ? "rgba(232,168,56,0.3)" : "rgba(47,125,121,0.18)"}`,
-                                                            borderRadius: 999, fontSize: 13, fontWeight: 600,
-                                                        }}>
-                                                            <span style={{ color: s.status === "booked" ? "#a06030" : "var(--teal)" }}>
-                                                                {s.jam_mulai.slice(0, 5)} – {s.jam_selesai.slice(0, 5)}
-                                                            </span>
-                                                            <span style={{
-                                                                fontSize: 10, fontWeight: 700, padding: "2px 8px",
-                                                                borderRadius: 999,
-                                                                background: s.status === "booked" ? "rgba(232,168,56,0.2)" : "rgba(47,125,121,0.12)",
-                                                                color: s.status === "booked" ? "#a06030" : "var(--teal)",
-                                                            }}>
+                                                        <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", background: s.status === "booked" ? "rgba(232,168,56,0.10)" : "rgba(47,125,121,0.07)", border: `1.5px solid ${s.status === "booked" ? "rgba(232,168,56,0.3)" : "rgba(47,125,121,0.18)"}`, borderRadius: 999, fontSize: 13, fontWeight: 600 }}>
+                                                            <span style={{ color: s.status === "booked" ? "#a06030" : "var(--teal)" }}>{s.jam_mulai.slice(0, 5)} – {s.jam_selesai.slice(0, 5)}</span>
+                                                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 999, background: s.status === "booked" ? "rgba(232,168,56,0.2)" : "rgba(47,125,121,0.12)", color: s.status === "booked" ? "#a06030" : "var(--teal)" }}>
                                                                 {s.status === "booked" ? "Dipesan" : "Tersedia"}
                                                             </span>
                                                             {s.status === "tersedia" && (
-                                                                <button
-                                                                    onClick={() => handleHapusSlot(s.id)}
-                                                                    style={{ background: "none", border: "none", cursor: "pointer", color: "#e05c5c", fontSize: 14, padding: "0 2px", lineHeight: 1, fontWeight: 700 }}
-                                                                    title="Hapus slot"
-                                                                >✕</button>
+                                                                <button onClick={() => handleHapusSlot(s.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#e05c5c", fontSize: 14, padding: "0 2px", lineHeight: 1, fontWeight: 700 }} title="Hapus slot">✕</button>
                                                             )}
                                                         </div>
                                                     ))}
@@ -915,6 +1059,7 @@ export default function KonselorDashboard() {
                         </>
                     )}
 
+                    {/* ── PERFORMA ─────────────────────────────────────────────── */}
                     {activeTab === "performa" && (
                         <>
                             <div className="kd-greeting">
@@ -932,8 +1077,8 @@ export default function KonselorDashboard() {
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Breakdown Rating</div>
                                     {[
                                         { lbl: "Keramahan", bobot: "30%", val: keramahan, color: "#2f7d79" },
-                                        { lbl: "Solusi", bobot: "50%", val: solusi, color: "#79d8d1" },
-                                        { lbl: "Respon", bobot: "20%", val: respon, color: "#1a5e5a" },
+                                        { lbl: "Solusi",    bobot: "50%", val: solusi,    color: "#79d8d1" },
+                                        { lbl: "Respon",    bobot: "20%", val: respon,    color: "#1a5e5a" },
                                     ].map((p) => (
                                         <div key={p.lbl} className="kd-perf-breakdown">
                                             <div className="kd-perf-bd-head">
@@ -957,7 +1102,7 @@ export default function KonselorDashboard() {
                                     <div className="kd-progress-list">
                                         {myBookings.filter((b) => isAktif(b.Status)).map((b) => {
                                             const nowPct = Math.round((b.Kondisi_Saat_Ini ?? 0) * 100);
-                                            const awal = Math.round((b.Kondisi_Awal ?? 0) * 100);
+                                            const awal   = Math.round((b.Kondisi_Awal ?? 0) * 100);
                                             return (
                                                 <div key={b.ID_Booking} className="kd-prog-item">
                                                     <div className="kd-prog-head">
@@ -981,25 +1126,21 @@ export default function KonselorDashboard() {
                                 <div className="kd-card">
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Komparasi vs Tim</div>
                                     {[
-                                        { lbl: "Rating", saya: ratingFinal, tim: ratingTim, max: 5, fmt: (v) => v.toFixed(1) },
-                                        { lbl: "Success Rate", saya: successRate / 100, tim: probTim, max: 1, fmt: (v) => `${Math.round(v * 100)}%` },
-                                        { lbl: "Kasus Selesai", saya: selesai, tim: avgKasusSelesai, max: Math.max(selesai, avgKasusSelesai, 1), fmt: (v) => Math.round(v) },
+                                        { lbl: "Rating",        saya: ratingFinal,    tim: ratingTim,        max: 5, fmt: (v) => v.toFixed(1) },
+                                        { lbl: "Success Rate",  saya: successRate/100, tim: probTim,          max: 1, fmt: (v) => `${Math.round(v*100)}%` },
+                                        { lbl: "Kasus Selesai", saya: selesai,         tim: avgKasusSelesai,  max: Math.max(selesai, avgKasusSelesai, 1), fmt: (v) => Math.round(v) },
                                     ].map((c) => (
                                         <div key={c.lbl} className="kd-compare-row">
                                             <div className="kd-compare-lbl">{c.lbl}</div>
                                             <div className="kd-compare-bars">
                                                 <div className="kd-compare-bar-wrap">
                                                     <div className="kd-compare-bar-label">Saya</div>
-                                                    <div className="kd-bar-track">
-                                                        <div className="kd-bar-fill" style={{ width: `${(c.saya / c.max) * 100}%`, background: "var(--grad-teal)" }} />
-                                                    </div>
+                                                    <div className="kd-bar-track"><div className="kd-bar-fill" style={{ width: `${(c.saya/c.max)*100}%`, background: "var(--grad-teal)" }} /></div>
                                                     <div className="kd-compare-val">{c.fmt(c.saya)}</div>
                                                 </div>
                                                 <div className="kd-compare-bar-wrap">
                                                     <div className="kd-compare-bar-label kd-compare-bar-label--tim">Tim</div>
-                                                    <div className="kd-bar-track">
-                                                        <div className="kd-bar-fill kd-bar-fill--tim" style={{ width: `${(c.tim / c.max) * 100}%` }} />
-                                                    </div>
+                                                    <div className="kd-bar-track"><div className="kd-bar-fill kd-bar-fill--tim" style={{ width: `${(c.tim/c.max)*100}%` }} /></div>
                                                     <div className="kd-compare-val kd-compare-val--tim">{c.fmt(c.tim)}</div>
                                                 </div>
                                             </div>
@@ -1010,6 +1151,7 @@ export default function KonselorDashboard() {
                         </>
                     )}
 
+                    {/* ── PROFIL ───────────────────────────────────────────────── */}
                     {activeTab === "profil" && (
                         <>
                             <div className="kd-greeting">
@@ -1022,8 +1164,7 @@ export default function KonselorDashboard() {
                                     </div>
                                     <button className="kd-edit-btn" onClick={() => setShowEditModal(true)}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
-                                            <path d="M17 3l4 4-7 7H10v-4l7-7z" />
-                                            <path d="M4 20h16" />
+                                            <path d="M17 3l4 4-7 7H10v-4l7-7z" /><path d="M4 20h16" />
                                         </svg>
                                         Edit Profil
                                     </button>
@@ -1031,11 +1172,7 @@ export default function KonselorDashboard() {
                             </div>
 
                             {showEditModal && (
-                                <EditProfilModal
-                                    profil={konselor}
-                                    onSave={updateProfil}
-                                    onClose={() => setShowEditModal(false)}
-                                />
+                                <EditProfilModal profil={konselor} onSave={updateProfil} onClose={() => setShowEditModal(false)} />
                             )}
 
                             <div className="kd-profil-hero">
@@ -1057,25 +1194,20 @@ export default function KonselorDashboard() {
                                         {konselor?.bio || `${konselor?.Nama?.split(" ")[0]} adalah konselor sebaya yang berfokus pada pendampingan mahasiswa.`}
                                     </p>
                                     <div className="kd-profil-stat-row">
-                                        <div className="kd-profil-stat-item">
-                                            <span className="kd-profil-stat-val" style={{ color: "var(--teal)" }}>{ratingFinal.toFixed(1)}</span>
-                                            <span className="kd-profil-stat-lbl">Rating</span>
-                                        </div>
-                                        <div className="kd-profil-stat-divider" />
-                                        <div className="kd-profil-stat-item">
-                                            <span className="kd-profil-stat-val">{total}</span>
-                                            <span className="kd-profil-stat-lbl">Total Kasus</span>
-                                        </div>
-                                        <div className="kd-profil-stat-divider" />
-                                        <div className="kd-profil-stat-item">
-                                            <span className="kd-profil-stat-val">{selesai}</span>
-                                            <span className="kd-profil-stat-lbl">Kasus Selesai</span>
-                                        </div>
-                                        <div className="kd-profil-stat-divider" />
-                                        <div className="kd-profil-stat-item">
-                                            <span className="kd-profil-stat-val">{successRate}%</span>
-                                            <span className="kd-profil-stat-lbl">Success Rate</span>
-                                        </div>
+                                        {[
+                                            { val: ratingFinal.toFixed(1), lbl: "Rating", color: "var(--teal)" },
+                                            { val: total,   lbl: "Total Kasus" },
+                                            { val: selesai, lbl: "Kasus Selesai" },
+                                            { val: `${successRate}%`, lbl: "Success Rate" },
+                                        ].map((s, i, arr) => (
+                                            <>
+                                                <div key={s.lbl} className="kd-profil-stat-item">
+                                                    <span className="kd-profil-stat-val" style={s.color ? { color: s.color } : {}}>{s.val}</span>
+                                                    <span className="kd-profil-stat-lbl">{s.lbl}</span>
+                                                </div>
+                                                {i < arr.length - 1 && <div key={`div-${i}`} className="kd-profil-stat-divider" />}
+                                            </>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -1093,9 +1225,9 @@ export default function KonselorDashboard() {
                                     )}
                                     <div style={{ marginTop: 24 }}>
                                         {[
-                                            { lbl: "Keramahan", val: keramahan },
-                                            { lbl: "Kualitas Solusi", val: solusi },
-                                            { lbl: "Kecepatan Respon", val: respon },
+                                            { lbl: "Keramahan",          val: keramahan },
+                                            { lbl: "Kualitas Solusi",    val: solusi },
+                                            { lbl: "Kecepatan Respon",   val: respon },
                                         ].map((p) => (
                                             <div key={p.lbl} className="kd-profil-rating-row">
                                                 <span className="kd-profil-rating-lbl">{p.lbl}</span>
@@ -1136,10 +1268,7 @@ export default function KonselorDashboard() {
                                                     <div key={r.bintang} className="kd-testi-dist-row">
                                                         <span className="kd-testi-dist-bintang">{r.bintang} ★</span>
                                                         <div className="kd-bar-track" style={{ flex: 1, height: 6 }}>
-                                                            <div className="kd-bar-fill" style={{
-                                                                width: `${ulasanList.length > 0 ? (r.count / ulasanList.length) * 100 : 0}%`,
-                                                                background: "#f5c842"
-                                                            }} />
+                                                            <div className="kd-bar-fill" style={{ width: `${ulasanList.length > 0 ? (r.count / ulasanList.length) * 100 : 0}%`, background: "#f5c842" }} />
                                                         </div>
                                                         <span className="kd-testi-dist-count">{r.count}</span>
                                                     </div>
@@ -1154,35 +1283,28 @@ export default function KonselorDashboard() {
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div className="kd-testi-cards">
                                             {ulasanList.length === 0 ? (
                                                 <p style={{ color: "#aaa", fontSize: 13, textAlign: "center", padding: "20px 0" }}>
-                                                    Belum ada testimoni. Fitur ini akan aktif setelah mahasiswa dapat memberikan ulasan sesi.
+                                                    Belum ada testimoni. Fitur ini akan aktif setelah mahasiswa memberikan ulasan sesi.
                                                 </p>
                                             ) : (
                                                 ulasanList.map((u, i) => (
                                                     <div key={u.id ?? i} className="kd-testi-card">
                                                         <div className="kd-stars" style={{ marginBottom: 8 }}>
-                                                            {[1, 2, 3, 4, 5].map(n => (
+                                                            {[1,2,3,4,5].map((n) => (
                                                                 <span key={n} className={`kd-star kd-star--sm ${n <= Math.round(Number(u.rating)) ? "kd-star--on" : ""}`}>★</span>
                                                             ))}
                                                         </div>
-                                                        <p style={{ fontSize: 13, color: "#444", lineHeight: 1.6, marginBottom: 12 }}>
-                                                            "{u.teks}"
-                                                        </p>
+                                                        <p style={{ fontSize: 13, color: "#444", lineHeight: 1.6, marginBottom: 12 }}>"{u.teks}"</p>
                                                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                                             <div className="kd-mini-avatar" style={{ width: 32, height: 32, fontSize: 12 }}>
                                                                 {(u.nama_mahasiswa ?? "M").charAt(0).toUpperCase()}
                                                             </div>
                                                             <div>
-                                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e" }}>
-                                                                    {u.nama_mahasiswa ?? "Mahasiswa"}
-                                                                </div>
+                                                                <div style={{ fontSize: 12, fontWeight: 700, color: "#1a1a2e" }}>{u.nama_mahasiswa ?? "Mahasiswa"}</div>
                                                                 <div style={{ fontSize: 11, color: "#999" }}>
-                                                                    {u.created_at
-                                                                        ? new Date(u.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-                                                                        : "—"}
+                                                                    {u.created_at ? new Date(u.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "—"}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1193,6 +1315,9 @@ export default function KonselorDashboard() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* ── NOTIFIKASI SECTION ── */}
+                            <KonselorNotifSection kid={kid} user={user} />
                         </>
                     )}
 

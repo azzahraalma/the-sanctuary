@@ -2116,9 +2116,6 @@ body,
   }
 }
 
-/* ============ PERBAIKAN MODAL DETAIL ============ */
-
-/* Informasi row - perbaiki alignment */
 .kd-modal-info-row {
   display: flex;
   justify-content: space-between;
@@ -2139,7 +2136,6 @@ body,
   color: #333;
 }
 
-/* Progress wrapper */
 .kd-modal-progress-wrap {
   background: #f8f8f8;
   border-radius: 16px;
@@ -2218,7 +2214,6 @@ body,
   color: #e05c5c;
 }
 
-/* Catatan perkembangan */
 .kd-modal-note {
   font-size: 13px;
   color: #666;
@@ -2229,7 +2224,6 @@ body,
   margin: 0;
 }
 
-/* Status badge di modal */
 .kd-modal-status {
   display: inline-block;
   padding: 4px 12px;
@@ -2248,7 +2242,6 @@ body,
   color: #a06030;
 }
 
-/* Section title */
 .kd-modal-section-title {
   font-size: 13px;
   font-weight: 700;
@@ -2258,7 +2251,6 @@ body,
   margin-bottom: 12px;
 }
 
-/* Spacing antar section */
 .kd-modal-section {
   margin-bottom: 24px;
 }
@@ -2267,7 +2259,6 @@ body,
   margin-bottom: 0;
 }
 
-/* Header modal */
 .kd-modal-header {
   display: flex;
   align-items: center;
@@ -2328,14 +2319,12 @@ body,
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* Body modal */
 .kd-modal-body {
   padding: 24px;
   max-height: 60vh;
   overflow-y: auto;
 }
 
-/* Footer modal */
 .kd-modal-footer {
   padding: 16px 24px 24px;
   border-top: 1px solid #f0f0f0;
@@ -2358,7 +2347,6 @@ body,
   opacity: 0.9;
 }
 
-/* Overlay */
 .kd-modal-overlay {
   position: fixed;
   inset: 0;
@@ -2391,4 +2379,9 @@ body,
     opacity: 1;
     transform: scale(1);
   }
+}
+
+@keyframes kd-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

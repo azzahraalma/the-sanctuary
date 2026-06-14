@@ -159,7 +159,6 @@ function SkeletonDetail() {
   );
 }
 
-// Normalise spesialisasi dari Supabase ke format display (icon, judul, desc)
 function normalizeSpesialisasi(raw) {
   if (!raw || !Array.isArray(raw) || raw.length === 0) return [];
   return raw.map((s) => ({
@@ -532,10 +531,8 @@ export default function KonselorDetail() {
   const today   = new Date();
   const isToday = (d) => d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
 
-  // Spesialisasi 100% dari Supabase — diisi konselor via Edit Profil di dashboard
   const spesialisasi = normalizeSpesialisasi(konselor.spesialisasi);
 
-  // Testimoni 100% dari Supabase (ulasan_konselor)
   const testimoni = ulasanList;
 
   const bio = konselor.bio || "Konselor sebaya yang berdedikasi dalam membantu mahasiswa.";

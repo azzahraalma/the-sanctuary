@@ -713,3 +713,45 @@ body::before {
   .db-kues-donuts-row { gap: 8px; }
   .db-footer     { padding: 16px; }
 }
+
+.db-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  flex-direction: column;
+  gap: 12px;
+  background: #f2f2ea;
+}
+
+.db-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e0e0e0;
+  border-top: 4px solid #2f7d79;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.db-loading-text {
+  color: #2f7d79;
+  font-weight: 600;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+input[type="range"] {
+  accent-color: var(--teal);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  background: var(--teal);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: var(--teal-lt);
+}

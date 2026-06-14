@@ -50,7 +50,8 @@ export function useAuth() {
         const userData = buildUserData(session, profil);
         localStorage.setItem("sanctuary_user", JSON.stringify(userData));
         setUser(userData);
-      } catch {
+      } catch (err) {
+        console.error("useAuth syncUser error:", err);
         const cachedFallback = JSON.parse(localStorage.getItem("sanctuary_user") || "null");
         if (cachedFallback?.email === session.user.email && cachedFallback?.role) {
           setUser(cachedFallback);
@@ -78,5 +79,11 @@ export function useAuth() {
     };
   }, []);
 
-  return { user, isReady };
+  const logout = async () => {
+    localStorage.removeItem("sanctuary_user");
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
+
+  return { user, isReady, logout };
 }

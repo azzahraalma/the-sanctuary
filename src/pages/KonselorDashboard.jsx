@@ -10,6 +10,7 @@ import {
     isAktif,
     isBerjalan,
     isTerjadwal,
+    isMenungguEvaluasi,
     statusLabel,
 } from "../lib/bookingStatus.js";
 
@@ -72,6 +73,98 @@ function ProgressBar({ value, max, color = "var(--grad-teal)" }) {
     );
 }
 
+function KlienDetailModal({ klien, onClose, konselor }) {
+    if (!klien) return null;
+
+    const progPct = Math.round((klien.Kondisi_Saat_Ini ?? 0) * 100);
+    const awalPct = Math.round((klien.Kondisi_Awal ?? 0) * 100);
+    const gain = progPct - awalPct;
+
+    return (
+        <div className="kd-modal-overlay" onClick={onClose}>
+            <div className="kd-modal" onClick={e => e.stopPropagation()}>
+                <div className="kd-modal-header">
+                    <div className="kd-modal-avatar">
+                        {klien.Nama_Mahasiswa?.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase()}
+                    </div>
+                    <div className="kd-modal-title-wrap">
+                        <h3 className="kd-modal-title">{klien.Nama_Mahasiswa}</h3>
+                        <p className="kd-modal-sub">ID: {klien.ID_Mahasiswa}</p>
+                    </div>
+                    <button className="kd-modal-close" onClick={onClose}>✕</button>
+                </div>
+
+                <div className="kd-modal-body">
+                    <div className="kd-modal-section">
+                        <div className="kd-modal-info-row">
+                            <span className="kd-modal-info-label">Kategori Masalah</span>
+                            <span className="kd-modal-info-value">{klien.Kategori_Masalah}</span>
+                        </div>
+                        <div className="kd-modal-info-row">
+                            <span className="kd-modal-info-label">Sesi ke-</span>
+                            <span className="kd-modal-info-value">{klien.Sesi_Konseling}</span>
+                        </div>
+                        <div className="kd-modal-info-row">
+                            <span className="kd-modal-info-label">Status</span>
+                            <span className={`kd-modal-status ${isSelesai(klien.Status) ? "kd-modal-status--done" : "kd-modal-status--run"}`}>
+                                {statusLabel(klien.Status)}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="kd-modal-section">
+                        <div className="kd-modal-section-title">Progress Kondisi Klien</div>
+                        <div className="kd-modal-progress-wrap">
+                            <div className="kd-modal-progress-label">
+                                <span>Kondisi Awal</span>
+                                <span>Kondisi Saat Ini</span>
+                            </div>
+                            <div className="kd-modal-progress-track">
+                                <div className="kd-modal-progress-awal" style={{ left: `${awalPct}%` }} title={`Awal: ${awalPct}%`} />
+                                <div className="kd-modal-progress-fill" style={{ width: `${progPct}%`, background: kondisiColor(klien.Kondisi_Saat_Ini) }} />
+                            </div>
+                                <div className="kd-modal-progress-numbers">
+                                <span className="kd-modal-progress-num">{awalPct}%</span>
+                                <span className="kd-modal-progress-arrow">→</span>
+                                <span className="kd-modal-progress-num" style={{ color: kondisiColor(klien.Kondisi_Saat_Ini) }}>
+                                    {progPct}%
+                                </span>
+                                <span className={`kd-modal-gain ${gain >= 0 ? "kd-modal-gain--pos" : "kd-modal-gain--neg"}`}>
+                                    {gain >= 0 ? "+" : ""}{gain}%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="kd-modal-section">
+                        <div className="kd-modal-info-row">
+                            <span className="kd-modal-info-label">Tingkat Pemulihan</span>
+                            <span className="kd-modal-info-value" style={{ color: kondisiColor(klien.Kondisi_Saat_Ini) }}>
+                                {kondisiLabel(klien.Kondisi_Saat_Ini)}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="kd-modal-section">
+                        <div className="kd-modal-section-title">Catatan Perkembangan</div>
+                        <p className="kd-modal-note">
+                            {klien.Kondisi_Saat_Ini >= 0.75 
+                                ? `Klien menunjukkan perkembangan yang sangat baik. ${klien.Nama_Mahasiswa?.split(" ")[0]} sudah mulai bisa mengelola stres dengan lebih baik.`
+                                : klien.Kondisi_Saat_Ini >= 0.5
+                                ? `Klien dalam proses pemulihan yang baik. Terus berikan dukungan dan motivasi.`
+                                : `Masih dalam tahap awal pemulihan. Perlu pendekatan yang lebih intensif.`}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="kd-modal-footer">
+                    <button className="kd-modal-btn" onClick={onClose}>Tutup</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function KonselorDashboard() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("overview");
@@ -86,7 +179,8 @@ export default function KonselorDashboard() {
     const [now, setNow] = useState(new Date());
     const [teamStats, setTeamStats] = useState({ ratingTim: 0, kasusTim: 0, probSukses: 0, avgKasusSelesai: 0 });
     const [ulasanList, setUlasanList] = useState([]);
-
+    const [selectedKlien, setSelectedKlien] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -258,9 +352,12 @@ export default function KonselorDashboard() {
     }, [myBookings, filterKlien]);
 
     function handleLogout() {
-        supabase.auth.signOut();
         localStorage.removeItem("sanctuary_user");
-        navigate("/login");
+        supabase.auth.signOut().then(() => {
+            navigate("/login");
+        }).catch(() => {
+            navigate("/login");
+        });
     }
 
     async function handleTambahSlot() {
@@ -308,9 +405,9 @@ export default function KonselorDashboard() {
     const ratingFinal = konselor?.["Rating_(Final)"] ?? 0;
 
     const SPESIALISASI_DEFAULT = [
-        { icon: "", title: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline." },
-        { icon: "", title: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental." },
-        { icon: "", title: "Fokus & Produktivitas", desc: "Teknik untuk meningkatkan konsentrasi belajar." },
+        { icon: "✓", title: "Manajemen Stres Akademik", desc: "Membantu mahasiswa mengelola tekanan tugas, ujian, dan deadline." },
+        { icon: "✓", title: "Kesejahteraan Mental", desc: "Pendampingan untuk menjaga keseimbangan mental." },
+        { icon: "✓", title: "Fokus & Produktivitas", desc: "Teknik untuk meningkatkan konsentrasi belajar." },
     ];
 
     const ratingDist = [5, 4, 3, 2, 1].map((bintang) => ({
@@ -346,31 +443,15 @@ export default function KonselorDashboard() {
 
     return (
         <div className="kd-shell">
-            <aside className="kd-sidebar">
-                <div>
-                    <span className="kd-logo" onClick={() => navigate("/konselor-dashboard")}>The Sanctuary</span>
-                    <div className="kd-profile-mini">
-                        <div className="kd-profile-avatar">{initials}</div>
-                        <div>
-                            <div className="kd-profile-name">{konselor?.Nama ?? "Konselor"}</div>
-                            <div className="kd-profile-role">Konselor · {konselor?.Kategori_Masalah}</div>
-                        </div>
-                    </div>
-                    <nav className="kd-nav">
-                        {navItems.map((item) => (
-                            <button
-                                key={item.key}
-                                className={`kd-nav-item ${activeTab === item.key ? "kd-nav-item--active" : ""}`}
-                                onClick={() => setActiveTab(item.key)}
-                            >
-                                <span className="kd-nav-icon">{item.icon}</span>
-                                {item.label}
-                            </button>
-                        ))}
-                    </nav>
-                </div>
-                <button className="kd-logout" onClick={handleLogout}>← Keluar</button>
-            </aside>
+            {showDetailModal && (
+                <KlienDetailModal 
+                    klien={selectedKlien} 
+                    onClose={() => {
+                        setShowDetailModal(false);
+                        setSelectedKlien(null);
+                    }} 
+                />
+            )}
 
             <main className="kd-main">
                 <div className="kd-topbar">
@@ -392,6 +473,16 @@ export default function KonselorDashboard() {
                         <div className="kd-avatar" title={konselor?.Nama} onClick={() => setActiveTab("profil")} style={{ cursor: "pointer" }}>
                             {initials}
                         </div>
+                        
+                        <button className="kd-nav-logout-btn" onClick={handleLogout} title="Keluar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                            <span>Keluar</span>
+                        </button>
+
                         <button className="kd-topbar-logout" onClick={handleLogout} title="Keluar">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -448,7 +539,7 @@ export default function KonselorDashboard() {
                                             <div className="kd-card-h3">Sesi Terbaru</div>
                                             <div className="kd-card-sub">{myBookings.length} total sesi</div>
                                         </div>
-                                        <button className="kd-card-link" onClick={() => setActiveTab("klien")}>Lihat semua →</button>
+                                        <button className="kd-card-link" onClick={() => setActiveTab("klien")}>Lihat semua </button>
                                     </div>
                                     <div className="kd-sesi-list">
                                         {myBookings.slice(0, 4).map((b) => (
@@ -595,6 +686,7 @@ export default function KonselorDashboard() {
                                     const bkDateStr = b.Tanggal_Sesi ? getWIBDateStr(b.Tanggal_Sesi) : "";
                                     const bkTimeStr = b.Tanggal_Sesi ? getWIBTimeStr(b.Tanggal_Sesi) : "00:00:00";
                                     const isBerjalanSesi = isBerjalan(b.Status);
+                                    const isMenungguEval = isMenungguEvaluasi(b.Status);
 
                                     const matchedSlot = slots.find(s =>
                                         s.tanggal === bkDateStr &&
@@ -670,12 +762,30 @@ export default function KonselorDashboard() {
                                                     >
                                                         {bisaMasuk ? "Masuk Sesi →" : "Mulai Sesi →"}
                                                     </button>
+                                                ) : isMenungguEval ? (
+                                                    <button 
+                                                        className="kd-btn-evaluasi"
+                                                        onClick={() => navigate(`/evaluasi-sesi/${b.ID_Booking}`)}
+                                                    >
+                                                        Isi Evaluasi →
+                                                    </button>
                                                 ) : statusHelperText ? (
                                                     <span className="kd-status-helper" style={{ fontSize: "0.75rem", color: "#666", fontWeight: "500" }}>
                                                         {statusHelperText}
                                                     </span>
                                                 ) : (
-                                                    <span className="kd-cell-dash">—</span>
+                                                    <>
+                                                        <span className="kd-cell-dash">—</span>
+                                                        <button 
+                                                            className="kd-btn-detail"
+                                                            onClick={() => {
+                                                                setSelectedKlien(b);
+                                                                setShowDetailModal(true);
+                                                            }}
+                                                        >
+                                                            Lihat Detail 
+                                                        </button>
+                                                    </>
                                                 )}
                                             </div>
                                         </div>
@@ -776,7 +886,6 @@ export default function KonselorDashboard() {
                                                             border: `1.5px solid ${s.status === "booked" ? "rgba(232,168,56,0.3)" : "rgba(47,125,121,0.18)"}`,
                                                             borderRadius: 999, fontSize: 13, fontWeight: 600,
                                                         }}>
-                                                            <span></span>
                                                             <span style={{ color: s.status === "booked" ? "#a06030" : "var(--teal)" }}>
                                                                 {s.jam_mulai.slice(0, 5)} – {s.jam_selesai.slice(0, 5)}
                                                             </span>
@@ -904,12 +1013,20 @@ export default function KonselorDashboard() {
                     {activeTab === "profil" && (
                         <>
                             <div className="kd-greeting">
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                <div className="kd-greeting-header">
                                     <div>
                                         <h2 className="kd-greeting-h2">Profil Saya</h2>
-                                        <p className="kd-greeting-sub">Tampilan profil publikmu seperti yang dilihat oleh mahasiswa.</p>
+                                        <p className="kd-greeting-sub kd-greeting-sub--limited">
+                                            Tampilan profil publikmu seperti yang dilihat oleh mahasiswa.
+                                        </p>
                                     </div>
-                                    <button className="kd-card-link" onClick={() => setShowEditModal(true)}>️ Edit Profil</button>
+                                    <button className="kd-edit-btn" onClick={() => setShowEditModal(true)}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                                            <path d="M17 3l4 4-7 7H10v-4l7-7z" />
+                                            <path d="M4 20h16" />
+                                        </svg>
+                                        Edit Profil
+                                    </button>
                                 </div>
                             </div>
 
@@ -994,9 +1111,9 @@ export default function KonselorDashboard() {
                                 <div className="kd-card">
                                     <div className="kd-card-h3" style={{ marginBottom: 16 }}>Spesialisasi Keahlian</div>
                                     <div className="kd-spesialis-list">
-                                        {(konselor?.spesialisasi ?? SPESIALISASI_DEFAULT).map((s) => (
-                                            <div key={s.title} className="kd-spesialis-item">
-                                                <div className="kd-spesialis-icon">{s.icon}</div>
+                                        {(konselor?.spesialisasi ?? SPESIALISASI_DEFAULT).map((s, idx) => (
+                                            <div key={idx} className="kd-spesialis-item">
+                                                <div className="kd-spesialis-icon">{s.icon || "✓"}</div>
                                                 <div>
                                                     <div className="kd-spesialis-title">{s.title}</div>
                                                     <div className="kd-spesialis-desc">{s.desc}</div>
@@ -1063,11 +1180,9 @@ export default function KonselorDashboard() {
                                                                     {u.nama_mahasiswa ?? "Mahasiswa"}
                                                                 </div>
                                                                 <div style={{ fontSize: 11, color: "#999" }}>
-                                                                    {u.booking?.sesi_konseling
-                                                                        ? `Sesi ke-${u.booking.sesi_konseling}`
-                                                                        : u.created_at
-                                                                            ? new Date(u.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-                                                                            : "—"}
+                                                                    {u.created_at
+                                                                        ? new Date(u.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+                                                                        : "—"}
                                                                 </div>
                                                             </div>
                                                         </div>

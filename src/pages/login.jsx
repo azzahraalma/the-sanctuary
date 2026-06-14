@@ -224,8 +224,8 @@ export default function Login() {
                 type="email"
                 className="auth-input"
                 placeholder={
-                  isKonselor ? "email.konselor@sanctuary.com"
-                  : isAdmin  ? "Masukan Email Akses"
+                  isKonselor ? "contoh@email.com"
+                  : isAdmin  ? "contoh@email.com"
                   : "contoh@email.com"
                 }
                 value={email}

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import "../styles/dashboard.css";
 import { supabase } from "../lib/supabase.js";
+import { useAuth } from "../hooks/useAuth.js";
 import { useMid } from "../hooks/useMid.js";
 import { seedPesan } from "../lib/seedPesan.js";
 import {
@@ -502,26 +503,28 @@ function IconClose() {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user, isReady: authReady } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedPesan, setSelectedPesan] = useState(null);
+  const [footerModal, setFooterModal] = useState(null);
+  const [now, setNow] = useState(new Date());
 
-  const user = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("sanctuary_user")); }
-    catch { return null; }
-  }, []);
+  useEffect(() => {
+    if (authReady && user?.konselorId) {
+      navigate("/konselor-dashboard");
+    }
+  }, [user, authReady, navigate]);
 
   const userEmail = user?.email?.toLowerCase() ?? null;
   const firstName = (user?.nama ?? user?.name ?? "Kamu").split(" ")[0];
 
   const { mid, loading: midLoading } = useMid(userEmail);
-  const [bookings, setBookings]           = useState([]);
-  const [konselor, setKonselor]           = useState([]);
-  const [progress, setProgress]           = useState([]);
-  const [pesan, setPesan]                 = useState([]);
-  const [isLoading, setIsLoading]         = useState(() => Boolean(userEmail));
-  const [selectedPesan, setSelectedPesan] = useState(null);
-  const [slots, setSlots]                 = useState([]);
-  const [now, setNow]                     = useState(new Date());
-  const [footerModal, setFooterModal]     = useState(null);
-  const [sidebarOpen, setSidebarOpen]     = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [konselor, setKonselor] = useState([]);
+  const [progress, setProgress] = useState([]);
+  const [pesan, setPesan] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [slots, setSlots] = useState([]);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -529,9 +532,15 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
-    if (!userEmail) { setIsLoading(false); return; }
-    if (!midLoading && !mid) setIsLoading(false);
-  }, [userEmail, mid, midLoading]);
+    if (!authReady) return;
+    if (!userEmail) {
+      setIsLoading(false);
+      return;
+    }
+    if (!midLoading && !mid) {
+      setIsLoading(false);
+    }
+  }, [userEmail, mid, midLoading, authReady]);
 
   useEffect(() => {
     if (!mid) return;
@@ -610,7 +619,7 @@ export default function Dashboard() {
       active = false;
       supabase.removeChannel(bookingChannel);
     };
-  }, [mid]);
+  }, [mid, userEmail, firstName]);
 
   const handlePesanClick = async (p) => {
     setSelectedPesan(p);
@@ -630,13 +639,26 @@ export default function Dashboard() {
   const mindfulnessPct = Math.round((latestProgress?.mindfulness ?? 0) * 100);
   const unreadCount    = pesan.filter(p => p.unread).length;
 
-  const handleLogout = () => {
-    supabase.auth.signOut();
+  const handleLogout = async () => {
     localStorage.removeItem("sanctuary_user");
+    await supabase.auth.signOut();
     navigate("/login");
   };
 
   const userKey = userEmail ?? "guest";
+
+  if (!authReady) {
+    return (
+      <div className="db-loading">
+        <div className="db-loading-spinner" />
+        <p className="db-loading-text">Memuat dashboard...</p>
+      </div>
+    );
+  }
+
+  if (user?.konselorId) {
+    return null;
+  }
 
   return (
     <div className="db-shell">
@@ -937,7 +959,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-+            <div className="db-card">
+           <div className="db-card">
               <div className="db-card-hd">
                 <div>
                   <h3 className="db-card-h3">Pesan Masuk</h3>

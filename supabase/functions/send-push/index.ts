@@ -1,10 +1,5 @@
-// supabase/functions/send-push/index.ts
-// Web Push dengan enkripsi RFC 8291 (AES-128-GCM) + VAPID RFC 8292
-// Tidak pakai library eksternal — murni Web Crypto API yang tersedia di Deno
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ── Helpers: encoding ────────────────────────────────────────────────────────
 
 function b64urlEncode(buf: ArrayBuffer | Uint8Array): string {
   const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
@@ -20,7 +15,6 @@ function b64urlDecode(s: string): Uint8Array {
   );
 }
 
-// ── VAPID JWT ────────────────────────────────────────────────────────────────
 
 async function importEcPrivateKey(b64: string): Promise<CryptoKey> {
   const raw = b64urlDecode(b64);
@@ -50,15 +44,6 @@ async function makeVapidJwt(audience: string, subject: string, privateKeyB64: st
   return `${header}.${payload}.${b64urlEncode(sig)}`;
 }
 
-// ── RFC 8291: Enkripsi Payload Web Push ──────────────────────────────────────
-//
-// Alur:
-// 1. Generate ephemeral ECDH key pair (as = server)
-// 2. ECDH shared secret dengan public key subscriber (p256dh)
-// 3. Derive encryption key & nonce via HKDF
-// 4. Enkripsi payload dengan AES-128-GCM
-// 5. Wrap dalam format "aesgcm" content-encoding
-
 async function encryptPayload(
   plaintext: string,
   p256dhB64: string,
@@ -67,7 +52,6 @@ async function encryptPayload(
   const enc        = new TextEncoder();
   const authSecret = b64urlDecode(authB64);
 
-  // Import subscriber public key
   const receiverPubKey = await crypto.subtle.importKey(
     "raw",
     b64urlDecode(p256dhB64).buffer as ArrayBuffer,
@@ -76,19 +60,16 @@ async function encryptPayload(
     []
   );
 
-  // Generate ephemeral key pair (server side)
   const senderKeyPair = await crypto.subtle.generateKey(
     { name: "ECDH", namedCurve: "P-256" },
     true,
     ["deriveBits"]
   );
 
-  // Export sender public key (65 bytes, uncompressed)
   const senderPublicRaw = new Uint8Array(
     await crypto.subtle.exportKey("raw", senderKeyPair.publicKey)
   );
 
-  // ECDH shared secret
   const sharedSecretBits = await crypto.subtle.deriveBits(
     { name: "ECDH", public: receiverPubKey },
     senderKeyPair.privateKey,
@@ -96,25 +77,20 @@ async function encryptPayload(
   );
   const sharedSecret = new Uint8Array(sharedSecretBits);
 
-  // Generate random salt (16 bytes)
   const salt = crypto.getRandomValues(new Uint8Array(16));
 
-  // Export receiver public key raw
   const receiverPubRaw = new Uint8Array(
     await crypto.subtle.exportKey("raw", receiverPubKey)
   );
 
-  // PRK via HKDF-SHA-256 (auth secret extraction)
   const prkKey = await crypto.subtle.importKey("raw", authSecret, "HKDF", false, ["deriveBits"]);
   
-  // ikm = sharedSecret dengan context "WebPush: info\0" + receiver pub + sender pub
   const authInfo = concat(
     enc.encode("WebPush: info\0"),
     receiverPubRaw,
     senderPublicRaw
   );
 
-  // PRK = HMAC-SHA-256(authSecret, sharedSecret)
   const prkHmacKey = await crypto.subtle.importKey(
     "raw", sharedSecret, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
   );
@@ -122,17 +98,15 @@ async function encryptPayload(
     await crypto.subtle.sign("HMAC", prkHmacKey, concat(authInfo, new Uint8Array([1])))
   );
 
-  // Derive content encryption key (16 bytes)
   const cekInfo = concat(
     enc.encode("Content-Encoding: aesgcm\0"),
-    new Uint8Array([0]),         // context length = 0 untuk aesgcm
-    new Uint8Array([0, 65]),     // receiver pub length prefix
+    new Uint8Array([0]),
+    new Uint8Array([0, 65]),    
     receiverPubRaw,
-    new Uint8Array([0, 65]),     // sender pub length prefix  
+    new Uint8Array([0, 65]),    
     senderPublicRaw
   );
 
-  // Nonce info
   const nonceInfo = concat(
     enc.encode("Content-Encoding: nonce\0"),
     new Uint8Array([0]),
@@ -153,12 +127,10 @@ async function encryptPayload(
   const cekRaw   = new Uint8Array((await crypto.subtle.sign("HMAC", prkHmac2, concat(cekInfo,   new Uint8Array([1])))).slice(0, 16));
   const nonceRaw = new Uint8Array((await crypto.subtle.sign("HMAC", prkHmac2, concat(nonceInfo, new Uint8Array([1])))).slice(0, 12));
 
-  // Import CEK untuk AES-GCM
   const cek = await crypto.subtle.importKey(
     "raw", cekRaw, { name: "AES-GCM" }, false, ["encrypt"]
   );
 
-  // Padding: 2 byte prefix (panjang padding = 0) + plaintext
   const data = enc.encode(plaintext);
   const padded = new Uint8Array(2 + data.byteLength);
   padded.set([0, 0], 0);   // pad length = 0
@@ -179,7 +151,6 @@ function concat(...arrays: Uint8Array[]): Uint8Array {
   return out;
 }
 
-// ── Kirim 1 Push ─────────────────────────────────────────────────────────────
 
 async function sendOnePush(
   sub:          { endpoint: string; p256dh: string; auth: string },
@@ -215,8 +186,6 @@ async function sendOnePush(
   const text = await res.text().catch(() => "");
   return { ok: false, status: res.status, error: text };
 }
-
-// ── Handler Utama ─────────────────────────────────────────────────────────────
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -294,7 +263,6 @@ Deno.serve(async (req: Request) => {
       )
     );
 
-    // Hapus subscription yang sudah expired (status 410/404)
     for (let i = 0; i < results.length; i++) {
       const r = results[i];
       if (r.status === "fulfilled" && !r.value.ok) {

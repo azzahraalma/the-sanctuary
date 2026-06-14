@@ -15,8 +15,8 @@ import RiwayatSesi from "./pages/RiwayatSesi.jsx";
 import RiwayatSesiAdmin from "./pages/RiwayatSesiAdmin.jsx";
 import Notifikasi from "./pages/Notifikasi.jsx";
 import SesiKonseling from "./pages/SesiKonseling.jsx";
-import EvaluasiSesi from "./pages/EvaluasiSesi.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
+import EvaluasiSesi from "./pages/EvaluasiSesi.jsx";
 
 function AuthLoader() {
   return (
@@ -99,6 +99,8 @@ export default function App() {
         <Route path="/admin/riwayat" element={<AdminRoute user={user} isReady={isReady}><RiwayatSesiAdmin /></AdminRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
+
+        <Route path="/evaluasi-sesi/:bookingId" element={<EvaluasiSesi />} />
 
       </Routes>
     </BrowserRouter>

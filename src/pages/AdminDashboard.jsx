@@ -690,7 +690,6 @@ export default function AdminDashboard() {
   const [footerModal, setFooterModal] = useState(null);
 
   useEffect(() => {
-    // Ensure proper viewport — no zoom-out, fits device width
     let meta = document.querySelector('meta[name="viewport"]');
     if (!meta) {
       meta = document.createElement("meta");

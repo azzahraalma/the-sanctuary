@@ -115,7 +115,6 @@ export function usePushNotif(userEmail) {
       const sub = await reg.pushManager.getSubscription();
       if (sub) await sub.unsubscribe();
 
-      // Hapus dari DB
       await supabase.from("push_subscriptions").delete().eq("email", userEmail);
       setStatus("unsubscribed");
     } catch (err) {

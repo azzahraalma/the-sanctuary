@@ -12,11 +12,11 @@ import { syncKonselorStats } from "../lib/konselorStats.js";
 import "../styles/evaluasi-sesi.css";
 
 const SUASANA_HATI_OPTIONS = [
-  { label: "Sangat Baik",  value: 1.0 },
-  { label: "Baik",         value: 0.75 },
-  { label: "Netral",       value: 0.5 },
-  { label: "Stres",        value: 0.25 },
-  { label: "Sangat Stres", value: 0.1 },
+  { label: "Sangat Baik",  value: 1.0, emoji: "😊" },
+  { label: "Baik",         value: 0.75, emoji: "🙂" },
+  { label: "Netral",       value: 0.5, emoji: "😐" },
+  { label: "Stres",        value: 0.25, emoji: "😟" },
+  { label: "Sangat Stres", value: 0.1, emoji: "😰" },
 ];
 
 const SLIDER_FIELDS = [
@@ -74,6 +74,8 @@ export default function EvaluasiSesi() {
   const [answers, setAnswers] = useState({
     suasana_hati:      "",
     suasana_hati_val:  0.5,
+    kondisi_awal:      0.5,
+    catatan_sesi:      "",
     mindfulness:       0.5,
     manajemen_stres:   0.5,
     ketahanan_diri:    0.5,
@@ -112,6 +114,11 @@ export default function EvaluasiSesi() {
         if (cancelled) return;
         setBooking(bk);
 
+        setAnswers(prev => ({
+          ...prev,
+          kondisi_awal: bk.kondisi_awal ?? 0.5,
+        }));
+
         if (bk.id_mahasiswa) {
           const { data: mhs, error: mhsErr } = await supabase
             .from("profil_pengguna")
@@ -144,7 +151,6 @@ export default function EvaluasiSesi() {
 
   const handleSubmit = async () => {
     if (!answers.suasana_hati || submitting) return;
-
     if (!booking) return;
 
     setSubmitting(true);
@@ -179,6 +185,8 @@ export default function EvaluasiSesi() {
         sesi_konseling:     sesiKe,
         tanggal:            new Date().toISOString(),
         kondisi_terkini:    avgScore,
+        kondisi_awal_sesi:  answers.kondisi_awal,
+        catatan_sesi:       answers.catatan_sesi || null,
         kategori_masalah:   booking.kategori_masalah,
         status:             BOOKING_STATUS.BERJALAN,
         suasana_hati:       answers.suasana_hati,
@@ -196,31 +204,31 @@ export default function EvaluasiSesi() {
 
       if (progErr) throw progErr;
 
+      const { error: bkUpdateErr } = await supabase
+        .from("booking")
+        .update({ 
+          status: BOOKING_STATUS.SELESAI, 
+          kondisi_saat_ini: avgScore,
+        })
+        .eq("id", bookingId);
+
+      if (bkUpdateErr) throw bkUpdateErr;
+
       if (targets && targets.length > 0) {
         for (const t of targets) {
           if (normalizeStatus(t.status) === BOOKING_STATUS.BERJALAN) {
             const nextTerlalui = (t.sesi_terlalui ?? 0) + 1;
             const nextStatus   = nextTerlalui >= t.target_sesi ? BOOKING_STATUS.SELESAI : BOOKING_STATUS.BERJALAN;
-            const { error: tErr } = await supabase
+            await supabase
               .from("data_target")
               .update({ sesi_terlalui: nextTerlalui, status: nextStatus })
               .eq("id_mahasiswa", booking.id_mahasiswa)
               .eq("nama_target", t.nama_target);
-
-            if (tErr) console.warn("Gagal update data_target:", tErr.message);
           }
         }
       }
 
-      const { error: bkUpdateErr } = await supabase
-        .from("booking")
-        .update({ status: BOOKING_STATUS.SELESAI, kondisi_saat_ini: avgScore })
-        .eq("id", bookingId);
-
-      if (bkUpdateErr) throw bkUpdateErr;
-
       await syncKonselorStats(booking.id_konselor);
-
       navigate("/konselor-dashboard");
     } catch (err) {
       console.error("Submit evaluasi error:", err);
@@ -323,23 +331,19 @@ export default function EvaluasiSesi() {
                     }))}
                     aria-pressed={answers.suasana_hati === opt.label}
                   >
+                    <span className="ev-mood-emoji">{opt.emoji}</span>
                     <span className="ev-mood-label">{opt.label}</span>
                   </button>
                 ))}
               </div>
               <div className="ev-btn-row" style={{ marginTop: 28 }}>
                 <button
-                  className="ev-btn-back"
-                  onClick={() => navigate("/konselor-dashboard")}
-                >
-                  Lewati
-                </button>
-                <button
-                  className="ev-btn-next"
+                  className="ev-btn-next ev-btn-next--full"
                   disabled={!answers.suasana_hati}
                   onClick={() => setStep(2)}
+                  style={{ width: "100%" }}
                 >
-                  Lanjut →
+                  {!answers.suasana_hati ? "Pilih suasana hati dulu" : "Lanjut →"}
                 </button>
               </div>
             </div>
@@ -360,6 +364,31 @@ export default function EvaluasiSesi() {
                 <div className="ev-card-sub">
                   Geser untuk menilai tiap aspek kondisi klien (0 = rendah, 100 = tinggi)
                 </div>
+
+                <div className="ev-section">
+                  <div className="ev-section-label">📊 Kondisi Awal Klien</div>
+                  <div className="ev-section-desc">
+                    Bagaimana kondisi klien sebelum sesi dimulai? (skala 0-100)
+                  </div>
+                  <div className="ev-kondisi-row">
+                    <span className="ev-kondisi-badge">Sebelum Sesi</span>
+                    <div className="ev-slider-track-wrap" style={{ flex: 1 }}>
+                      <input
+                        type="range" min="0" max="1" step="0.05"
+                        value={answers.kondisi_awal}
+                        onChange={e => setAnswers(prev => ({ ...prev, kondisi_awal: parseFloat(e.target.value) }))}
+                        className="ev-range"
+                        style={{ "--val": `${Math.round(answers.kondisi_awal * 100)}%`, "--color": "#e8a838" }}
+                      />
+                    </div>
+                    <div className="ev-kondisi-val" style={{ color: "#e8a838" }}>
+                      {Math.round(answers.kondisi_awal * 100)}%
+                    </div>
+                  </div>
+                </div>
+
+                <div className="ev-divider" />
+
                 {SLIDER_FIELDS.map(field => (
                   <SliderField
                     key={field.key}
@@ -368,6 +397,32 @@ export default function EvaluasiSesi() {
                     onChange={val => handleSliderChange(field.key, val)}
                   />
                 ))}
+
+                <div className="ev-divider" />
+
+                <div className="ev-section">
+                  <div className="ev-section-label">📝 Catatan Sesi (opsional)</div>
+                  <div className="ev-section-desc">
+                    Tuliskan catatan atau perkembangan penting selama sesi berlangsung.
+                    Catatan ini akan ditampilkan di riwayat klien.
+                  </div>
+                  <textarea
+                    className="ev-textarea"
+                    rows={4}
+                    placeholder="Contoh: Klien mulai bisa mengidentifikasi pemicu stresnya hari ini... atau Klien menunjukkan kemajuan yang baik dalam mengelola kecemasan..."
+                    value={answers.catatan_sesi}
+                    onChange={e => setAnswers(prev => ({ ...prev, catatan_sesi: e.target.value }))}
+                  />
+                  <div className="ev-textarea-hint">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    Catatan ini hanya bisa dilihat oleh kamu dan klien di riwayat sesi
+                  </div>
+                </div>
+
                 <div className="ev-btn-row" style={{ marginTop: 28 }}>
                   <button
                     className="ev-btn-back"

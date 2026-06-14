@@ -307,7 +307,7 @@ export default function Konselor() {
             <ul className="nav-menu">
               <li className="nav-item" onClick={() => navigate("/?home=1")}>Beranda</li>
               <li className="nav-item is-active">Konselor</li>
-              <li className="nav-item" onClick={() => goTo("/dashboard")}>Beranda</li>
+              <li className="nav-item" onClick={() => goTo("/dashboard")}>Dashboard</li>
             </ul>
           </div>
           <div className="nav-r">

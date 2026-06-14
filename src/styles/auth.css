@@ -394,3 +394,18 @@ body {
   .auth-left-h2 { font-size: 30px; }
   .auth-mode-btn { font-size: 12px; padding: 9px 10px; }
 }
+@media (max-width: 480px) {
+  .auth-panel-left {
+    padding: 1.5rem;
+    min-height: 180px;
+  }
+  .auth-left-h2 {
+    font-size: 24px;
+  }
+  .auth-panel-right {
+    padding: 24px 16px;
+  }
+  .auth-form-wrap > .auth-form {
+    padding: 20px;
+  }
+}

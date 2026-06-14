@@ -784,3 +784,13 @@
 .footer-modal-close-btn:hover {
   opacity: 0.88;
 }
+
+@media (max-width: 550px) {
+  .kon-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .kon-card-info {
+    padding: 10px;
+  }
+}

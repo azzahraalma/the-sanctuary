@@ -27,17 +27,30 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
   color: #1a2e2c;
   background: #f2f2ea;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .rsa-tab-content {
   font-family: 'Plus Jakarta Sans', sans-serif;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
+
+
+
 
 .rsa-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 .rsa-eyebrow {
   display: block;
@@ -78,6 +91,8 @@
   cursor: pointer;
   transition: all 0.15s;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .rsa-refresh-btn:hover {
   border-color: #2f7d79;
@@ -180,24 +195,31 @@
   margin-left: auto;
 }
 
+
 .rsa-table-wrap {
   background: white;
   border-radius: 14px;
   border: 1px solid rgba(47,125,121,0.07);
-  overflow: hidden;
-  box-shadow: 0 2px 16px rgba(47,125,121,0.08);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 2px 16px rgba(47,125,121,0.08);
 }
+
 .rsa-table {
+  min-width: 700px;
+  font-size: 0.75rem;
+}
+
+.rsa-tab-content {
+  overflow-x: auto;
+  min-width: 0;
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.84rem;
-  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .rsa-table thead tr {
   background: #f9f9f5;
   border-bottom: 1.5px solid rgba(47,125,121,0.08);
 }
+
 .rsa-table th {
   padding: 0.85rem 1rem;
   text-align: left;
@@ -207,8 +229,12 @@
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: #666;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  min-width: 80px;
 }
+
+
 .rsa-row {
   border-bottom: 1px solid rgba(47,125,121,0.05);
   cursor: pointer;
@@ -216,11 +242,21 @@
 }
 .rsa-row:last-child { border-bottom: none; }
 .rsa-row:hover { background: #f9f9f5; }
+
 .rsa-table td {
   padding: 0.9rem 1rem;
   vertical-align: middle;
   color: #444;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.rsa-td-kondisi {
+  color: #666;
+  font-size: 0.82rem;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .rsa-cell-name {
@@ -247,6 +283,8 @@
   color: #1a2e2c;
   font-size: 0.84rem;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: normal;
+  word-break: break-word;
 }
 .rsa-id {
   font-size: 0.72rem;
@@ -254,7 +292,7 @@
   margin-top: 1px;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.rsa-td-konselor { color: #666; }
+.rsa-td-konselor { color: #666; white-space: nowrap; }
 .rsa-td-date     { white-space: nowrap; color: #666; }
 .rsa-td-center   { text-align: center; }
 
@@ -267,7 +305,50 @@
   font-size: 0.75rem;
   font-weight: 600;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: normal; /* ganti dari nowrap */
+  word-break: break-word;
+  max-width: 160px;
 }
+
+@media (max-width: 600px) {
+  .rsa-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .rsa-search-wrap {
+    width: 100%;
+    flex: none;
+  }
+
+  .rsa-select {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+    font-size: 0.78rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .rsa-refresh-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .rsa-count {
+    width: 100%;
+    text-align: right;
+    margin-left: 0;
+  }
+
+  /* Fix nama mahasiswa tidak wrap */
+    .rsa-name {
+    white-space: normal;
+    word-break: break-word;
+    font-size: 0.74rem;
+  }
+}
+
+
 
 .rsa-sesi-badge {
   display: inline-block;
@@ -296,6 +377,19 @@
 .status-terjadwal { background: #dbeafe; color: #1e40af; }
 .status-dibatalkan{ background: #fdecea; color: #c0392b; }
 .status-unknown   { background: #f3f4f6; color: #6b7280; }
+
+.rsa-kondisi-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #666;
+  white-space: nowrap;
+}
+.rsa-arrow {
+  color: #d1d5db;
+  font-size: 0.8rem;
+}
 
 .rsa-detail-btn {
   padding: 0.3rem 0.8rem;
@@ -505,13 +599,13 @@
   background: rgba(47,125,121,0.10);
   border-radius: 999px;
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 .progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #2f7d79, #79d8d1);
-  border-radius: 999px;
-  transition: width 0.5s ease;
+  height: 8px !important;
+  background: linear-gradient(90deg, #2f7d79, #79d8d1) !important;
+  border-radius: 999px !important;
+  display: block !important;
 }
 .progress-label {
   display: block;
@@ -532,15 +626,91 @@
 .delta-up   { background: rgba(47,125,121,0.08); color: #2f7d79; }
 .delta-down { background: #fdecea; color: #c0392b; }
 
-@media (max-width: 900px) {
-  .rsa-summary { grid-template-columns: repeat(2, 1fr); }
-}
 @media (max-width: 768px) {
-  .rsa-page         { padding: 1.25rem; }
-  .rsa-modal-grid   { grid-template-columns: 1fr; }
-  .rsa-kondisi-row  { flex-direction: column; }
-  .rsa-kondisi-arrow{ display: none; }
+  .rsa-modal-grid  { grid-template-columns: 1fr; }
+  .rsa-kondisi-row { flex-direction: column; }
+  .rsa-kondisi-arrow { display: none; }
+  .rsa-page { padding: 1.25rem; }
 }
+
 @media (max-width: 600px) {
-  .rsa-summary { grid-template-columns: 1fr 1fr; }
+  .rsa-kondisi-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .rsa-kondisi-item { width: 100%; }
+  .rsa-kondisi-arrow { display: none; }
+
+  .progress-label {
+    margin-top: 0;
+    font-size: 0.82rem;
+    color: #444;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .rsa-modal-grid { grid-template-columns: 1fr; }
+  .rsa-modal-header { padding: 1.25rem 1.25rem 1rem; }
+  .rsa-modal-body { padding: 1rem 1.25rem 1.5rem; gap: 1.25rem; }
+  .rsa-modal-title { font-size: 1.15rem; }
+
+  .rsa-page { padding: 1rem; }
+
+  .rsa-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .rsa-title    { font-size: 1.5rem; }
+  .rsa-subtitle { font-size: 0.8rem; }
+  .rsa-refresh-btn { align-self: flex-start; }
+
+  .rsa-summary {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+  .rsa-stat-card  { padding: 14px; }
+  .rsa-stat-value { font-size: 24px; }
+  .rsa-stat-label { font-size: 10px; }
+
+  .rsa-filter-bar  { gap: 0.5rem; }
+  .rsa-search-wrap { min-width: 100%; flex: none; width: 100%; }
+  .rsa-select      { flex: 1; min-width: 0; font-size: 0.78rem; padding: 0.5rem 0.6rem; }
+  .rsa-count       { margin-left: 0; }
+
+  .rsa-table-wrap {
+  border-radius: 10px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+  .rsa-table        { min-width: 820px; font-size: 0.78rem; }
+  .rsa-table th { padding: 0.5rem 0.6rem; font-size: 9px; }
+.rsa-table td { padding: 0.55rem 0.6rem; }
+.rsa-avatar   { width: 24px; height: 24px; font-size: 0.65rem; }
+.rsa-name     { font-size: 0.72rem; }
+.rsa-id       { font-size: 0.62rem; }
+.status-badge { font-size: 0.63rem; padding: 0.14rem 0.38rem; }
+.rsa-detail-btn { padding: 0.16rem 0.4rem; font-size: 0.63rem; }
+  .rsa-td-date      { font-size: 0.72rem; }
+  .rsa-td-konselor  { font-size: 0.74rem; }
+  .rsa-td-kondisi   { font-size: 0.72rem; }
+  .rsa-kategori     { font-size: 0.68rem; padding: 0.18rem 0.45rem; }
+  .rsa-sesi-badge   { width: 22px; height: 22px; line-height: 22px; font-size: 0.7rem; }
+  .status-badge     { font-size: 0.65rem; padding: 0.16rem 0.4rem; }
+
+  .rsa-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .rsa-modal {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 92vh;
+  }
+  .rsa-modal-header { padding: 1.25rem 1.25rem 1rem; }
+  .rsa-modal-body   { padding: 1rem 1.25rem 1.5rem; }
+  .rsa-modal-title  { font-size: 1.15rem; }
+  .rsa-modal-grid   { grid-template-columns: 1fr; }
 }

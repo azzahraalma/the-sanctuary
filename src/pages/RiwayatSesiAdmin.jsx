@@ -164,15 +164,9 @@ export default function RiwayatSesiAdmin() {
   }
 
   const totalSesi = sesi.length;
-  const totalSelesai = sesi.filter(
-    (s) => s.status?.toLowerCase() === "selesai"
-  ).length;
-  const totalTerjadwal = sesi.filter(
-    (s) => s.status?.toLowerCase() === "terjadwal"
-  ).length;
-  const totalDibatalkan = sesi.filter(
-    (s) => s.status?.toLowerCase() === "dibatalkan"
-  ).length;
+  const totalSelesai = sesi.filter((s) => s.status?.toLowerCase() === "selesai").length;
+  const totalTerjadwal = sesi.filter((s) => s.status?.toLowerCase() === "terjadwal").length;
+  const totalDibatalkan = sesi.filter((s) => s.status?.toLowerCase() === "dibatalkan").length;
 
   return (
     <div className="rsa-page">
@@ -187,9 +181,7 @@ export default function RiwayatSesiAdmin() {
         <div className="rsa-header-left">
           <span className="rsa-eyebrow">Admin Panel</span>
           <h1 className="rsa-title">Riwayat Sesi</h1>
-          <p className="rsa-subtitle">
-            Seluruh rekam jejak sesi konseling di The Sanctuary
-          </p>
+          <p className="rsa-subtitle">Seluruh rekam jejak sesi konseling di The Sanctuary</p>
         </div>
         <button className="rsa-refresh-btn" onClick={fetchAllSesi}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -201,7 +193,6 @@ export default function RiwayatSesiAdmin() {
         </button>
       </div>
 
-      {/* Summary Cards */}
       <div className="rsa-summary">
         <div className="rsa-stat-card">
           <span className="rsa-stat-value">{totalSesi}</span>
@@ -236,31 +227,15 @@ export default function RiwayatSesiAdmin() {
           />
         </div>
 
-        <select
-          className="rsa-select"
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-        >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
+        <select className="rsa-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
 
-        <select
-          className="rsa-select"
-          value={filterKonselor}
-          onChange={(e) => setFilterKonselor(e.target.value)}
-        >
-          {konselorList.map((k) => (
-            <option key={k} value={k}>{k}</option>
-          ))}
+        <select className="rsa-select" value={filterKonselor} onChange={(e) => setFilterKonselor(e.target.value)}>
+          {konselorList.map((k) => <option key={k} value={k}>{k}</option>)}
         </select>
 
-        <select
-          className="rsa-select"
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-        >
+        <select className="rsa-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
           <option value="tanggal_desc">Terbaru</option>
           <option value="tanggal_asc">Terlama</option>
           <option value="sesi_asc">Sesi ↑</option>
@@ -291,9 +266,9 @@ export default function RiwayatSesiAdmin() {
               <tr>
                 <th>Mahasiswa</th>
                 <th>Konselor</th>
-                <th>Kategori Masalah</th>
-                <th>Tanggal Sesi</th>
-                <th>Sesi ke-</th>
+                <th>Kategori</th>
+                <th>Tanggal</th>
+                <th className="rsa-td-center">Sesi</th>
                 <th>Status</th>
                 <th>Kondisi Awal</th>
                 <th>Kondisi Saat Ini</th>
@@ -302,7 +277,7 @@ export default function RiwayatSesiAdmin() {
             </thead>
             <tbody>
               {filtered.map((item) => (
-                <tr key={item.id} onClick={() => openModal(item)} className="rsa-row">
+                <tr key={item.id} className="rsa-row" onClick={() => openModal(item)}>
                   <td>
                     <div className="rsa-cell-name">
                       <div className="rsa-avatar">
@@ -327,10 +302,13 @@ export default function RiwayatSesiAdmin() {
                       {item.status || "—"}
                     </span>
                   </td>
-                  <td>{item.kondisi_awal ?? "—"}</td>
-                  <td>{item.kondisi_saat_ini ?? "—"}</td>
+                  <td className="rsa-td-kondisi">{item.kondisi_awal ?? "—"}</td>
+                  <td className="rsa-td-kondisi">{item.kondisi_saat_ini ?? "—"}</td>
                   <td>
-                    <button className="rsa-detail-btn" onClick={(e) => { e.stopPropagation(); openModal(item); }}>
+                    <button
+                      className="rsa-detail-btn"
+                      onClick={(e) => { e.stopPropagation(); openModal(item); }}
+                    >
                       Detail
                     </button>
                   </td>
@@ -341,7 +319,6 @@ export default function RiwayatSesiAdmin() {
         </div>
       )}
 
-      {/* Modal Detail */}
       {modalOpen && selectedSesi && (
         <div className="rsa-modal-overlay" onClick={closeModal}>
           <div className="rsa-modal" onClick={(e) => e.stopPropagation()}>

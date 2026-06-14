@@ -424,6 +424,13 @@
   }
 }
 
+@media (max-width: 1024px) {
+  .stg-profile-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
 @media (max-width: 700px) {
   .stg-grid-2 {
     grid-template-columns: 1fr;
@@ -432,6 +439,25 @@
     flex-direction: column;
   }
   .stg-leftnav {
+    width: 100%;
+  }
+  .stg-profile-top {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+  .stg-profile-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .stg-profile-row {
+    width: 100%;
+    align-items: center;
+  }
+  .stg-profile-field {
     width: 100%;
   }
 }

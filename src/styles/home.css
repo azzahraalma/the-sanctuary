@@ -596,10 +596,14 @@ button { cursor: pointer; font-family: inherit; }
 @media (max-width: 768px) {
   .hero        { grid-template-columns: 1fr; gap: 40px; padding: 40px 0 80px; }
   .hero-h1     { font-size: 38px; }
-  .hero-badge  { display: none; }
+  .hero-badge {
+    position: static;
+    margin: 20px auto 0;
+    max-width: 100%;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
   .features    { grid-template-columns: 1fr; }
   .journey     { grid-template-columns: 1fr; gap: 40px; }
-  .mentors-grid { grid-template-columns: 1fr; }
   .stats-h2    { font-size: 30px; }
   .stats-row   { flex-direction: column; align-items: center; }
   .stat-card   { max-width: 100%; width: 100%; }
@@ -607,8 +611,104 @@ button { cursor: pointer; font-family: inherit; }
   .cta-box     { padding: 50px 28px; }
   .cta-h2      { font-size: 28px; }
   .footer      { grid-template-columns: 1fr; gap: 36px; }
-  .nav-l       { flex-direction: column; gap: 12px; }
+  .nav-shell {
+    height: 98px;
+    position: relative;
+  }
+  .nav {
+    width: 92%;
+    margin: auto;
+    padding: 0;
+    height: 98px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+  }
+  .nav-l {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: auto;
+  }
+  .nav-r {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .nav-menu {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+    border-top: 1px solid rgba(47, 125, 121, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .nav-cta {
+    display: inline-block;
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+
+  .mentors-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .mcard {
+    padding: 10px;
+  }
+  .mcard-photo {
+    height: 140px;
+  }
+  .mcard-hover-layer {
+    opacity: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(15, 60, 58, 0.72) 100%);
+    padding-bottom: 10px;
+  }
+  .mcard-book {
+    padding: 6px 14px;
+    font-size: 11px;
+  }
+  .mcard-info {
+    padding: 10px 2px 2px;
+    gap: 4px;
+  }
+  .mcard-name {
+    font-size: 13px;
+  }
+  .mcard-cat {
+    font-size: 9px;
+  }
+  .stars {
+    gap: 1px;
+  }
+  .star-svg {
+    width: 10px;
+    height: 10px;
+  }
+  .rating-val {
+    font-size: 11px;
+  }
+  .mcard-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    font-size: 10px;
+  }
+  .mcard-sr {
+    font-size: 9px;
+  }
 }
+
 
 .nav-user-wrap { display: flex; align-items: center; gap: 8px; }
 

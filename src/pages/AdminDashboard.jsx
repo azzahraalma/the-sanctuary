@@ -4,10 +4,6 @@ import { supabase } from "../lib/supabase.js";
 import "../styles/admin-dashboard.css";
 import "../styles/riwayat-sesi-admin.css";
 
-function getMetrik(rows, nama) {
-  return rows.find(d => d.metrik_statistik === nama) || {};
-}
-
 const STATUS_OPTIONS = ["Semua", "Terjadwal", "Berjalan", "Menunggu Evaluasi", "Selesai", "Dibatalkan"];
 
 function filterStatusValue(label) {
@@ -25,16 +21,16 @@ function DonutChart({ parts, total }) {
   const r = 70, cx = 90, cy = 90;
   const circ = 2 * Math.PI * r;
   const segs = parts.map((p, idx) => {
-    const pct = p.val / total;
+    const pct  = p.val / total;
     const dash = pct * circ;
-    const gap = circ - dash;
+    const gap  = circ - dash;
     const offset = parts.slice(0, idx).reduce((sum, prev) => sum + (prev.val / total) * circ, 0);
     return { ...p, dash, gap, offset };
   });
   const maxPart = parts.reduce((a, b) => (a.val > b.val ? a : b));
   return (
     <div className="ad-donut-wrap">
-      <svg width="180" height="180" viewBox="0 0 180 180">
+      <svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(47,125,121,0.08)" strokeWidth="22" />
         {segs.map((s) => (
           <circle key={s.label} cx={cx} cy={cy} r={r} fill="none"
@@ -43,7 +39,7 @@ function DonutChart({ parts, total }) {
             strokeDashoffset={-s.offset + circ * 0.25}
             strokeLinecap="round" />
         ))}
-        <text x={cx} y={cy - 6} textAnchor="middle" className="ad-donut-lbl">{maxPart.label}</text>
+        <text x={cx} y={cy - 6}  textAnchor="middle" className="ad-donut-lbl">{maxPart.label}</text>
         <text x={cx} y={cy + 16} textAnchor="middle" className="ad-donut-pct">
           {(maxPart.val / total * 100).toFixed(1)}%
         </text>
@@ -85,7 +81,7 @@ function GaugeChart({ value, max = 10 }) {
   const r = 54, cx = 70, cy = 70;
   const startAngle = -210, endAngle = 30;
   const totalArc = endAngle - startAngle;
-  const arcPct = pct * totalArc;
+  const arcPct   = pct * totalArc;
   function polarToXY(deg, radius) {
     const rad = (deg - 90) * Math.PI / 180;
     return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
@@ -97,12 +93,12 @@ function GaugeChart({ value, max = 10 }) {
   const e2 = polarToXY(endAngle, r);
   const la2 = totalArc > 180 ? 1 : 0;
   return (
-    <svg width="140" height="100" viewBox="0 0 140 100">
+    <svg viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg">
       <path d={`M${s2.x},${s2.y} A${r},${r} 0 ${la2},1 ${e2.x},${e2.y}`}
         fill="none" stroke="rgba(47,125,121,0.12)" strokeWidth="12" strokeLinecap="round" />
       <path d={`M${s1.x},${s1.y} A${r},${r} 0 ${largeArc},1 ${e1.x},${e1.y}`}
         fill="none" stroke="#2f7d79" strokeWidth="12" strokeLinecap="round" />
-      <text x={cx} y={cy - 4} textAnchor="middle" className="ad-gauge-val">{value}</text>
+      <text x={cx} y={cy - 4}  textAnchor="middle" className="ad-gauge-val">{value}</text>
       <text x={cx} y={cy + 14} textAnchor="middle" className="ad-gauge-max">/ {max}.0</text>
     </svg>
   );
@@ -116,9 +112,9 @@ function LikertChart({ rows }) {
       <div className="ad-likert-chart">
         {rows.map((row) => {
           const freqs = [
-            { label: "Kemudahan", val: row.kemudahan || 0 },
-            { label: "Kejelasan", val: row.kejelasan || 0 },
-            { label: "Daya Tarik", val: row.daya_tarik || 0 },
+            { label: "Kemudahan",  val: row.kemudahan   || 0 },
+            { label: "Kejelasan",  val: row.kejelasan   || 0 },
+            { label: "Daya Tarik", val: row.daya_tarik  || 0 },
           ];
           return (
             <div key={row.metrik_statistik} className="ad-likert-group">
@@ -172,88 +168,40 @@ function MinMaxBar({ label, min, max }) {
 
 function FooterModal({ type, onClose }) {
   if (!type) return null;
-
   const content = {
     privasi: {
       title: "Kebijakan Privasi",
       sections: [
-        {
-          heading: "Informasi yang Kami Kumpulkan",
-          body: "Kami mengumpulkan informasi yang kamu berikan secara langsung, seperti nama, alamat email, dan data profil saat mendaftar. Kami juga mengumpulkan data penggunaan layanan secara anonim untuk meningkatkan pengalaman pengguna."
-        },
-        {
-          heading: "Bagaimana Kami Menggunakan Informasimu",
-          body: "Informasi yang kami kumpulkan digunakan untuk menyediakan layanan konseling sebaya, menghubungkan kamu dengan konselor yang tepat, serta mengirimkan notifikasi terkait jadwal dan sesi konselingmu."
-        },
-        {
-          heading: "Kerahasiaan Sesi Konseling",
-          body: "Semua percakapan dalam sesi konseling bersifat rahasia. Kami tidak membagikan konten sesi kepada pihak ketiga tanpa persetujuan eksplisit darimu, kecuali diwajibkan oleh hukum yang berlaku."
-        },
-        {
-          heading: "Keamanan Data",
-          body: "Kami menggunakan enkripsi standar industri untuk melindungi data pribadimu. Akses ke data dibatasi hanya untuk personel yang berwenang dan diperlukan untuk operasional layanan."
-        },
-        {
-          heading: "Hubungi Kami",
-          body: "Jika kamu memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui email: privacy@thesanctuary.id"
-        }
-      ]
+        { heading: "Informasi yang Kami Kumpulkan", body: "Kami mengumpulkan informasi yang kamu berikan secara langsung, seperti nama, alamat email, dan data profil saat mendaftar. Kami juga mengumpulkan data penggunaan layanan secara anonim untuk meningkatkan pengalaman pengguna." },
+        { heading: "Bagaimana Kami Menggunakan Informasimu", body: "Informasi yang kami kumpulkan digunakan untuk menyediakan layanan konseling sebaya, menghubungkan kamu dengan konselor yang tepat, serta mengirimkan notifikasi terkait jadwal dan sesi konselingmu." },
+        { heading: "Kerahasiaan Sesi Konseling", body: "Semua percakapan dalam sesi konseling bersifat rahasia. Kami tidak membagikan konten sesi kepada pihak ketiga tanpa persetujuan eksplisit darimu, kecuali diwajibkan oleh hukum yang berlaku." },
+        { heading: "Keamanan Data", body: "Kami menggunakan enkripsi standar industri untuk melindungi data pribadimu. Akses ke data dibatasi hanya untuk personel yang berwenang dan diperlukan untuk operasional layanan." },
+        { heading: "Hubungi Kami", body: "Jika kamu memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami melalui email: privacy@thesanctuary.id" },
+      ],
     },
     syarat: {
       title: "Syarat dan Ketentuan",
       sections: [
-        {
-          heading: "Penerimaan Syarat",
-          body: "Dengan menggunakan layanan The Sanctuary, kamu menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan kami."
-        },
-        {
-          heading: "Penggunaan Layanan",
-          body: "The Sanctuary adalah platform konseling sebaya yang ditujukan untuk mahasiswa Polimedia. Layanan ini bukan pengganti konseling profesional atau layanan kesehatan mental klinis. Untuk kondisi darurat, segera hubungi tenaga profesional."
-        },
-        {
-          heading: "Kewajiban Pengguna",
-          body: "Kamu bertanggung jawab untuk menjaga kerahasiaan akun dan tidak membagikan informasi login kepada orang lain. Segala aktivitas yang terjadi melalui akunmu adalah tanggung jawabmu."
-        },
-        {
-          heading: "Kode Etik",
-          body: "Semua pengguna diharapkan berinteraksi dengan saling menghormati. Perilaku yang merendahkan, melecehkan, atau merugikan pengguna lain akan mengakibatkan penangguhan akun."
-        },
-        {
-          heading: "Perubahan Layanan",
-          body: "Kami berhak mengubah, menangguhkan, atau menghentikan layanan kapan saja dengan pemberitahuan sebelumnya. Perubahan syarat dan ketentuan akan diberitahukan melalui email atau notifikasi aplikasi."
-        }
-      ]
+        { heading: "Penerimaan Syarat", body: "Dengan menggunakan layanan The Sanctuary, kamu menyetujui untuk terikat oleh syarat dan ketentuan ini. Jika kamu tidak setuju, mohon untuk tidak menggunakan layanan kami." },
+        { heading: "Penggunaan Layanan", body: "The Sanctuary adalah platform konseling sebaya yang ditujukan untuk mahasiswa Polimedia. Layanan ini bukan pengganti konseling profesional atau layanan kesehatan mental klinis. Untuk kondisi darurat, segera hubungi tenaga profesional." },
+        { heading: "Kewajiban Pengguna", body: "Kamu bertanggung jawab untuk menjaga kerahasiaan akun dan tidak membagikan informasi login kepada orang lain. Segala aktivitas yang terjadi melalui akunmu adalah tanggung jawabmu." },
+        { heading: "Kode Etik", body: "Semua pengguna diharapkan berinteraksi dengan saling menghormati. Perilaku yang merendahkan, melecehkan, atau merugikan pengguna lain akan mengakibatkan penangguhan akun." },
+        { heading: "Perubahan Layanan", body: "Kami berhak mengubah, menangguhkan, atau menghentikan layanan kapan saja dengan pemberitahuan sebelumnya. Perubahan syarat dan ketentuan akan diberitahukan melalui email atau notifikasi aplikasi." },
+      ],
     },
     bantuan: {
       title: "Pusat Bantuan",
       sections: [
-        {
-          heading: "Cara Booking Sesi",
-          body: "Kunjungi halaman Konselor, pilih konselor yang sesuai kebutuhanmu, lalu pilih jadwal yang tersedia. Konfirmasi booking dan kamu akan mendapat notifikasi setelah konselor menyetujui sesi."
-        },
-        {
-          heading: "Bergabung ke Sesi",
-          body: "Saat waktu sesi tiba, tombol 'Mulai Sesi' akan muncul di dashboard. Klik tombol tersebut untuk masuk ke ruang konseling online bersama konselormu."
-        },
-        {
-          heading: "Membatalkan Sesi",
-          body: "Pembatalan sesi dapat dilakukan melalui halaman Riwayat Sesi minimal 1 jam sebelum waktu sesi dimulai. Pembatalan mendadak kurang dari 1 jam akan dicatat sebagai ketidakhadiran."
-        },
-        {
-          heading: "Masalah Teknis",
-          body: "Jika kamu mengalami masalah teknis saat menggunakan platform, coba refresh halaman atau hapus cache browser. Jika masalah berlanjut, hubungi tim support kami."
-        },
-        {
-          heading: "Hubungi Support",
-          body: "📧 support@thesanctuary.id\n📱 WhatsApp: 0812-3456-7890 (Senin–Jumat, 08.00–17.00 WIB)\n🏢 Gedung Polimedia, Ruang Kemahasiswaan Lt. 2"
-        }
-      ]
-    }
+        { heading: "Cara Booking Sesi", body: "Kunjungi halaman Konselor, pilih konselor yang sesuai kebutuhanmu, lalu pilih jadwal yang tersedia. Konfirmasi booking dan kamu akan mendapat notifikasi setelah konselor menyetujui sesi." },
+        { heading: "Bergabung ke Sesi", body: "Saat waktu sesi tiba, tombol 'Mulai Sesi' akan muncul di dashboard. Klik tombol tersebut untuk masuk ke ruang konseling online bersama konselormu." },
+        { heading: "Membatalkan Sesi", body: "Pembatalan sesi dapat dilakukan melalui halaman Riwayat Sesi minimal 1 jam sebelum waktu sesi dimulai. Pembatalan mendadak kurang dari 1 jam akan dicatat sebagai ketidakhadiran." },
+        { heading: "Masalah Teknis", body: "Jika kamu mengalami masalah teknis saat menggunakan platform, coba refresh halaman atau hapus cache browser. Jika masalah berlanjut, hubungi tim support kami." },
+        { heading: "Hubungi Support", body: "📧 support@thesanctuary.id\n📱 WhatsApp: 0812-3456-7890 (Senin–Jumat, 08.00–17.00 WIB)\n🏢 Gedung Polimedia, Ruang Kemahasiswaan Lt. 2" },
+      ],
+    },
   };
-
   const c = content[type];
   if (!c) return null;
-
   return (
     <div className="footer-modal-overlay" onClick={onClose}>
       <div className="footer-modal-container" onClick={e => e.stopPropagation()}>
@@ -281,16 +229,16 @@ function FooterModal({ type, onClose }) {
 }
 
 function RiwayatSesiTab() {
-  const [sesi, setSesi] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterStatus, setFilterStatus] = useState("Semua");
+  const [sesi, setSesi]                     = useState([]);
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState(null);
+  const [searchQuery, setSearchQuery]       = useState("");
+  const [filterStatus, setFilterStatus]     = useState("Semua");
   const [filterKonselor, setFilterKonselor] = useState("Semua");
-  const [sortBy, setSortBy] = useState("tanggal_desc");
-  const [selectedSesi, setSelectedSesi] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [konselorList, setKonselorList] = useState([]);
+  const [sortBy, setSortBy]                 = useState("tanggal_desc");
+  const [selectedSesi, setSelectedSesi]     = useState(null);
+  const [modalOpen, setModalOpen]           = useState(false);
+  const [konselorList, setKonselorList]     = useState([]);
 
   useEffect(() => { fetchAllSesi(); }, []);
 
@@ -335,25 +283,25 @@ function RiwayatSesiTab() {
     }
     if (filterKonselor !== "Semua") result = result.filter(s => s.nama_konselor === filterKonselor);
     switch (sortBy) {
-      case "tanggal_asc": result.sort((a, b) => new Date(a.tanggal_sesi) - new Date(b.tanggal_sesi)); break;
+      case "tanggal_asc":  result.sort((a, b) => new Date(a.tanggal_sesi) - new Date(b.tanggal_sesi)); break;
       case "tanggal_desc": result.sort((a, b) => new Date(b.tanggal_sesi) - new Date(a.tanggal_sesi)); break;
-      case "sesi_asc": result.sort((a, b) => (a.sesi_konseling || 0) - (b.sesi_konseling || 0)); break;
-      case "nama_az": result.sort((a, b) => (a.nama_mahasiswa || "").localeCompare(b.nama_mahasiswa || "")); break;
+      case "sesi_asc":     result.sort((a, b) => (a.sesi_konseling || 0) - (b.sesi_konseling || 0)); break;
+      case "nama_az":      result.sort((a, b) => (a.nama_mahasiswa || "").localeCompare(b.nama_mahasiswa || "")); break;
     }
     return result;
   }, [searchQuery, filterStatus, filterKonselor, sortBy, sesi]);
 
-  function openModal(item) { setSelectedSesi(item); setModalOpen(true); }
-  function closeModal() { setModalOpen(false); setTimeout(() => setSelectedSesi(null), 300); }
+  function openModal(item)  { setSelectedSesi(item); setModalOpen(true); }
+  function closeModal()     { setModalOpen(false); setTimeout(() => setSelectedSesi(null), 300); }
 
   function getStatusClass(status) {
     if (!status) return "status-badge status-unknown";
     const s = status.toLowerCase();
-    if (s === "selesai") return "status-badge status-selesai";
-    if (s === "terjadwal") return "status-badge status-terjadwal";
-    if (s === "berjalan") return "status-badge status-terjadwal";
+    if (s === "selesai")           return "status-badge status-selesai";
+    if (s === "terjadwal")         return "status-badge status-terjadwal";
+    if (s === "berjalan")          return "status-badge status-terjadwal";
     if (s === "menunggu_evaluasi") return "status-badge status-terjadwal";
-    if (s === "dibatalkan") return "status-badge status-dibatalkan";
+    if (s === "dibatalkan")        return "status-badge status-dibatalkan";
     return "status-badge status-unknown";
   }
 
@@ -372,10 +320,9 @@ function RiwayatSesiTab() {
     );
   }
 
-  const totalSesi = sesi.length;
-  const totalSelesai = sesi.filter(s => s.status?.toLowerCase() === "selesai").length;
-  const totalTerjadwal = sesi.filter(s => s.status?.toLowerCase() === "terjadwal").length;
-  const totalBerjalan = sesi.filter(s => ["berjalan", "menunggu_evaluasi"].includes(s.status?.toLowerCase())).length;
+  const totalSesi       = sesi.length;
+  const totalSelesai    = sesi.filter(s => s.status?.toLowerCase() === "selesai").length;
+  const totalTerjadwal  = sesi.filter(s => s.status?.toLowerCase() === "terjadwal").length;
   const totalDibatalkan = sesi.filter(s => s.status?.toLowerCase() === "dibatalkan").length;
 
   return (
@@ -395,13 +342,13 @@ function RiwayatSesiTab() {
           <input className="rsa-search" type="text" placeholder="Cari mahasiswa, konselor, kategori..."
             value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         </div>
-        <select className="rsa-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+        <select className="rsa-select" value={filterStatus}   onChange={(e) => setFilterStatus(e.target.value)}>
           {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <select className="rsa-select" value={filterKonselor} onChange={(e) => setFilterKonselor(e.target.value)}>
           {konselorList.map(k => <option key={k} value={k}>{k}</option>)}
         </select>
-        <select className="rsa-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+        <select className="rsa-select" value={sortBy}         onChange={(e) => setSortBy(e.target.value)}>
           <option value="tanggal_desc">Terbaru</option>
           <option value="tanggal_asc">Terlama</option>
           <option value="sesi_asc">Sesi ↑</option>
@@ -428,9 +375,15 @@ function RiwayatSesiTab() {
           <table className="rsa-table">
             <thead>
               <tr>
-                <th>Mahasiswa</th><th>Konselor</th><th>Kategori Masalah</th>
-                <th>Tanggal Sesi</th><th>Sesi ke-</th><th>Status</th>
-                <th>Kondisi Awal</th><th>Kondisi Saat Ini</th><th></th>
+                <th>Mahasiswa</th>
+                <th>Konselor</th>
+                <th>Kategori Masalah</th>
+                <th>Tanggal Sesi</th>
+                <th className="rsa-td-center">Sesi ke-</th>
+                <th>Status</th>
+                <th>Kondisi Awal</th>
+                <th>Kondisi Saat Ini</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -450,8 +403,8 @@ function RiwayatSesiTab() {
                   <td className="rsa-td-date">{formatTanggal(item.tanggal_sesi)}</td>
                   <td className="rsa-td-center"><span className="rsa-sesi-badge">{item.sesi_konseling ?? "—"}</span></td>
                   <td><span className={getStatusClass(item.status)}>{item.status || "—"}</span></td>
-                  <td>{item.kondisi_awal != null ? Number(item.kondisi_awal).toFixed(2) : "—"}</td>
-                  <td>{item.kondisi_saat_ini != null ? Number(item.kondisi_saat_ini).toFixed(2) : "—"}</td>
+                  <td className="rsa-td-kondisi">{item.kondisi_awal != null ? Number(item.kondisi_awal).toFixed(2) : "—"}</td>
+                  <td className="rsa-td-kondisi">{item.kondisi_saat_ini != null ? Number(item.kondisi_saat_ini).toFixed(2) : "—"}</td>
                   <td>
                     <button className="rsa-detail-btn" onClick={(e) => { e.stopPropagation(); openModal(item); }}>Detail</button>
                   </td>
@@ -519,39 +472,29 @@ function RiwayatSesiTab() {
 }
 
 function DashboardTab() {
-  const [stats, setStats] = useState(null);
+  const [stats, setStats]               = useState(null);
   const [totalResponden, setTotalResponden] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState(null);
 
   useEffect(() => { fetchData(); }, []);
 
   async function fetchData() {
     setLoading(true); setError(null);
     try {
-      const { data: rows, error: rowsErr } = await supabase
-        .from("data_responden").select("*");
+      const { data: rows, error: rowsErr } = await supabase.from("data_responden").select("*");
       if (rowsErr) throw rowsErr;
+      if (!rows || rows.length === 0) { setStats(null); setTotalResponden(0); return; }
 
-      if (!rows || rows.length === 0) {
-        setStats(null);
-        setTotalResponden(0);
-        return;
-      }
-
-      const n = rows.length;
       const dims = {
         kemudahan:  rows.map(r => Number(r.mean_kemudahan)  || 0),
         kejelasan:  rows.map(r => Number(r.mean_kejelasan)  || 0),
         daya_tarik: rows.map(r => Number(r.mean_daya_tarik) || 0),
       };
-
       const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
       const med = arr => {
         const s = [...arr].sort((a, b) => a - b);
-        return s.length % 2 === 0
-          ? (s[s.length/2 - 1] + s[s.length/2]) / 2
-          : s[Math.floor(s.length/2)];
+        return s.length % 2 === 0 ? (s[s.length/2 - 1] + s[s.length/2]) / 2 : s[Math.floor(s.length/2)];
       };
       const std = arr => {
         const m = avg(arr);
@@ -559,16 +502,12 @@ function DashboardTab() {
       };
 
       setStats({
-        mean:   { kemudahan: avg(dims.kemudahan),  kejelasan: avg(dims.kejelasan),  daya_tarik: avg(dims.daya_tarik) },
-        median: { kemudahan: med(dims.kemudahan),  kejelasan: med(dims.kejelasan),  daya_tarik: med(dims.daya_tarik) },
-        stddev: { kemudahan: std(dims.kemudahan),  kejelasan: std(dims.kejelasan),  daya_tarik: std(dims.daya_tarik) },
-        min:    { kemudahan: Math.min(...dims.kemudahan), kejelasan: Math.min(...dims.kejelasan), daya_tarik: Math.min(...dims.daya_tarik) },
-        max:    { kemudahan: Math.max(...dims.kemudahan), kejelasan: Math.max(...dims.kejelasan), daya_tarik: Math.max(...dims.daya_tarik) },
-        skorIdx: {
-          kemudahan:  avg(dims.kemudahan)  / 5 * 100,
-          kejelasan:  avg(dims.kejelasan)  / 5 * 100,
-          daya_tarik: avg(dims.daya_tarik) / 5 * 100,
-        },
+        mean:    { kemudahan: avg(dims.kemudahan), kejelasan: avg(dims.kejelasan), daya_tarik: avg(dims.daya_tarik) },
+        median:  { kemudahan: med(dims.kemudahan), kejelasan: med(dims.kejelasan), daya_tarik: med(dims.daya_tarik) },
+        stddev:  { kemudahan: std(dims.kemudahan), kejelasan: std(dims.kejelasan), daya_tarik: std(dims.daya_tarik) },
+        min:     { kemudahan: Math.min(...dims.kemudahan), kejelasan: Math.min(...dims.kejelasan), daya_tarik: Math.min(...dims.daya_tarik) },
+        max:     { kemudahan: Math.max(...dims.kemudahan), kejelasan: Math.max(...dims.kejelasan), daya_tarik: Math.max(...dims.daya_tarik) },
+        skorIdx: { kemudahan: avg(dims.kemudahan)/5*100, kejelasan: avg(dims.kejelasan)/5*100, daya_tarik: avg(dims.daya_tarik)/5*100 },
         likert: [1,2,3,4,5].map(skor => ({
           metrik_statistik: `Likert ${skor}`,
           kemudahan:  rows.filter(r => Math.round(r.mean_kemudahan)  === skor).length,
@@ -576,51 +515,31 @@ function DashboardTab() {
           daya_tarik: rows.filter(r => Math.round(r.mean_daya_tarik) === skor).length,
         })),
       });
-      setTotalResponden(n);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      setTotalResponden(rows.length);
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   }
 
-  if (loading) return (
-    <div className="rsa-loading" style={{ marginTop: "4rem" }}>
-      <div className="rsa-spinner" />
-      <span>Memuat data analitik...</span>
-    </div>
-  );
+  if (loading) return <div className="rsa-loading" style={{ marginTop: "2rem" }}><div className="rsa-spinner" /><span>Memuat data analitik...</span></div>;
+  if (error)   return <div className="rsa-error"   style={{ marginTop: "2rem" }}><span>Gagal memuat data: {error}</span><button onClick={fetchData}>Coba lagi</button></div>;
+  if (!stats)  return <div className="rsa-empty"   style={{ marginTop: "2rem" }}><span>Belum ada data responden.</span></div>;
 
-  if (error) return (
-    <div className="rsa-error" style={{ marginTop: "4rem" }}>
-      <span>Gagal memuat data: {error}</span>
-      <button onClick={fetchData}>Coba lagi</button>
-    </div>
-  );
+  const mean    = stats.mean    || {};
+  const median  = stats.median  || {};
+  const stddev  = stats.stddev  || {};
+  const minK    = stats.min     || {};
+  const maxK    = stats.max     || {};
+  const skorIdx = stats.skorIdx || {};
 
-  if (!stats) return (
-    <div className="rsa-empty" style={{ marginTop: "4rem" }}>
-      <span>Belum ada data responden.</span>
-    </div>
-  );
-
-  const mean     = stats?.mean    || {};
-  const median   = stats?.median  || {};
-  const stddev   = stats?.stddev  || {};
-  const minK     = stats?.min     || {};
-  const maxK     = stats?.max     || {};
-  const skorIdx  = stats?.skorIdx || {};
-  const likertRows = stats?.likert || [];
-
-  const meanK = Number(mean.kemudahan) || 0;
-  const meanJ = Number(mean.kejelasan) || 0;
+  const meanK  = Number(mean.kemudahan)  || 0;
+  const meanJ  = Number(mean.kejelasan)  || 0;
   const meanDT = Number(mean.daya_tarik) || 0;
-  const uxIndex = ((meanK + meanJ + meanDT) / 3 / 5 * 100).toFixed(0);
+  const uxIndex    = ((meanK + meanJ + meanDT) / 3 / 5 * 100).toFixed(0);
   const gapPercent = (100 - Number(uxIndex)).toFixed(0);
 
   const donutParts = [
-    { label: "Kemudahan", val: meanK, color: "#79d8d1" },
-    { label: "Kejelasan", val: meanJ, color: "#2f7d79" },
+    { label: "Kemudahan",  val: meanK,  color: "#79d8d1" },
+    { label: "Kejelasan",  val: meanJ,  color: "#2f7d79" },
     { label: "Daya Tarik", val: meanDT, color: "#b0d8c8" },
   ];
   const donutTotal = donutParts.reduce((s, d) => s + d.val, 0);
@@ -643,8 +562,8 @@ function DashboardTab() {
           <span className="ad-stat-label">Rata-Rata Kemudahan</span>
           <span className="ad-stat-big">{meanK.toFixed(1)}</span>
           <div className="ad-star-row">
-            {[1, 2, 3, 4, 5].map(i => (
-              <svg key={i} width="14" height="14" viewBox="0 0 24 24"
+            {[1,2,3,4,5].map(i => (
+              <svg key={i} width="13" height="13" viewBox="0 0 24 24"
                 fill={i <= Math.round(meanK) ? "#2f7d79" : "none"} stroke="#2f7d79" strokeWidth="2">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
@@ -659,9 +578,9 @@ function DashboardTab() {
 
       <section className="ad-dim-row">
         {[
-          { label: "Kemudahan", sub: "Usability & Navigation", val: meanK, idx: Number(skorIdx.kemudahan) },
-          { label: "Kejelasan", sub: "Content & Messaging", val: meanJ, idx: Number(skorIdx.kejelasan) },
-          { label: "Daya Tarik", sub: "Visual Aesthetics", val: meanDT, idx: Number(skorIdx.daya_tarik) },
+          { label: "Kemudahan",  sub: "Usability & Navigation", val: meanK,  idx: Number(skorIdx.kemudahan)  },
+          { label: "Kejelasan",  sub: "Content & Messaging",    val: meanJ,  idx: Number(skorIdx.kejelasan)  },
+          { label: "Daya Tarik", sub: "Visual Aesthetics",      val: meanDT, idx: Number(skorIdx.daya_tarik) },
         ].map((d) => (
           <div key={d.label} className="ad-dim-card">
             <div className="ad-dim-top">
@@ -684,9 +603,7 @@ function DashboardTab() {
 
       <section className="ad-chart-row">
         <div className="ad-chart-card">
-          <div className="ad-chart-head">
-            <span className="ad-chart-title">Rata-rata Skor UX</span>
-          </div>
+          <div className="ad-chart-head"><span className="ad-chart-title">Rata-rata Skor UX</span></div>
           <div className="ad-bar-chart">
             <BarGroup label="KEMUDAHAN"  values={[meanK]} />
             <BarGroup label="KEJELASAN"  values={[meanJ]} />
@@ -694,9 +611,7 @@ function DashboardTab() {
           </div>
         </div>
         <div className="ad-chart-card">
-          <div className="ad-chart-head">
-            <span className="ad-chart-title">Nilai Tengah Skor UX</span>
-          </div>
+          <div className="ad-chart-head"><span className="ad-chart-title">Nilai Tengah Skor UX</span></div>
           <div className="ad-bar-chart">
             <BarGroup label="KEMUDAHAN"  values={[Number(median.kemudahan)  || 0]} />
             <BarGroup label="KEJELASAN"  values={[Number(median.kejelasan)  || 0]} />
@@ -704,20 +619,16 @@ function DashboardTab() {
           </div>
         </div>
         <div className="ad-chart-card">
-          <div className="ad-chart-head">
-            <span className="ad-chart-title">Standar Deviasi UX</span>
-          </div>
+          <div className="ad-chart-head"><span className="ad-chart-title">Standar Deviasi UX</span></div>
           <div className="ad-std-list">
             {[
-              { label: "KEMUDAHAN", val: Number(stddev.kemudahan)  || 0 },
-              { label: "KEJELASAN", val: Number(stddev.kejelasan)  || 0 },
+              { label: "KEMUDAHAN",  val: Number(stddev.kemudahan)  || 0 },
+              { label: "KEJELASAN",  val: Number(stddev.kejelasan)  || 0 },
               { label: "DAYA TARIK", val: Number(stddev.daya_tarik) || 0 },
             ].map((s) => (
               <div key={s.label} className="ad-std-item">
                 <span className="ad-std-label">{s.label}</span>
-                <div className="ad-std-track">
-                  <div className="ad-std-fill" style={{ width: `${(s.val / 2) * 100}%` }} />
-                </div>
+                <div className="ad-std-track"><div className="ad-std-fill" style={{ width: `${(s.val / 2) * 100}%` }} /></div>
                 <span className="ad-std-val">{s.val.toFixed(2)}</span>
               </div>
             ))}
@@ -726,7 +637,7 @@ function DashboardTab() {
       </section>
 
       <section className="ad-section">
-        <h2 className="ad-section-title">Distribusi & Sebaran</h2>
+        <h2 className="ad-section-title">Distribusi &amp; Sebaran</h2>
         <p className="ad-section-sub">Analisis mendalam mengenai distribusi skor dan sebaran jawaban responden.</p>
         <div className="ad-distrib-row">
           <div className="ad-distrib-card">
@@ -755,7 +666,7 @@ function DashboardTab() {
       <section className="ad-section">
         <div className="ad-card ad-card--full">
           <span className="ad-distrib-title">Frekuensi Jawaban Likert (1–5)</span>
-          <LikertChart rows={likertRows} />
+          <LikertChart rows={stats.likert || []} />
         </div>
       </section>
 
@@ -763,8 +674,8 @@ function DashboardTab() {
         <div className="ad-card ad-card--full">
           <span className="ad-distrib-title">Nilai Min &amp; Max Per Dimensi</span>
           <div className="ad-minmax-row-outer">
-            <MinMaxBar label="KEMUDAHAN" min={Number(minK.kemudahan)} max={Number(maxK.kemudahan)} />
-            <MinMaxBar label="KEJELASAN" min={Number(minK.kejelasan)} max={Number(maxK.kejelasan)} />
+            <MinMaxBar label="KEMUDAHAN"  min={Number(minK.kemudahan)}  max={Number(maxK.kemudahan)} />
+            <MinMaxBar label="KEJELASAN"  min={Number(minK.kejelasan)}  max={Number(maxK.kejelasan)} />
             <MinMaxBar label="DAYA TARIK" min={Number(minK.daya_tarik)} max={Number(maxK.daya_tarik)} />
           </div>
         </div>
@@ -775,16 +686,23 @@ function DashboardTab() {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("dashboard");
-
+  const [activeTab, setActiveTab]   = useState("dashboard");
   const [footerModal, setFooterModal] = useState(null);
+
+  useEffect(() => {
+    // Ensure proper viewport — no zoom-out, fits device width
+    let meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "viewport";
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
+  }, []);
 
   return (
     <div className="ad-shell">
-      <FooterModal
-        type={footerModal}
-        onClose={() => setFooterModal(null)}
-      />
+      <FooterModal type={footerModal} onClose={() => setFooterModal(null)} />
 
       <header className="ad-topnav">
         <span className="ad-topnav-logo" onClick={() => navigate("/")}>The Sanctuary</span>
@@ -825,7 +743,6 @@ export default function AdminDashboard() {
             <DashboardTab />
           </>
         )}
-
         {activeTab === "riwayat" && (
           <>
             <section className="ad-hero">
@@ -843,24 +760,9 @@ export default function AdminDashboard() {
           <p>© 2026 The Sanctuary Polimedia. Tempat aman untuk saling mendengar dan menguatkan</p>
         </div>
         <div className="ad-footer-links">
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={() => setFooterModal("privasi")}
-          >
-            Kebijakan Privasi
-          </span>
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={() => setFooterModal("syarat")}
-          >
-            Syarat dan Ketentuan
-          </span>
-          <span
-            style={{ cursor: "pointer" }}
-            onClick={() => setFooterModal("bantuan")}
-          >
-            Bantuan
-          </span>
+          <span onClick={() => setFooterModal("privasi")}>Kebijakan Privasi</span>
+          <span onClick={() => setFooterModal("syarat")}>Syarat dan Ketentuan</span>
+          <span onClick={() => setFooterModal("bantuan")}>Bantuan</span>
         </div>
       </footer>
     </div>

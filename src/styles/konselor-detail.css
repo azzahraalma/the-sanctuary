@@ -1042,11 +1042,49 @@
 }
 
 @media (max-width: 768px) {
-  .kd-hero-card { grid-template-columns: 1fr; }
-  .kd-hero-photo-wrap { width: 160px; height: 190px; }
-  .kd-hero-name { font-size: 26px; }
+  .kd-hero-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .kd-hero-photo-wrap {
+    width: 160px;
+    height: 190px;
+    margin: 0 auto;
+  }
+  .kd-hero-info {
+    align-items: center;
+  }
+  .kd-hero-kat-pill {
+    margin: 0 auto;
+  }
+  .kd-hero-tagline {
+    margin: 0 auto;
+  }
+  .kd-hero-name {
+    font-size: 26px;
+  }
+  .kd-quick-stats {
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+  }
+  .kd-qs-divider {
+    display: none;
+  }
   .kd-spesial-grid { grid-template-columns: 1fr; }
   .kd-testi-header { grid-template-columns: 1fr; }
   .kd-testi-grid { grid-template-columns: 1fr; }
-  .kd-quick-stats { gap: 8px; }
+}
+@media (max-width: 480px) {
+  .kd-rating-bar-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .kd-rating-bar-label {
+    width: 100%;
+  }
+  .kd-rating-bar-track {
+    width: 100%;
+  }
 }

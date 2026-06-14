@@ -958,3 +958,8 @@
   .hasil-h1 { font-size: 28px; }
   .kuis-h1 { font-size: 28px; }
 }
+@media (max-width: 480px) {
+  .hasil-dimensi-grid {
+    grid-template-columns: 1fr;
+  }
+}

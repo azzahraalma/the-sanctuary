@@ -38,6 +38,7 @@ export default function SesiKonseling() {
   const [isSending, setIsSending]       = useState(false);
   const [isLoading, setIsLoading]       = useState(true);
   const [showEndModal, setShowEndModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const [elapsed, setElapsed]           = useState(0);
   const bottomRef   = useRef(null);
   const textareaRef = useRef(null);
@@ -361,22 +362,71 @@ export default function SesiKonseling() {
         </div>
       )}
 
+      {showInfoModal && (
+        <div className="sk-info-overlay" onClick={() => setShowInfoModal(false)}>
+          <div className="sk-info-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="sk-info-close" onClick={() => setShowInfoModal(false)}>✕</button>
+            <div className="sk-info-modal-body">
+              <div className="sk-info-avatar-wrap">
+                {konselor?.image_url ? (
+                  <img src={konselor.image_url} alt={konselor.nama} />
+                ) : (
+                  <div className="sk-info-avatar-placeholder">
+                    {(konselor?.nama ?? "K").charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <h3 className="sk-info-kons-name">{konselor?.nama ?? "—"}</h3>
+              {konselor?.kategori_masalah && (
+                <div style={{ textAlign: "center", marginTop: 6 }}>
+                  <span className="sk-info-kons-cat">{konselor.kategori_masalah}</span>
+                </div>
+              )}
+              {konselor?.["Rating_(Final)"] && (
+                <div className="sk-info-rating">
+                  ★ {Number(konselor["Rating_(Final)"]).toFixed(1)}
+                </div>
+              )}
+              <div className="sk-info-divider" />
+              <div className="sk-info-details">
+                <div className="sk-info-detail-row">
+                  <span className="sk-info-detail-label">Kamu</span>
+                  <span className="sk-info-detail-val">{firstName}</span>
+                </div>
+                <div className="sk-info-detail-row">
+                  <span className="sk-info-detail-label">Kategori</span>
+                  <span className="sk-info-detail-val">{booking?.kategori_masalah ?? konselor?.kategori_masalah ?? "—"}</span>
+                </div>
+                <div className="sk-info-detail-row">
+                  <span className="sk-info-detail-label">Durasi Sesi</span>
+                  <span className="sk-info-detail-val">{elapsedStr}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="sk-shell">
         <header className="sk-topbar">
           <span className="sk-topbar-brand" onClick={() => navigate("/")}>
             The <span>Sanctuary</span>
           </span>
-          <div className="sk-session-info">
+          <div className="sk-session-info" onClick={() => setShowInfoModal(true)} style={{ cursor: "pointer" }} title="Klik untuk detail sesi">
             <div className="sk-dot" />
-            <span>Sesi dengan {konselor?.nama ?? "Konselor"}</span>
+            <span className="sk-session-title">
+              <span className="sk-session-prefix">Sesi dengan </span>
+              {konselor?.nama ?? "Konselor"}
+            </span>
             <span className="sk-timer">{elapsedStr}</span>
+            <span className="sk-info-icon" style={{ marginLeft: 4, fontSize: 13, opacity: 0.7 }}>ⓘ</span>
           </div>
           {user?.role === "konselor" ? (
             <button className="sk-end-btn" onClick={() => setShowEndModal(true)}>
               Akhiri Sesi
             </button>
           ) : (
-            <button className="sk-end-btn" style={{ background: "#79d8d1" }} onClick={() => navigate("/dashboard")}>
+            <button className="sk-end-btn" style={{ background: "#2f7d79", color: "#fff" }} onClick={() => navigate("/dashboard")}>
               Kembali ke Dashboard
             </button>
           )}

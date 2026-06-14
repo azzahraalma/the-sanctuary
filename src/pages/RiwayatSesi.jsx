@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase.js";
 import { useMid } from "../hooks/useMid.js";
 import { isSelesai, statusLabel } from "../lib/bookingStatus.js";
 import "../styles/riwayat.css";
+import "../styles/statistik.css";
 
 function mapKonselor(k) {
   return {

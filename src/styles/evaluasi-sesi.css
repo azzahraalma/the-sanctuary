@@ -420,3 +420,19 @@ body {
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
+@media (max-width: 480px) {
+  .ev-topbar {
+    padding: 0 16px;
+  }
+  .ev-klien-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .ev-klien-badge {
+    margin-left: 0;
+  }
+  .ev-mood-btn {
+    min-width: calc(50% - 5px);
+  }
+}
